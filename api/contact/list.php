@@ -40,10 +40,15 @@ if ($users === false) {
   admidioApiError('Database error', 500);
 }
 $contacts = [];
+$isAdmin = $gCurrentUser->isAdministrator();
+$showAll = $gSettingsManager->getBool('contacts_show_all');
 
 while ($row = $users->fetch()) {
   $user = new User($gDb, $gProfileFields);
   $user->readDataById($row['usr_id']);
+  if (!isMemberOfOrganization($user) && (!$isAdmin || !$showAll)) {
+    continue;
+  }
   $profileBinary = '';
   if ((int) $gSettingsManager->get('profile_photo_storage') === 0) {
     $usr_photo = $user->getValue('usr_photo');
