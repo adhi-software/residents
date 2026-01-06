@@ -1,0 +1,201 @@
+<?php
+require_once(__DIR__ . '/../../../../adm_program/system/common.php');
+require_once(__DIR__ . '/../../common_function.php');
+header('Content-Type: application/json; charset=utf-8');
+
+$endpointName = 'message/detail';
+
+$currentUser = validateApiKey();
+$currentUserId = (int) $currentUser->getValue('usr_id');
+
+if (!$gSettingsManager->getBool('enable_pm_module') && !$gSettingsManager->getBool('enable_mail_module')) {
+  admidioApiError('Messages module is disabled', 403, array(
+    'endpoint' => $endpointName,
+    'user_id' => $currentUserId
+  ));
+}
+
+$getMsgUuid = admFuncVariableIsValid($_GET, 'msg_uuid', 'string', array('requireValue' => true));
+$markRead = admFuncVariableIsValid($_GET, 'mark_read', 'bool', array('defaultValue' => true));
+
+if ($getMsgUuid === '') {
+  admidioApiError('Message identifier missing', 400, array(
+    'endpoint' => $endpointName,
+    'user_id' => $currentUserId
+  ));
+}
+
+try {
+  $message = new TableMessage($gDb);
+  $message->readDataByUuid($getMsgUuid);
+
+  if ($message->isNewRecord()) {
+    admidioApiError('Message not found', 404, array(
+      'endpoint' => $endpointName,
+      'user_id' => $currentUserId,
+      'msg_uuid' => $getMsgUuid
+    ));
+  }
+
+  if (!residentsMessageIsVisibleToUser($message, $currentUserId)) {
+    admidioApiError('Access denied for this message', 403, array(
+      'endpoint' => $endpointName,
+      'user_id' => $currentUserId,
+      'msg_uuid' => $getMsgUuid
+    ));
+  }
+
+  if ($markRead && $message->getValue('msg_usr_id_sender') !== $currentUserId) {
+    $message->setReadValue();
+  }
+
+  $sender = new User($gDb, $gProfileFields, (int) $message->getValue('msg_usr_id_sender'));
+  $senderPayload = array(
+    'id' => (int) $message->getValue('msg_usr_id_sender'),
+    'name' => trim($sender->getValue('FIRST_NAME') . ' ' . $sender->getValue('LAST_NAME')),
+    'email' => $sender->getValue('EMAIL'),
+    'usr_uuid' => $sender->getValue('usr_uuid')
+  );
+
+  $recipientRows = $message->readRecipientsData();
+  $recipientPayload = array();
+  $recipientEmailCache = array();
+  foreach ($recipientRows as $recipient) {
+    $recipientType = strtoupper($recipient['type']);
+    $recipientId = (int) $recipient['id'];
+    $recipientEmail = '';
+
+    if ($recipientType === 'USER' && $recipientId > 0) {
+      if (!array_key_exists($recipientId, $recipientEmailCache)) {
+        $recipientUser = new User($gDb, $gProfileFields, $recipientId);
+        $recipientEmailCache[$recipientId] = (string) $recipientUser->getValue('EMAIL');
+      }
+      $recipientEmail = $recipientEmailCache[$recipientId];
+    }
+
+    $recipientPayload[] = array(
+      'type' => $recipientType,
+      'id' => $recipientId,
+      'display_name' => trim((string) $recipient['name']),
+      'mode' => $recipient['mode'],
+      'msr_id' => $recipient['msr_id'],
+      'email' => $recipientEmail
+    );
+  }
+
+  $conversation = array();
+  $conversationStatement = $message->getConversation((int) $message->getValue('msg_id'));
+  $userCache = array();
+  while ($entry = $conversationStatement->fetch(PDO::FETCH_ASSOC)) {
+    $authorId = (int) $entry['msc_usr_id'];
+    if ($authorId > 0 && !array_key_exists($authorId, $userCache)) {
+      $userCache[$authorId] = billingFetchUserNameById($authorId);
+    }
+
+    $authorDisplayName = $authorId > 0 ? $userCache[$authorId] : 'System';
+
+    $conversation[] = array(
+      'id' => (int) $entry['msc_id'],
+      'author_id' => $authorId,
+      'author_name' => $authorDisplayName,
+      'author_display_name' => $authorDisplayName,
+      'is_author_current_user' => ($authorId === $currentUserId),
+      'body_plain' => StringUtils::strStripTags((string) $entry['msc_message']),
+      'body_html' => $entry['msc_message'],
+      'timestamp' => $entry['msc_timestamp']
+    );
+  }
+
+  $attachments = array();
+  foreach ($message->getAttachmentsInformations() as $attachment) {
+    $attachments[] = array(
+      'id' => (int) $attachment['msa_id'],
+      'file_name' => $attachment['file_name'],
+      'download_url' => SecurityUtils::encodeUrl(
+        ADMIDIO_URL . FOLDER_MODULES . '/messages/get_attachment.php',
+        array('msa_id' => (int) $attachment['msa_id'], 'view' => 1)
+      )
+    );
+  }
+
+  $response = array(
+    'message' => array(
+      'id' => (int) $message->getValue('msg_id'),
+      'uuid' => $message->getValue('msg_uuid'),
+      'type' => $message->getValue('msg_type'),
+      'subject' => $message->getValue('msg_subject'),
+      'timestamp' => $message->getValue('msg_timestamp'),
+      'read_flag' => (int) $message->getValue('msg_read'),
+      'is_sender' => (int) ($message->getValue('msg_usr_id_sender') === $currentUserId),
+      'sender' => $senderPayload,
+      'recipients' => $recipientPayload,
+      'conversation' => $conversation,
+      'attachments' => $attachments,
+      'reply_targets' => buildReplyTargets($recipientPayload, $currentUserId, $senderPayload),
+      'permissions' => array(
+        'can_delete' => residentsMessageCanDelete($message, $currentUserId)
+      )
+    )
+  );
+
+  echo json_encode($response);
+} catch (Exception $exception) {
+  admidioApiError($exception->getMessage(), 500, array(
+    'endpoint' => $endpointName,
+    'user_id' => $currentUserId,
+    'msg_uuid' => $getMsgUuid,
+    'exception' => get_class($exception)
+  ));
+}
+
+function buildReplyTargets(array $recipients, int $currentUserId, array $sender): array
+{
+  $targets = array();
+  foreach ($recipients as $recipient) {
+    if ($recipient['type'] === 'USER' && $recipient['id'] === $currentUserId) {
+      continue;
+    }
+    $targets[] = $recipient;
+  }
+
+  if ($sender['id'] !== $currentUserId) {
+    $targets[] = array(
+      'type' => 'USER',
+      'id' => $sender['id'],
+      'display_name' => $sender['name'],
+      'mode' => null,
+      'msr_id' => null
+    );
+  }
+
+  return $targets;
+}
+
+if (!function_exists('admidioApiLog')) {
+  function admidioApiLog(string $message, array $context = array(), string $level = 'error'): void
+  {
+    global $gLogger;
+    $prefix = '[Residents Messages API] ';
+    if (isset($gLogger) && method_exists($gLogger, $level)) {
+      $gLogger->{$level}($prefix . $message, $context);
+      return;
+    }
+    if (isset($gLogger)) {
+      $gLogger->error($prefix . $message, $context);
+      return;
+    }
+    $encoded = empty($context) ? '' : ' ' . json_encode($context);
+    error_log($prefix . $message . $encoded);
+  }
+}
+
+if (!function_exists('admidioApiError')) {
+  function admidioApiError(string $message, int $statusCode, array $context = array()): void
+  {
+    $context['status'] = $statusCode;
+    admidioApiLog($message, $context);
+    http_response_code($statusCode);
+    echo json_encode(array('error' => $message));
+    exit();
+  }
+}

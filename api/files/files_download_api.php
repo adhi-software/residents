@@ -1,0 +1,63 @@
+<?php
+require_once(__DIR__ . '/../../../../adm_program/system/common.php');
+require_once(__DIR__ . '/../../common_function.php');
+
+validateApiKey();
+
+$getFileUuid = admFuncVariableIsValid($_GET, 'file_uuid', 'string', array('requireValue' => true));
+$getView     = admFuncVariableIsValid($_GET, 'view', 'bool');
+
+try {
+  $file = new TableFile($gDb);
+  $file->getFileForDownload($getFileUuid);
+} catch (AdmException $e) {
+  header('Content-Type: application/json; charset=utf-8');
+  http_response_code(403);
+  echo json_encode(array('error' => 'No permission to download this file.'));
+  exit;
+} catch (Exception $e) {
+  header('Content-Type: application/json; charset=utf-8');
+  http_response_code(500);
+  echo json_encode(array('error' => 'Unable to download file.'));
+  exit;
+}
+
+$completePath = $file->getFullFilePath();
+
+if (!is_file($completePath)) {
+  header('Content-Type: application/json; charset=utf-8');
+  http_response_code(404);
+  echo json_encode(array('error' => 'File not found.'));
+  exit;
+}
+
+// Increment download counter
+try {
+  $file->setValue('fil_counter', (int) $file->getValue('fil_counter') + 1);
+  $file->save();
+} catch (Exception $e) {
+  // ignore counter issues
+}
+
+$fileSize = filesize($completePath);
+$content = $getView ? 'inline' : 'attachment';
+
+header('Content-Type: ' . $file->getMimeType());
+header('Content-Length: ' . $fileSize);
+header('Content-Disposition: ' . $content . '; filename="' . $file->getValue('fil_name') . '"');
+header('Cache-Control: private');
+header('Pragma: public');
+
+if ($fileSize > 10 * 1024 * 1024) {
+  $chunkSize = 1024 * 1024;
+  $handle = fopen($completePath, 'rb');
+  while (!feof($handle)) {
+    $buffer = fread($handle, $chunkSize);
+    echo $buffer;
+    @ob_flush();
+    flush();
+  }
+  fclose($handle);
+} else {
+  readfile($completePath);
+}

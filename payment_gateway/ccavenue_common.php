@@ -1,0 +1,236 @@
+<?php
+/**
+ * CCAvenue CORE logic for MOBILE
+ * Common CCAvenue transaction functions (shared by web & mobile)
+ * No session, no $gMessage, WebView compatible
+ */
+
+require_once __DIR__ . '/../common_function.php';
+require_once __DIR__ . '/ccavenue_config.php';
+require_once __DIR__ . '/ccavenue_crypto.php';
+
+/**
+ * Common CCAvenue transaction initiation
+ * Used by both web and mobile to start payment
+ * 
+ * @param array $invoiceIds Array of invoice IDs to pay
+ * @param int $userId User ID making the payment
+ * @param string $source 'web' or 'mobile' - determines redirect URLs
+ * @return array Payment data including encrypted request
+ */
+function initCcavenueTransaction(array $invoiceIds, int $userId, string $source = 'web'): array
+{
+    global $gDb, $gCurrentOrgId, $pgConf;
+
+    // Validate config
+    if (
+        empty(CCAVENUE_MERCHANT_ID) ||
+        empty(CCAVENUE_ACCESS_CODE) ||
+        empty(CCAVENUE_WORKING_KEY) ||
+        empty(CCAVENUE_API_URL)
+    ) {
+        return ['error' => 'CCAvenue is not configured. Please contact administrator.'];
+    }
+
+    if (empty($invoiceIds)) {
+        return ['error' => 'No invoices selected'];
+    }
+
+    // Validate invoices & calculate total
+    $totalAmount = 0.0;
+    $currency = '';
+    $ownerId = 0;
+
+    foreach ($invoiceIds as $invId) {
+        $invId = (int)$invId;
+
+        $stmt = $gDb->queryPrepared(
+            'SELECT * FROM ' . TBL_BL_INVOICES . ' WHERE biv_id = ?',
+            [$invId],
+            false
+        );
+        if ($stmt === false) {
+            return ['error' => 'Database error'];
+        }
+        $invoice = $stmt->fetch();
+
+        if (!$invoice) {
+            return ['error' => 'Invalid invoice'];
+        }
+
+        if ((int)$invoice['biv_is_paid'] === 1) {
+            return ['error' => 'Invoice already paid'];
+        }
+
+        if ($ownerId === 0) {
+            $ownerId = (int)$invoice['biv_usr_id'];
+        } elseif ($ownerId !== (int)$invoice['biv_usr_id']) {
+            return ['error' => 'Invoices must belong to same user'];
+        }
+
+        if ($ownerId !== $userId) {
+            return ['error' => 'Unauthorized invoice access'];
+        }
+
+        $totals = billingGetInvoiceTotals($invId);
+        $totalAmount += (float)$totals['amount'];
+        $currency = $totals['currency'];
+    }
+
+    if ($totalAmount <= 0) {
+        return ['error' => 'Invalid payment amount'];
+    }
+
+    // Determine redirect URLs based on source
+    $baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payment_gateway/';
+    $apiBaseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/api/payment/';
+    
+    if ($source === 'mobile') {
+        // Mobile uses dedicated response handler with clean HTML output (in api folder)
+        $redirectUrl = $apiBaseUrl . 'ccavenue_response.php';
+        $cancelUrl = $apiBaseUrl . 'ccavenue_response.php';
+    } else {
+        // Web uses standard response handler with Admidio theme redirect
+        $redirectUrl = !empty($pgConf['redirect_url']) ? $pgConf['redirect_url'] : $baseUrl . 'ccavenue_response.php';
+        $cancelUrl = !empty($pgConf['cancel_url']) ? $pgConf['cancel_url'] : $baseUrl . 'ccavenue_response.php';
+    }
+
+    // Insert payment record (status = IT for initiated)
+    if ($gDb->queryPrepared(
+        'INSERT INTO ' . TBL_BL_TRANS . ' (
+            btr_pg_id,
+            btr_status,
+            btr_amount,
+            btr_currency,
+            btr_usr_id,
+            btr_org_id,
+            btr_pg_pay_method,
+            btr_usr_id_create,
+            btr_usr_id_change
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+            null,
+            'IT',
+            number_format($totalAmount, 2, '.', ''),
+            $currency,
+            $ownerId,
+            $gCurrentOrgId,
+            'CCAvenue',
+            $ownerId,
+            $ownerId
+        ],
+        false
+    ) === false) {
+        return ['error' => 'Failed to create initiated payment'];
+    }
+
+    $paymentId = (int)$gDb->lastInsertId();
+
+    // Insert payment items
+    foreach ($invoiceIds as $invId) {
+        $invTotals = billingGetInvoiceTotals($invId);
+
+        if ($gDb->queryPrepared(
+            'INSERT INTO ' . TBL_BL_TRANS_ITEMS . ' (
+                bti_pg_payment_id,
+                bti_inv_id,
+                bti_amount,
+                bti_currency,
+                bti_usr_id,
+                bti_org_id,
+                bti_usr_id_create,
+                bti_usr_id_change
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                $paymentId,
+                $invId,
+                number_format((float)$invTotals['amount'], 2, '.', ''),
+                $currency,
+                $ownerId,
+                $gCurrentOrgId,
+                $ownerId,
+                $ownerId
+            ],
+            false
+        ) === false) {
+            return ['error' => 'Failed to create initiated payment items'];
+        }
+    }
+
+    // Build merchant data
+    $merchantData = [
+        'merchant_id'     => CCAVENUE_MERCHANT_ID,
+        'order_id'        => (string)$paymentId,
+        'amount'          => number_format($totalAmount, 2, '.', ''),
+        'currency'        => 'INR',
+        'redirect_url'    => $redirectUrl,
+        'cancel_url'      => $cancelUrl,
+        'language'        => 'EN',
+        'merchant_param2' => implode(',', $invoiceIds),
+        'merchant_param3' => (string)$userId,
+        'merchant_param4' => (string)$paymentId
+    ];
+
+    $merchantStr = '';
+    foreach ($merchantData as $key => $value) {
+        $merchantStr .= $key . '=' . $value . '&';
+    }
+    $merchantStr = rtrim($merchantStr, '&');
+
+    $encryptedData = encrypt_ccavenue($merchantStr, CCAVENUE_WORKING_KEY);
+
+    return [
+        'success'      => true,
+        'payment_id'   => $paymentId,
+        'amount'       => $totalAmount,
+        'currency'     => $currency,
+        'enc_request'  => $encryptedData,
+        'access_code'  => CCAVENUE_ACCESS_CODE,
+        'gateway_url'  => CCAVENUE_API_URL,
+        'redirect_url' => $redirectUrl,
+        'cancel_url'   => $cancelUrl
+    ];
+}
+
+/**
+ * Render auto-submit HTML form for mobile WebView
+ * Uses common initCcavenueTransaction function
+ */
+function renderCcavenueForMobile(array $invoiceIds, int $userId)
+{
+    // Use common transaction init with mobile source
+    $result = initCcavenueTransaction($invoiceIds, $userId, 'mobile');
+    
+    if (isset($result['error'])) {
+        echo '<!DOCTYPE html>';
+        echo '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>';
+        echo '<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;text-align:center;padding:40px;background:#f8f9fa">';
+        echo '<div style="background:#fff;padding:30px;border-radius:12px;max-width:320px;margin:auto;box-shadow:0 4px 20px rgba(0,0,0,0.1)">';
+        echo '<div style="font-size:48px;margin-bottom:16px">⚠️</div>';
+        echo '<h3 style="color:#dc3545;margin:0 0 12px">Payment Error</h3>';
+        echo '<p style="color:#666;margin:0">' . htmlspecialchars($result['error']) . '</p>';
+        echo '</div></body></html>';
+        exit;
+    }
+    
+    // Render auto-submit form
+    echo '<!DOCTYPE html>';
+    echo '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Redirecting…</title>';
+    echo '<style>';
+    echo 'body{margin:0;padding:60px 20px;text-align:center;background:linear-gradient(135deg,#0B1120 0%,#1a2942 100%);font-family:-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;box-sizing:border-box}';
+    echo '.loader{border:4px solid rgba(255,255,255,0.2);border-top:4px solid #349aaa;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;margin:0 auto 24px}';
+    echo '@keyframes spin{to{transform:rotate(360deg)}}';
+    echo 'h3{color:#fff;font-weight:600;margin:0 0 8px}';
+    echo 'p{color:rgba(255,255,255,0.7);font-size:14px;margin:0}';
+    echo '</style></head>';
+    echo '<body onload="document.forms[0].submit()">';
+    echo '<div class="loader"></div>';
+    echo '<h3>Connecting to Payment Gateway</h3>';
+    echo '<p>Please wait, do not close this window...</p>';
+    echo '<form method="post" action="' . htmlspecialchars($result['gateway_url']) . '">';
+    echo '<input type="hidden" name="encRequest" value="' . htmlspecialchars($result['enc_request']) . '">';
+    echo '<input type="hidden" name="access_code" value="' . htmlspecialchars($result['access_code']) . '">';
+    echo '</form>';
+    echo '</body></html>';
+    exit;
+}
