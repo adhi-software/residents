@@ -58,15 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     } elseif (isset($_FILES['userfile']) && isset($_FILES['userfile']['tmp_name'][0])) {
       $uploadError = (int)($_FILES['userfile']['error'][0] ?? UPLOAD_ERR_NO_FILE);
-      if ($uploadError !== UPLOAD_ERR_NO_FILE) {
-        if ($uploadError === UPLOAD_ERR_INI_SIZE) {
-          $gMessage->show($gL10n->get('SYS_PHOTO_FILE_TO_LARGE', array(round(PhpIniUtils::getUploadMaxSize() / 1024 ** 2))));
-        }
-
-        if (!file_exists($_FILES['userfile']['tmp_name'][0]) || !is_uploaded_file($_FILES['userfile']['tmp_name'][0])) {
-          $gMessage->show($gL10n->get('SYS_NO_PICTURE_SELECTED'));
-        }
-
+      if ($uploadError === UPLOAD_ERR_NO_FILE) {
+        // No file was uploaded, skip processing
+      } elseif ($uploadError === UPLOAD_ERR_INI_SIZE || $uploadError === UPLOAD_ERR_FORM_SIZE) {
+        $gMessage->show($gL10n->get('SYS_PHOTO_FILE_TO_LARGE', array(round(PhpIniUtils::getUploadMaxSize() / 1024 ** 2))));
+      } elseif ($uploadError !== UPLOAD_ERR_OK) {
+        // Other upload errors (partial upload, no tmp dir, write error, extension blocked)
+        $gMessage->show($gL10n->get('SYS_NO_PICTURE_SELECTED'));
+      } elseif (!file_exists($_FILES['userfile']['tmp_name'][0]) || !is_uploaded_file($_FILES['userfile']['tmp_name'][0])) {
+        $gMessage->show($gL10n->get('SYS_NO_PICTURE_SELECTED'));
+      } else {
         $imageProperties = getimagesize($_FILES['userfile']['tmp_name'][0]);
         if ($imageProperties === false || !in_array($imageProperties['mime'], array('image/jpeg', 'image/png'), true)) {
           $gMessage->show($gL10n->get('SYS_PHOTO_FORMAT_INVALID'));
@@ -110,7 +111,8 @@ $orgLogoUrl = '';
 if ($orgId > 0) {
   $orgLogoPath = ADMIDIO_PATH . FOLDER_DATA . '/residents/org_logo_' . $orgId . '.png';
   if (file_exists($orgLogoPath)) {
-    $orgLogoUrl = ADMIDIO_URL . FOLDER_DATA . '/residents/org_logo_' . $orgId . '.png?v=' . rawurlencode((string)filemtime($orgLogoPath));
+    // Use PHP endpoint to serve logo (direct file access is blocked by .htaccess)
+    $orgLogoUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/preferences/get_logo.php?v=' . rawurlencode((string)filemtime($orgLogoPath));
   }
 }
 
