@@ -75,6 +75,7 @@ try {
       'pay_method' => $row['bpa_pg_pay_method'],
       'pay_type' => $row['bpa_pay_type'],
       'amount' => (float)$row['total_amount'],
+      'currency' => $row['total_currency'] ?? $gSettingsManager->getString('system_currency'),
       'reference_no' => $row['bpa_bank_ref_no'] ?? null
     ];
   }
