@@ -551,13 +551,14 @@ function billingCalculateUserCharge(int $userId, ?int $groupId = null): array
 
 /**
  * Check if a table exists (works for MySQL and PostgreSQL when default schema equals DB_NAME/public).
+ * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
  */
 function tableExistsBILL(string $tableName): bool
 {
   global $gDb, $gDbType;
 
   if ($gDbType === 'pgsql') {
-  $sql = 'SELECT COUNT(*) FROM information_schema.tables WHERE table_catalog = ? AND table_schema = current_schema() AND table_name = ?';
+  $sql = 'SELECT COUNT(*) FROM information_schema.tables WHERE table_catalog = ? AND table_schema = current_schema() AND LOWER(table_name) = LOWER(?)';
   $stmt = $gDb->queryPrepared($sql, array(DB_NAME, $tableName));
   } else {
   $sql = 'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ? AND table_name = ?';
@@ -568,13 +569,14 @@ function tableExistsBILL(string $tableName): bool
 
 /**
  * Check if an index exists.
+ * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
  */
 function indexExistsBILL(string $tableName, string $indexName): bool
 {
   global $gDb, $gDbType;
 
   if ($gDbType === 'pgsql') {
-  $sql = 'SELECT COUNT(*) FROM pg_indexes WHERE schemaname = current_schema() AND tablename = ? AND indexname = ?';
+  $sql = 'SELECT COUNT(*) FROM pg_indexes WHERE schemaname = current_schema() AND LOWER(tablename) = LOWER(?) AND LOWER(indexname) = LOWER(?)';
   $stmt = $gDb->queryPrepared($sql, array($tableName, $indexName));
   } else {
   $sql = 'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ?';
@@ -583,12 +585,16 @@ function indexExistsBILL(string $tableName, string $indexName): bool
   return (int)$stmt->fetchColumn() > 0;
 }
 
+/**
+ * Check if a column exists.
+ * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
+ */
 function columnExistsBILL(string $tableName, string $columnName): bool
 {
   global $gDb, $gDbType;
 
   if ($gDbType === 'pgsql') {
-  $sql = 'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = ? AND column_name = ?';
+  $sql = 'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = current_schema() AND LOWER(table_name) = LOWER(?) AND LOWER(column_name) = LOWER(?)';
   $stmt = $gDb->queryPrepared($sql, array($tableName, $columnName));
   } else {
   $sql = 'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?';
@@ -601,13 +607,14 @@ function columnExistsBILL(string $tableName, string $columnName): bool
 
 /**
  * Check if a FK constraint exists.
+ * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
  */
 function constraintExistsBILL(string $tableName, string $constraintName): bool
 {
   global $gDb, $gDbType;
 
   if ($gDbType === 'pgsql') {
-  $sql = 'SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema = current_schema() AND table_name = ? AND constraint_name = ?';
+  $sql = 'SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema = current_schema() AND LOWER(table_name) = LOWER(?) AND LOWER(constraint_name) = LOWER(?)';
   $stmt = $gDb->queryPrepared($sql, array($tableName, $constraintName));
   } else {
   $sql = 'SELECT COUNT(*) FROM information_schema.table_constraints WHERE table_schema = ? AND table_name = ? AND constraint_name = ?';
