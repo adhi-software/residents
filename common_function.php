@@ -1,7 +1,13 @@
 <?php
 /**
-    * Common functions for the Admidio Residents plugin
-    */
+ ***********************************************************************************************
+ * Common functions for the Admidio Residents plugin
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 require_once(__DIR__ . '/../../adm_program/system/common.php');
 require_once(__DIR__ . '/../../adm_program/system/bootstrap/constants.php');

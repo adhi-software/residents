@@ -1,7 +1,13 @@
 <?php
 /**
-    * TableAccess wrapper for Residents invoice item rows.
-    */
+ ***********************************************************************************************
+ * TableAccess wrapper for Residents invoice item rows.
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 require_once(__DIR__ . '/TableResidentsBase.php');
 

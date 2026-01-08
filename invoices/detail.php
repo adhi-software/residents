@@ -1,8 +1,13 @@
 <?php
-
 /**
-    * View an invoice details (admins or users with permission)
-    */
+ ***********************************************************************************************
+ * View an invoice details (admins or users with permission)
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 require_once(__DIR__ . '/../common_function.php');
 // Enforce valid login

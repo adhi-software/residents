@@ -1,7 +1,13 @@
 <?php
 /**
-    * Export payment receipt as PDF
-    */
+ ***********************************************************************************************
+ * Export payment receipt as PDF
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 require_once(__DIR__ . '/../common_function.php');
 // Check if we are in API mode (API Key provided)

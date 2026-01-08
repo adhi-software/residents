@@ -1,14 +1,20 @@
 <?php
 /**
-    * Non-fatal TableAccess base for the Residents plugin.
-    *
-    * Admidio's core Database wrapper can render a dedicated SQL error page and exit when
-    * a statement fails (Database::queryPrepared with $showError=true). The Residents
-    * plugin prefers to handle failures gracefully (inline alerts, redirects, JSON errors).
-    *
-    * This base class overrides write operations to always execute with $showError=false
-    * so callers can decide how to surface the error.
-    */
+ ***********************************************************************************************
+ * Non-fatal TableAccess base for the Residents plugin.
+ *
+ * Admidio's core Database wrapper can render a dedicated SQL error page and exit when
+ * a statement fails (Database::queryPrepared with $showError=true). The Residents
+ * plugin prefers to handle failures gracefully (inline alerts, redirects, JSON errors).
+ *
+ * This base class overrides write operations to always execute with $showError=false
+ * so callers can decide how to surface the error.
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 require_once(__DIR__ . '/../../../adm_program/system/classes/TableAccess.php');
 

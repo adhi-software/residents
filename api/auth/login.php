@@ -1,11 +1,17 @@
 <?php
 /**
-    * Device Login API
-    * 
-    * Authenticates a user and returns an API key if the device is approved.
-    * Uses the TBL_BL_DEVICES table (adm_bl_devices) defined in ConfigTables.php.
-    * The table must be installed via the residents plugin installation page.
-    */
+ ***********************************************************************************************
+ * Device Login API - Authenticates a user and returns an API key if the device is approved
+ *
+ * Uses the TBL_BL_DEVICES table (adm_bl_devices) defined in ConfigTables.php.
+ * The table must be installed via the residents plugin installation page.
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
+
 require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
 

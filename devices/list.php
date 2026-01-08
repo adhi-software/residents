@@ -1,7 +1,13 @@
 <?php
 /**
-* Manage Device tab content: manage mobile login devices.
-*/
+ ***********************************************************************************************
+ * Manage Device tab content - manage mobile login devices
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 global $gDb, $gL10n, $gSettingsManager, $page;
 

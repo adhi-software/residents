@@ -1,10 +1,14 @@
 <?php
 /**
-    ***********************************************************************************************
-    * CCAvenue redirect
-    * Builds a form and redirects the user to the CCAvenue payment gateway
-    ***********************************************************************************************
-    */
+ ***********************************************************************************************
+ * CCAvenue redirect - Builds a form and redirects the user to the CCAvenue payment gateway
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
+
 require_once(__DIR__ . '/../common_function.php');
 if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
     require_once(__DIR__ . '/../../../system/login_valid.php');

@@ -1,4 +1,14 @@
 <?php
+/**
+ ***********************************************************************************************
+ * API endpoint to return a list of invoices for the current user
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
+
 global $gDb, $gCurrentUser, $gCurrentOrgId, $gProfileFields, $gDbType;
 
 require_once(__DIR__ . '/../../../../adm_program/system/common.php');

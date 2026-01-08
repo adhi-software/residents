@@ -1,12 +1,16 @@
 <?php
 /**
-    ***********************************************************************************************
-    * CCAvenue payment response handler
-    *
-    * This file handles the response from CCAvenue payment gateway and updates the database
-    * NOTE: This file must NOT initialize sessions to avoid logout issues with gateway callbacks
-    ***********************************************************************************************
-    */
+ ***********************************************************************************************
+ * CCAvenue payment response handler
+ *
+ * This file handles the response from CCAvenue payment gateway and updates the database.
+ * NOTE: This file must NOT initialize sessions to avoid logout issues with gateway callbacks.
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 // Start output buffering to prevent any output before redirect
 ob_start();

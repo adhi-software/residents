@@ -1,8 +1,15 @@
 <?php
 /**
-    * Preferences tab: select roles that act as Residents admins
-    * Expects $page, $isAdmin, $config to be available from residents.php
-    */
+ ***********************************************************************************************
+ * Preferences tab: select roles that act as Residents admins
+ *
+ * Expects $page, $isAdmin, $config to be available from residents.php
+ *
+ * @copyright The Admidio Team
+ * @see https://www.admidio.org/
+ * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License v2.0 only
+ ***********************************************************************************************
+ */
 
 global $gDb, $gCurrentOrganization, $gL10n, $gCurrentUser;
 
