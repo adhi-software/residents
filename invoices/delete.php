@@ -1,51 +1,51 @@
 <?php
 /**
- * Delete an invoice and all related rows.
- */
+    * Delete an invoice and all related rows.
+    */
 
 require_once(__DIR__ . '/../common_function.php');
 require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
 if (!isBillingAdminBySettings()) {
-  $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
+    $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
+    $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
 try {
-  SecurityUtils::validateCsrfToken($_POST['admidio-csrf-token'] ?? '');
+    SecurityUtils::validateCsrfToken($_POST['admidio-csrf-token'] ?? '');
 } catch (Exception $e) {
-  $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
+    $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
 $invoiceId = admFuncVariableIsValid($_POST, 'id', 'int');
 if ($invoiceId <= 0) {
-  $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
+    $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
 $invoice = new TableResidentsInvoice($gDb, $invoiceId);
 if ($invoice->isNewRecord()) {
-  $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
+    $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
 $isPaid = (int)$invoice->getValue('biv_is_paid') === 1;
 if ($isPaid) {
-  $gMessage->show($gL10n->get('BL_DELETE_PAID_DENIED'));
+    $gMessage->show($gL10n->get('BL_DELETE_PAID_DENIED'));
 }
 
 $deleted = $invoice->deleteWithRelations();
 
 $params = array('tab' => 'invoices');
 if ($deleted) {
-  $params['invoice_status'] = 'deleted';
+    $params['invoice_status'] = 'deleted';
 } else {
-  $params['invoice_status'] = 'error';
-  $params['invoice_message'] = 'Failed to delete invoice.';
+    $params['invoice_status'] = 'error';
+    $params['invoice_message'] = 'Failed to delete invoice.';
 }
 
 admRedirect(SecurityUtils::encodeUrl(
-  ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php',
-  $params
+    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php',
+    $params
 ));

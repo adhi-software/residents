@@ -8,35 +8,35 @@ $getFileUuid = admFuncVariableIsValid($_GET, 'file_uuid', 'string', array('requi
 $getView     = admFuncVariableIsValid($_GET, 'view', 'bool');
 
 try {
-  $file = new TableFile($gDb);
-  $file->getFileForDownload($getFileUuid);
+    $file = new TableFile($gDb);
+    $file->getFileForDownload($getFileUuid);
 } catch (AdmException $e) {
-  header('Content-Type: application/json; charset=utf-8');
-  http_response_code(403);
-  echo json_encode(array('error' => 'No permission to download this file.'));
-  exit;
+    header('Content-Type: application/json; charset=utf-8');
+    http_response_code(403);
+    echo json_encode(array('error' => 'No permission to download this file.'));
+    exit;
 } catch (Exception $e) {
-  header('Content-Type: application/json; charset=utf-8');
-  http_response_code(500);
-  echo json_encode(array('error' => 'Unable to download file.'));
-  exit;
+    header('Content-Type: application/json; charset=utf-8');
+    http_response_code(500);
+    echo json_encode(array('error' => 'Unable to download file.'));
+    exit;
 }
 
 $completePath = $file->getFullFilePath();
 
 if (!is_file($completePath)) {
-  header('Content-Type: application/json; charset=utf-8');
-  http_response_code(404);
-  echo json_encode(array('error' => 'File not found.'));
-  exit;
+    header('Content-Type: application/json; charset=utf-8');
+    http_response_code(404);
+    echo json_encode(array('error' => 'File not found.'));
+    exit;
 }
 
 // Increment download counter
 try {
-  $file->setValue('fil_counter', (int) $file->getValue('fil_counter') + 1);
-  $file->save();
+    $file->setValue('fil_counter', (int) $file->getValue('fil_counter') + 1);
+    $file->save();
 } catch (Exception $e) {
-  // ignore counter issues
+    // ignore counter issues
 }
 
 $fileSize = filesize($completePath);
@@ -49,15 +49,15 @@ header('Cache-Control: private');
 header('Pragma: public');
 
 if ($fileSize > 10 * 1024 * 1024) {
-  $chunkSize = 1024 * 1024;
-  $handle = fopen($completePath, 'rb');
-  while (!feof($handle)) {
-    $buffer = fread($handle, $chunkSize);
-    echo $buffer;
-    @ob_flush();
-    flush();
-  }
-  fclose($handle);
+    $chunkSize = 1024 * 1024;
+    $handle = fopen($completePath, 'rb');
+    while (!feof($handle)) {
+        $buffer = fread($handle, $chunkSize);
+        echo $buffer;
+        @ob_flush();
+        flush();
+    }
+    fclose($handle);
 } else {
-  readfile($completePath);
+    readfile($completePath);
 }

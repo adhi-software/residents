@@ -14,45 +14,45 @@ $photoData = null;
 
 $storage = (int) $gSettingsManager->get('profile_photo_storage');
 if ($storage === 0) {
-  $usrPhoto = $currentUser->getValue('usr_photo');
-  if (!empty($usrPhoto)) {
-    $photoData = (string) $usrPhoto;
-  }
+    $usrPhoto = $currentUser->getValue('usr_photo');
+    if (!empty($usrPhoto)) {
+        $photoData = (string) $usrPhoto;
+    }
 } else {
-  $file = ADMIDIO_PATH . FOLDER_DATA . '/user_profile_photos/' . $userId . '.jpg';
-  if (is_file($file)) {
-    $photoData = file_get_contents($file);
-  }
+    $file = ADMIDIO_PATH . FOLDER_DATA . '/user_profile_photos/' . $userId . '.jpg';
+    if (is_file($file)) {
+        $photoData = file_get_contents($file);
+    }
 }
 
 $photo = null;
 if (!empty($photoData)) {
-  $mime = 'image/jpeg';
-  if (function_exists('finfo_open')) {
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    if ($finfo) {
-      $detected = finfo_buffer($finfo, $photoData);
-      if (is_string($detected) && $detected !== '') {
-        $mime = $detected;
-      }
-      finfo_close($finfo);
+    $mime = 'image/jpeg';
+    if (function_exists('finfo_open')) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        if ($finfo) {
+            $detected = finfo_buffer($finfo, $photoData);
+            if (is_string($detected) && $detected !== '') {
+                $mime = $detected;
+            }
+            finfo_close($finfo);
     }
-  }
+    }
 
-  $base64 = base64_encode($photoData);
-  $photo = [
+    $base64 = base64_encode($photoData);
+    $photo = [
     'mime' => $mime,
     'base64' => $base64,
     'data_uri' => 'data:' . $mime . ';base64,' . $base64,
-  ];
+    ];
 }
 
 echo json_encode([
-  'user' => [
+    'user' => [
     'id' => $userId,
     'login' => $login,
     'first_name' => $firstName,
     'last_name' => $lastName,
-  ],
-  'photo' => $photo,
+    ],
+    'photo' => $photo,
 ]);

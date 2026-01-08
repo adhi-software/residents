@@ -1,9 +1,9 @@
 <?php
 /**
- * Compatibility loader for Residents TableAccess wrappers.
- *
- * Older code includes this file, so we forward to the new per-class files.
- */
+    * Compatibility loader for Residents TableAccess wrappers.
+    *
+    * Older code includes this file, so we forward to the new per-class files.
+    */
 
 require_once(__DIR__ . '/TableResidentsCharge.php');
 require_once(__DIR__ . '/BillingHistory.php');

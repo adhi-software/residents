@@ -10,65 +10,65 @@ $currentUser = validateApiKey();
 $currentUserId = (int) $currentUser->getValue('usr_id');
 
 try {
-  // Permission check: only billing admin or payment admin
-  $canViewAll = isBillingAdmin() || isPaymentAdmin();
+    // Permission check: only billing admin or payment admin
+    $canViewAll = isBillingAdmin() || isPaymentAdmin();
 
-  $groups = [];
-  $users  = [];
+    $groups = [];
+    $users  = [];
 
-  if ($canViewAll) {
-    // 1. Groups 
-    $allRoles = billingGetRoleOptions();
-    foreach ($allRoles as $id => $name) {
-      $groups[] = [
+    if ($canViewAll) {
+        // 1. Groups 
+        $allRoles = billingGetRoleOptions();
+        foreach ($allRoles as $id => $name) {
+            $groups[] = [
         'id'   => (int)$id,
         'name' => $name
-      ];
+            ];
     }
 
-    // 2. Users (filtered by group)
-    $filterGroupId = admFuncVariableIsValid($_GET, 'group_id', 'int');
+        // 2. Users (filtered by group)
+        $filterGroupId = admFuncVariableIsValid($_GET, 'group_id', 'int');
 
-    $firstNameFieldId = (int)$gProfileFields->getProperty('FIRST_NAME', 'usf_id');
-    $lastNameFieldId  = (int)$gProfileFields->getProperty('LAST_NAME', 'usf_id');
+        $firstNameFieldId = (int)$gProfileFields->getProperty('FIRST_NAME', 'usf_id');
+        $lastNameFieldId  = (int)$gProfileFields->getProperty('LAST_NAME', 'usf_id');
 
-    $allUsers = TableResidentsPayment::fetchUserOptions(
-      $gDb,
-      true,
-      $firstNameFieldId,
-      $lastNameFieldId,
-      $currentUserId,
-      $filterGroupId
-    );
+        $allUsers = TableResidentsPayment::fetchUserOptions(
+            $gDb,
+            true,
+            $firstNameFieldId,
+            $lastNameFieldId,
+            $currentUserId,
+            $filterGroupId
+        );
 
-    foreach ($allUsers as $id => $name) {
-      $users[] = [
+        foreach ($allUsers as $id => $name) {
+            $users[] = [
         'id'   => (int)$id,
         'name' => $name
-      ];
+            ];
     }
-  }
+    }
 
-  $defaultDates = [
-      'start' => date('Y-m-01'),
-      'end' => date('Y-m-t')
-  ];
+    $defaultDates = [
+            'start' => date('Y-m-01'),
+            'end' => date('Y-m-t')
+    ];
 
-  echo json_encode([
+    echo json_encode([
     'is_admin' => $canViewAll,
     'groups'   => $groups,
     'users'    => $users,
     'dates'    => $defaultDates
-  ]);
+    ]);
 
 } catch (Exception $exception) {
-  admidioApiError(
+    admidioApiError(
     $exception->getMessage(),
     500,
     [
-      'endpoint'  => $endpointName,
-      'user_id'   => $currentUserId,
-      'exception' => get_class($exception)
+            'endpoint'  => $endpointName,
+            'user_id'   => $currentUserId,
+            'exception' => get_class($exception)
     ]
-  );
+    );
 }

@@ -1,7 +1,7 @@
 <?php
 /**
- * Payments tab content. Lists captured payments and allows viewing their items.
- */
+    * Payments tab content. Lists captured payments and allows viewing their items.
+    */
 
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gSettingsManager, $gCurrentOrgId, $gDbType, $page;
 
@@ -11,7 +11,7 @@ $canCreatePayments = isBillingAdminBySettings();
 $canViewAll = $canCreatePayments || $canManage;
 
 if (!tableExistsBILL(TBL_BL_PAYMENTS) || !tableExistsBILL(TBL_BL_PAYMENT_ITEMS)) {
-  return;
+    return;
 }
 
 // Show empty-state banner if there are no payments at all, but still render filters/table
@@ -28,28 +28,28 @@ TableResidentsTransaction::expireInitiated($gDb, $timeoutDate);
 $paymentStatus = admFuncVariableIsValid($_GET, 'payment_status', 'string');
 $paymentMessage = admFuncVariableIsValid($_GET, 'payment_message', 'string');
 $paymentMessageMap = array(
-  'invalid_response' => $gL10n->get('BL_PAYMENT_MSG_INVALID_RESPONSE'),
-  'missing_order' => $gL10n->get('BL_PAYMENT_MSG_MISSING_ORDER'),
-  'payment_not_found' => $gL10n->get('BL_PAYMENT_MSG_PAYMENT_NOT_FOUND'),
-  'processing_error' => $gL10n->get('BL_PAYMENT_MSG_PROCESSING_ERROR'),
-  'Unknown error' => $gL10n->get('BL_PAYMENT_MSG_UNKNOWN')
+    'invalid_response' => $gL10n->get('BL_PAYMENT_MSG_INVALID_RESPONSE'),
+    'missing_order' => $gL10n->get('BL_PAYMENT_MSG_MISSING_ORDER'),
+    'payment_not_found' => $gL10n->get('BL_PAYMENT_MSG_PAYMENT_NOT_FOUND'),
+    'processing_error' => $gL10n->get('BL_PAYMENT_MSG_PROCESSING_ERROR'),
+    'Unknown error' => $gL10n->get('BL_PAYMENT_MSG_UNKNOWN')
 );
 
 if ($paymentStatus === 'success') {
-  $page->addHtml('<div class="alert alert-success mb-3">' . $gL10n->get('BL_PAYMENT_SUCCESS') . '</div>');
+    $page->addHtml('<div class="alert alert-success mb-3">' . $gL10n->get('BL_PAYMENT_SUCCESS') . '</div>');
 } elseif ($paymentStatus === 'failed') {
-  $msg = $gL10n->get('BL_PAYMENT_FAILED');
-  if ($paymentMessage !== '' && isset($paymentMessageMap[$paymentMessage])) {
-    $msg = $paymentMessageMap[$paymentMessage];
-  } elseif ($paymentMessage !== '') {
-    $msg .= ' (' . htmlspecialchars($paymentMessage) . ')';
-  }
-  $page->addHtml('<div class="alert alert-danger mb-3">' . $msg . '</div>');
+    $msg = $gL10n->get('BL_PAYMENT_FAILED');
+    if ($paymentMessage !== '' && isset($paymentMessageMap[$paymentMessage])) {
+        $msg = $paymentMessageMap[$paymentMessage];
+    } elseif ($paymentMessage !== '') {
+        $msg .= ' (' . htmlspecialchars($paymentMessage) . ')';
+    }
+    $page->addHtml('<div class="alert alert-danger mb-3">' . $msg . '</div>');
 } elseif ($paymentStatus === 'deleted') {
-  $page->addHtml('<div class="alert alert-success mb-3">Payment deleted.</div>');
+    $page->addHtml('<div class="alert alert-success mb-3">Payment deleted.</div>');
 } elseif ($paymentStatus === 'error') {
-  $msg = $paymentMessage !== '' ? htmlspecialchars($paymentMessage) : 'Action failed.';
-  $page->addHtml('<div class="alert alert-danger mb-3">' . $msg . '</div>');
+    $msg = $paymentMessage !== '' ? htmlspecialchars($paymentMessage) : 'Action failed.';
+    $page->addHtml('<div class="alert alert-danger mb-3">' . $msg . '</div>');
 }
 
 $getUser = admFuncVariableIsValid($_GET, 'filter_user', 'int');
@@ -58,14 +58,14 @@ $getQ = trim((string)admFuncVariableIsValid($_GET, 'q', 'string'));
 $getStart = admFuncVariableIsValid($_GET, 'filter_start', 'date');
 $getEnd = admFuncVariableIsValid($_GET, 'filter_end', 'date');
 if ($getStart === '' && $getEnd === '') {
-  $getStart = date('Y-m-01');
-  $getEnd = date('Y-m-t');
+    $getStart = date('Y-m-01');
+    $getEnd = date('Y-m-t');
 }
 
 // Determine default page length for Datatables
 $defaultPageLength = (int)$gSettingsManager->getInt('system_datatables_rows');
 if ($defaultPageLength <= 0) {
-  $defaultPageLength = 25;
+    $defaultPageLength = 25;
 }
 
 // filter dropdowns
@@ -73,8 +73,8 @@ $getGroup = admFuncVariableIsValid($_GET, 'filter_group', 'int');
 
 // Hide and ignore group/user filters for normal users (only admins can filter across users/groups).
 if (!$canViewAll) {
-  $getUser = 0;
-  $getGroup = 0;
+    $getUser = 0;
+    $getGroup = 0;
 }
 
 $firstNameFieldId = (int)$gProfileFields->getProperty('FIRST_NAME', 'usf_id');
@@ -88,94 +88,94 @@ $userOptions = TableResidentsPayment::fetchUserOptions($gDb, $canViewAll, $first
 $filterAction = SecurityUtils::encodeUrl($baseUrl, array('tab' => 'payments'));
 // Show "New payment" button only to billing admins
 if ($canCreatePayments) {
-  $page->addHtml('<div class="mb-3 text-start"><a href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payments/edit.php').'" class="btn btn-secondary"><i class="fas fa-plus"></i> '.$gL10n->get('BL_ADD_PAYMENT').'</a></div>');
+    $page->addHtml('<div class="mb-3 text-start"><a href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payments/edit.php').'" class="btn btn-secondary"><i class="fas fa-plus"></i> '.$gL10n->get('BL_ADD_PAYMENT').'</a></div>');
 }
 
 if (!$canViewAll) {
-  $basicForm = new HtmlForm(
+    $basicForm = new HtmlForm(
     'payments_filter_basic',
     $filterAction,
     $page,
     array('type' => 'navbar', 'setFocus' => false)
-  );
-  $basicForm->addInput('tab', '', 'payments', array('type' => 'hidden'));
-  $basicForm->addInput('filter_start', $gL10n->get('SYS_START'), $getStart, array('type' => 'date', 'maxLength' => 10));
-  $basicForm->addInput('filter_end', $gL10n->get('SYS_END'), $getEnd, array('type' => 'date', 'maxLength' => 10));
-  $basicForm->addButton(
+    );
+    $basicForm->addInput('tab', '', 'payments', array('type' => 'hidden'));
+    $basicForm->addInput('filter_start', $gL10n->get('SYS_START'), $getStart, array('type' => 'date', 'maxLength' => 10));
+    $basicForm->addInput('filter_end', $gL10n->get('SYS_END'), $getEnd, array('type' => 'date', 'maxLength' => 10));
+    $basicForm->addButton(
     'payments_filter_apply_basic',
     $gL10n->get('SYS_FILTER'),
     array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
-  );
+    );
 
-  $basicNavbar = new HtmlNavbar('navbar_payments_filter_basic', '', $page, 'filter');
-  $basicNavbar->addForm($basicForm->show());
-  $page->addHtml($basicNavbar->show());
-  $page->addJavascript(
+    $basicNavbar = new HtmlNavbar('navbar_payments_filter_basic', '', $page, 'filter');
+    $basicNavbar->addForm($basicForm->show());
+    $page->addHtml($basicNavbar->show());
+    $page->addJavascript(
     "$(function(){ var basicPayForm=$('#payments_filter_basic'); basicPayForm.find('input[type=date]').on('change', function(){ basicPayForm.submit(); }); });",
     true
-  );
+    );
 }
 
 // Show filters only to admins (use same navbar form styling as Invoices)
 if ($canViewAll) {
-  $roles = billingGetRoleOptions();
-  $rolesWithAll = array('0' => $gL10n->get('BL_ALL')) + $roles;
-  $userOptionsWithAll = array('0' => $gL10n->get('BL_ALL')) + $userOptions;
+    $roles = billingGetRoleOptions();
+    $rolesWithAll = array('0' => $gL10n->get('BL_ALL')) + $roles;
+    $userOptionsWithAll = array('0' => $gL10n->get('BL_ALL')) + $userOptions;
 
-  $labelGroup = '<i class="fas fa-users" alt="'.$gL10n->get('BL_GROUP').'" title="'.$gL10n->get('BL_GROUP').'"></i>';
-  $labelUser = '<i class="fas fa-user" alt="'.$gL10n->get('BL_USER').'" title="'.$gL10n->get('BL_USER').'"></i>';
-  $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
+    $labelGroup = '<i class="fas fa-users" alt="'.$gL10n->get('BL_GROUP').'" title="'.$gL10n->get('BL_GROUP').'"></i>';
+    $labelUser = '<i class="fas fa-user" alt="'.$gL10n->get('BL_USER').'" title="'.$gL10n->get('BL_USER').'"></i>';
+    $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
 
-  $filterNavbar = new HtmlNavbar('navbar_payments_filter', '', $page, 'filter');
-  $filterForm = new HtmlForm(
+    $filterNavbar = new HtmlNavbar('navbar_payments_filter', '', $page, 'filter');
+    $filterForm = new HtmlForm(
     'payments_filter',
     $filterAction,
     $page,
     array('type' => 'navbar', 'setFocus' => false)
-  );
-  $filterForm->addInput('tab', '', 'payments', array('type' => 'hidden'));
+    );
+    $filterForm->addInput('tab', '', 'payments', array('type' => 'hidden'));
 
-  $filterForm->addSelectBox(
+    $filterForm->addSelectBox(
     'filter_group',
     $labelGroup,
     $rolesWithAll,
     array('defaultValue' => (string)$getGroup, 'showContextDependentFirstEntry' => false)
-  );
+    );
 
-  $filterForm->addSelectBox(
+    $filterForm->addSelectBox(
     'filter_user',
     $labelUser,
     $userOptionsWithAll,
     array('defaultValue' => (string)$getUser, 'showContextDependentFirstEntry' => false)
-  );
+    );
 
-  $filterForm->addSelectBox(
+    $filterForm->addSelectBox(
     'filter_type',
     $gL10n->get('BL_TYPE'),
     array(
-      '' => $gL10n->get('BL_ALL'),
-      'online' => $gL10n->get('BL_PAYMENT_TYPE_ONLINE'),
-      'offline' => $gL10n->get('BL_PAYMENT_TYPE_OFFLINE')
+            '' => $gL10n->get('BL_ALL'),
+            'online' => $gL10n->get('BL_PAYMENT_TYPE_ONLINE'),
+            'offline' => $gL10n->get('BL_PAYMENT_TYPE_OFFLINE')
     ),
     array('defaultValue' => (string)$getType, 'showContextDependentFirstEntry' => false)
-  );
+    );
 
-  $filterForm->addInput('q', $labelSearch, $getQ);
-  $filterForm->addInput('filter_start', $gL10n->get('SYS_START'), $getStart, array('type' => 'date', 'maxLength' => 10));
-  $filterForm->addInput('filter_end', $gL10n->get('SYS_END'), $getEnd, array('type' => 'date', 'maxLength' => 10));
-  $filterForm->addButton(
+    $filterForm->addInput('q', $labelSearch, $getQ);
+    $filterForm->addInput('filter_start', $gL10n->get('SYS_START'), $getStart, array('type' => 'date', 'maxLength' => 10));
+    $filterForm->addInput('filter_end', $gL10n->get('SYS_END'), $getEnd, array('type' => 'date', 'maxLength' => 10));
+    $filterForm->addButton(
     'payments_filter_apply',
     $gL10n->get('SYS_FILTER'),
     array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
-  );
+    );
 
-  $filterNavbar->addForm($filterForm->show());
-  $page->addHtml($filterNavbar->show());
+    $filterNavbar->addForm($filterForm->show());
+    $page->addHtml($filterNavbar->show());
 
-  $page->addJavascript(
+    $page->addJavascript(
     "$(function(){ var payForm=$('#payments_filter'); payForm.find('select, input[type=date], input[name=q]').on('change', function(){ payForm.submit(); }); });",
     true
-  );
+    );
 }
 
 $paymentsStyle = '#table_billing_payments thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}#table_billing_payments thead th{font-weight:700;color:#495057;padding:12px 30px 12px 15px !important;white-space:nowrap;position:relative;border:none;background-position: right 5px center !important;}';
@@ -184,17 +184,17 @@ $paymentsStyle .= '#table_billing_payments_wrapper .dataTables_length label,#tab
 $paymentsStyle .= '#table_billing_payments_wrapper .dataTables_length select,#table_billing_payments_length select{width:auto;min-width:70px;display:inline-block;}';
 $paymentsStyle .= '#table_billing_payments_filter{display:none!important;}';
 if ($canViewAll) {
-  $paymentsStyle .= '#table_billing_payments thead th:first-child:before,#table_billing_payments thead th:first-child:after{display:none!important;}';
+    $paymentsStyle .= '#table_billing_payments thead th:first-child:before,#table_billing_payments thead th:first-child:after{display:none!important;}';
 }
 $page->addHtml('<style>'.$paymentsStyle.'</style>');
 
 $serverParams = array(
-  'filter_user' => $getUser,
-  'filter_group' => $getGroup,
-  'filter_type' => $getType,
-  'q' => $getQ,
-  'filter_start' => $getStart,
-  'filter_end' => $getEnd
+    'filter_user' => $getUser,
+    'filter_group' => $getGroup,
+    'filter_type' => $getType,
+    'q' => $getQ,
+    'filter_start' => $getStart,
+    'filter_end' => $getEnd
 );
 $serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payments/list_data.php', $serverParams);
 
@@ -203,9 +203,9 @@ $table->setServerSideProcessing($serverUrl);
 $table->setDatatablesRowsPerPage($defaultPageLength);
 $table->setDatatablesOrderColumns(array(array(2, 'desc')));
 if ($canViewAll) {
-  $table->disableDatatablesColumnsSort(array(1,8));
-  $table->setColumnAlignByArray(array('center','left','left','left','left','left','right','left'));
-  $table->addRowHeadingByArray(array(
+    $table->disableDatatablesColumnsSort(array(1,8));
+    $table->setColumnAlignByArray(array('center','left','left','left','left','left','right','left'));
+    $table->addRowHeadingByArray(array(
     ($canManage ? '<input type="checkbox" id="billing-select-all-payments" />' : ''),
     $gL10n->get('BL_PAYMENT_NUMBER'),
     $gL10n->get('BL_PAYMENT_DATE'),
@@ -214,11 +214,11 @@ if ($canViewAll) {
     $gL10n->get('BL_CUSTOMER'),
     $gL10n->get('BL_PAYMENT_TOTAL'),
     $gL10n->get('BL_ACTIONS')
-  ));
+    ));
 } else {
-  $table->disableDatatablesColumnsSort(array(7));
-  $table->setColumnAlignByArray(array('left','left','left','left','left','right','left'));
-  $table->addRowHeadingByArray(array(
+    $table->disableDatatablesColumnsSort(array(7));
+    $table->setColumnAlignByArray(array('left','left','left','left','left','right','left'));
+    $table->addRowHeadingByArray(array(
     $gL10n->get('BL_PAYMENT_NUMBER'),
     $gL10n->get('BL_PAYMENT_DATE'),
     $gL10n->get('BL_PAYMENT_METHOD'),
@@ -226,7 +226,7 @@ if ($canViewAll) {
     $gL10n->get('BL_CUSTOMER'),
     $gL10n->get('BL_PAYMENT_TOTAL'),
     $gL10n->get('BL_ACTIONS')
-  ));
+    ));
 }
 
 if ($canManage) {
@@ -286,7 +286,7 @@ if ($canManage) {
                     $.ajax({
                         type: 'POST',
                         url: bulkDeleteUrl,
-                      data: { ids: ids, 'admidio-csrf-token': csrfToken },
+                        data: { ids: ids, 'admidio-csrf-token': csrfToken },
                         success: function(){ location.reload(); },
                         error: function(){ alert(deleteErrorMsg); }
                     });
@@ -363,7 +363,7 @@ if ($canManage) {
             '{{DELETE_CONFIRM}}' => $paymentsDeleteConfirm,
             '{{DELETE_ERROR}}' => $paymentsDeleteError,
             '{{DELETE_BUTTON_LABEL}}' => $deleteAllLabel,
-          '{{CSRF_TOKEN}}' => $csrfTokenJs,
+            '{{CSRF_TOKEN}}' => $csrfTokenJs,
         ));
         $page->addJavascript("\n".$jsPayments."\n", true);
 }

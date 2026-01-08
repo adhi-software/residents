@@ -1,10 +1,10 @@
 <?php
 /**
- * CCAvenue Mobile Response Handler
- * 
- * Clean HTML response page for mobile WebView (no Admidio theme/session).
- * Displays success/fail message with mobile-friendly styling.
- */
+    * CCAvenue Mobile Response Handler
+    * 
+    * Clean HTML response page for mobile WebView (no Admidio theme/session).
+    * Displays success/fail message with mobile-friendly styling.
+    */
 
 ob_start();
 
@@ -21,8 +21,8 @@ ob_clean();
 global $gDb;
 
 /**
- * Render mobile-friendly result page
- */
+    * Render mobile-friendly result page
+    */
 function renderMobileResultPage(bool $success, array $data): void
 {
     $statusColor = $success ? '#28a745' : '#dc3545';

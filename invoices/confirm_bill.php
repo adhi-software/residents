@@ -1,7 +1,7 @@
 <?php
 /**
- * Intermediate form that collects scheduling details before previewing or generating invoices.
- */
+    * Intermediate form that collects scheduling details before previewing or generating invoices.
+    */
 
 require_once(__DIR__ . '/../common_function.php');
 require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
@@ -10,11 +10,11 @@ global $gDb, $gL10n, $gMessage;
 
 $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
 if (!isUserAuthorizedForBilling($scriptUrl)) {
-  $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
+    $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 if (!isBillingAdminBySettings()) {
-  $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
+    $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 $modeRaw = strtolower(trim((string)admFuncVariableIsValid($_REQUEST, 'mode', 'string')));
@@ -24,12 +24,12 @@ $cfg = billingReadConfig();
 $configuredDefaultNote = billingGetDefaultInvoiceNote($cfg);
 
 $filters = array(
-  'filter_group' => admFuncVariableIsValid($_REQUEST, 'filter_group', 'int'),
-  'filter_user' => admFuncVariableIsValid($_REQUEST, 'filter_user', 'int'),
-  'filter_status' => admFuncVariableIsValid($_REQUEST, 'filter_status', 'string'),
-  'date_from' => admFuncVariableIsValid($_REQUEST, 'date_from', 'date'),
-  'date_to' => admFuncVariableIsValid($_REQUEST, 'date_to', 'date'),
-  'q' => admFuncVariableIsValid($_REQUEST, 'q', 'string')
+    'filter_group' => admFuncVariableIsValid($_REQUEST, 'filter_group', 'int'),
+    'filter_user' => admFuncVariableIsValid($_REQUEST, 'filter_user', 'int'),
+    'filter_status' => admFuncVariableIsValid($_REQUEST, 'filter_status', 'string'),
+    'date_from' => admFuncVariableIsValid($_REQUEST, 'date_from', 'date'),
+    'date_to' => admFuncVariableIsValid($_REQUEST, 'date_to', 'date'),
+    'q' => admFuncVariableIsValid($_REQUEST, 'q', 'string')
 );
 
 $incomingInvoiceDate = admFuncVariableIsValid($_REQUEST, 'invoice_date', 'date');
@@ -43,97 +43,97 @@ $noteValue = $defaultNote;
 $errors = array();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  try {
-    SecurityUtils::validateCsrfToken((string)($_POST['admidio-csrf-token'] ?? ''));
-  } catch (Throwable $e) {
-    $gMessage->show($e->getMessage());
-  }
+    try {
+        SecurityUtils::validateCsrfToken((string)($_POST['admidio-csrf-token'] ?? ''));
+    } catch (Throwable $e) {
+        $gMessage->show($e->getMessage());
+    }
 
-  $startDateValue = admFuncVariableIsValid($_POST, 'start_date', 'date');
-  $invoiceDateValue = admFuncVariableIsValid($_POST, 'invoice_date', 'date');
-  $noteValue = trim((string)($_POST['note'] ?? $defaultNote));
+    $startDateValue = admFuncVariableIsValid($_POST, 'start_date', 'date');
+    $invoiceDateValue = admFuncVariableIsValid($_POST, 'invoice_date', 'date');
+    $noteValue = trim((string)($_POST['note'] ?? $defaultNote));
 
-  $action = 'auto';
-  if (isset($_POST['billing_preview'])) {
-  $action = 'preview';
-  } elseif (isset($_POST['billing_generate'])) {
-  $action = 'generate';
-  }
+    $action = 'auto';
+    if (isset($_POST['billing_preview'])) {
+        $action = 'preview';
+    } elseif (isset($_POST['billing_generate'])) {
+        $action = 'generate';
+    }
 
-  if ($startDateValue === '') {
-  $errors[] = $gL10n->get('BL_START_DATE') . ': ' . $gL10n->get('SYS_FIELD_EMPTY');
-  }
-  if ($invoiceDateValue === '') {
-  $errors[] = $gL10n->get('BL_DATE') . ': ' . $gL10n->get('SYS_FIELD_EMPTY');
-  }
+    if ($startDateValue === '') {
+        $errors[] = $gL10n->get('BL_START_DATE') . ': ' . $gL10n->get('SYS_FIELD_EMPTY');
+    }
+    if ($invoiceDateValue === '') {
+        $errors[] = $gL10n->get('BL_DATE') . ': ' . $gL10n->get('SYS_FIELD_EMPTY');
+    }
 
-  if (empty($errors)) {
-  $listParams = array('tab' => 'invoices');
-  foreach ($filters as $key => $value) {
-      if ($value === '' || $value === null) {
-    continue;
-      }
-      $listParams[$key] = $value;
-  }
+    if (empty($errors)) {
+        $listParams = array('tab' => 'invoices');
+        foreach ($filters as $key => $value) {
+            if ($value === '' || $value === null) {
+                continue;
+            }
+            $listParams[$key] = $value;
+    }
 
-  // Redirect based on chosen action. If the page was opened with a fixed mode,
-  // fall back to that mode when no explicit button is provided.
-  $effectiveAction = $action === 'auto' ? $mode : $action;
+        // Redirect based on chosen action. If the page was opened with a fixed mode,
+        // fall back to that mode when no explicit button is provided.
+        $effectiveAction = $action === 'auto' ? $mode : $action;
 
-  if ($effectiveAction === 'preview') {
-      $previewParams = $listParams + array(
-    'preview' => 1,
-    'preview_start_date' => $startDateValue,
-    'preview_invoice_date' => $invoiceDateValue
-      );
-      if ($noteValue !== '') {
-    $previewParams['preview_note'] = $noteValue;
-      }
-      $redirectUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', $previewParams);
-      header('Location: ' . $redirectUrl);
-      exit;
-  }
+        if ($effectiveAction === 'preview') {
+            $previewParams = $listParams + array(
+        'preview' => 1,
+        'preview_start_date' => $startDateValue,
+        'preview_invoice_date' => $invoiceDateValue
+            );
+            if ($noteValue !== '') {
+                $previewParams['preview_note'] = $noteValue;
+            }
+            $redirectUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', $previewParams);
+            header('Location: ' . $redirectUrl);
+            exit;
+    }
 
-  $generateParams = array(
-      'mode' => 'generate',
-      'group' => (int)$filters['filter_group'],
-      'start_date' => $startDateValue,
-      'invoice_date' => $invoiceDateValue
-  );
-  if ($noteValue !== '') {
-      $generateParams['note'] = $noteValue;
-  }
-  foreach ($filters as $key => $value) {
-      if ($value === '' || $value === null) {
-    continue;
-      }
-      $generateParams[$key] = $value;
-  }
-  $redirectUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/generate.php', $generateParams);
-  header('Location: ' . $redirectUrl);
-  exit;
-  }
+        $generateParams = array(
+            'mode' => 'generate',
+            'group' => (int)$filters['filter_group'],
+            'start_date' => $startDateValue,
+            'invoice_date' => $invoiceDateValue
+        );
+        if ($noteValue !== '') {
+            $generateParams['note'] = $noteValue;
+    }
+        foreach ($filters as $key => $value) {
+            if ($value === '' || $value === null) {
+                continue;
+            }
+            $generateParams[$key] = $value;
+    }
+        $redirectUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/generate.php', $generateParams);
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
 }
 
 $pageTitle = $mode === 'generate'
-  ? $gL10n->get('BL_GENERATE_BILL')
-  : $gL10n->get('BL_PREVIEW_LABEL');
+    ? $gL10n->get('BL_GENERATE_BILL')
+    : $gL10n->get('BL_PREVIEW_LABEL');
 $page = new HtmlPage('billing-run', $pageTitle);
 $page->setHeadline($pageTitle);
 billingEnqueueStyles($page);
 
 if (!empty($errors)) {
-  $page->addHtml('<div class="alert alert-danger">' . implode('<br />', array_map('htmlspecialchars', $errors)) . '</div>');
+    $page->addHtml('<div class="alert alert-danger">' . implode('<br />', array_map('htmlspecialchars', $errors)) . '</div>');
 }
 
 $page->addHtml('<p class="lead">' . htmlspecialchars($gL10n->get('BL_CONFIRM_DETAILS_INTRO')) . '</p>');
 
 $formActionParams = array('mode' => $mode);
 foreach ($filters as $key => $value) {
-  if ($value === '' || $value === null) {
-  continue;
-  }
-  $formActionParams[$key] = $value;
+    if ($value === '' || $value === null) {
+        continue;
+    }
+    $formActionParams[$key] = $value;
 }
 $formAction = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/confirm_bill.php', $formActionParams);
 
@@ -147,41 +147,41 @@ $selectedGroup = max(0, (int)($filters['filter_group'] ?? 0));
 $selectedUser = max(0, (int)($filters['filter_user'] ?? 0));
 $userOptions = billingGetOwnerOptions($selectedGroup);
 if ($selectedUser > 0 && !isset($userOptions[$selectedUser])) {
-  $userOptions[$selectedUser] = billingFetchUserNameById($selectedUser);
+    $userOptions[$selectedUser] = billingFetchUserNameById($selectedUser);
 }
 $userOptions = array('0' => $gL10n->get('BL_ALL')) + $userOptions;
 
 $form->addSelectBox(
-  'filter_group',
-  $gL10n->get('SYS_GROUPS_ROLES'),
-  $rolesOptions,
-  array('defaultValue' => (string)$selectedGroup, 'showContextDependentFirstEntry' => false)
+    'filter_group',
+    $gL10n->get('SYS_GROUPS_ROLES'),
+    $rolesOptions,
+    array('defaultValue' => (string)$selectedGroup, 'showContextDependentFirstEntry' => false)
 );
 
 $form->addSelectBox(
-  'filter_user',
-  $gL10n->get('BL_USER'),
-  $userOptions,
-  array('defaultValue' => (string)$selectedUser, 'showContextDependentFirstEntry' => false)
+    'filter_user',
+    $gL10n->get('BL_USER'),
+    $userOptions,
+    array('defaultValue' => (string)$selectedUser, 'showContextDependentFirstEntry' => false)
 );
 
 // Keep other filters (status, dates, query) as hidden to preserve navigation context
 foreach ($filters as $key => $value) {
-  if ($key === 'filter_group' || $key === 'filter_user') {
-  continue; // now visible
-  }
-  if ($value === '' || $value === null) {
-  continue;
-  }
-  $form->addInput($key, '', (string)$value, array('property' => HtmlForm::FIELD_HIDDEN));
+    if ($key === 'filter_group' || $key === 'filter_user') {
+        continue; // now visible
+    }
+    if ($value === '' || $value === null) {
+        continue;
+    }
+    $form->addInput($key, '', (string)$value, array('property' => HtmlForm::FIELD_HIDDEN));
 }
 $form->addInput('start_date', $gL10n->get('BL_START_DATE'), $startDateValue, array(
-  'type' => 'date',
-  'property' => HtmlForm::FIELD_REQUIRED
+    'type' => 'date',
+    'property' => HtmlForm::FIELD_REQUIRED
 ));
 $form->addInput('invoice_date', $gL10n->get('BL_DATE'), $invoiceDateValue, array(
-  'type' => 'date',
-  'property' => HtmlForm::FIELD_REQUIRED
+    'type' => 'date',
+    'property' => HtmlForm::FIELD_REQUIRED
 ));
 $form->addMultilineTextInput('note', $gL10n->get('BL_NOTES'), $noteValue, 3);
 
@@ -191,14 +191,14 @@ $form->addSubmitButton('billing_generate', $gL10n->get('BL_GENERATE_BILL'), arra
 
 $cancelParams = array('tab' => 'invoices');
 foreach ($filters as $key => $value) {
-  if ($value === '' || $value === null) {
-  continue;
-  }
-  $cancelParams[$key] = $value;
+    if ($value === '' || $value === null) {
+        continue;
+    }
+    $cancelParams[$key] = $value;
 }
 $form->addButton('billing_run_cancel', $gL10n->get('SYS_CANCEL'), array(
-  'link' => SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', $cancelParams),
-  'class' => 'btn btn-link'
+    'link' => SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', $cancelParams),
+    'class' => 'btn btn-link'
 ));
 
 $page->addHtml($form->show(false));
@@ -208,47 +208,48 @@ $loadUsersUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_F
 $loadUsersUrlJs = json_encode($loadUsersUrl);
 $jsConfirmDetails = <<<'JS'
   $(function(){
-    var loadUsersUrl = {{LOAD_USERS_URL}};
-    var allLabel = {{ALL_LABEL}};
-    var generateConfirm = {{GENERATE_CONFIRM}};
-    $('select[name=filter_group]').on('change', function(){
-      var groupId = $(this).val();
-      var $userSel = $('#filter_user');
-      if (!$userSel.length) { return; }
-      $userSel.val('0').prop('disabled', true);
-      $.ajax({
-        type: 'GET',
-        url: loadUsersUrl,
-        data: { group_id: groupId },
-        dataType: 'json',
-        success: function(data){
-          $userSel.empty();
-          $userSel.append($('<option>', { value: '0', text: allLabel }));
-          $.each(data, function(key, value){
-            $userSel.append($('<option>', { value: key, text: value }));
+      var loadUsersUrl = {{LOAD_USERS_URL}};
+      var allLabel = {{ALL_LABEL}};
+      var generateConfirm = {{GENERATE_CONFIRM}};
+      $('select[name=filter_group]').on('change', function(){
+        var groupId = $(this).val();
+        var $userSel = $('#filter_user');
+        if (!$userSel.length) { return; }
+        $userSel.val('0').prop('disabled', true);
+        $.ajax({
+          type: 'GET',
+          url: loadUsersUrl,
+          data: { group_id: groupId },
+          dataType: 'json',
+          success: function(data){
+            $userSel.empty();
+            $userSel.append($('<option>', { value: '0', text: allLabel }));
+            $.each(data, function(key, value){
+              $userSel.append($('<option>', { value: key, text: value }));
           });
-          $userSel.val('0').prop('disabled', false).trigger('change');
+            $userSel.val('0').prop('disabled', false).trigger('change');
         },
-        error: function(){
-          $userSel.prop('disabled', false);
+          error: function(){
+            $userSel.prop('disabled', false);
         }
       });
     });
 
-    $(document).on('click', '#billing_generate, button[name=billing_generate], input[name=billing_generate]', function(e){
-      if (!confirm(generateConfirm)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+      $(document).on('click', '#billing_generate, button[name=billing_generate], input[name=billing_generate]', function(e){
+        if (!confirm(generateConfirm)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
       }
-      return true;
+        return true;
     });
   });
 JS;
 $jsConfirmDetails = str_replace(
-  array('{{LOAD_USERS_URL}}', '{{ALL_LABEL}}', '{{GENERATE_CONFIRM}}'),
-  array($loadUsersUrlJs, json_encode($gL10n->get('BL_ALL')), json_encode($gL10n->get('BL_GENERATE_CONFIRM'))),
-  $jsConfirmDetails
+    array('{{LOAD_USERS_URL}}', '{{ALL_LABEL}}', '{{GENERATE_CONFIRM}}'),
+    array($loadUsersUrlJs, json_encode($gL10n->get('BL_ALL')), json_encode($gL10n->get('BL_GENERATE_CONFIRM'))),
+    $jsConfirmDetails
 );
 $page->addJavascript("\n".$jsConfirmDetails."\n", true);
+$page->addHtml('<div style="height: 50px;"></div>');
 $page->show();

@@ -1,32 +1,32 @@
 <?php
 /**
- * Chargers tab content: manage recurring charge definitions.
- */
+* Chargers tab content: manage recurring charge definitions.
+*/
 
 global $gDb, $gL10n, $gSettingsManager, $page;
 
 $isAdmin = isBillingAdminBySettings();
 if (!$isAdmin) {
-  $page->addHtml('<div class="alert alert-warning">' . $gL10n->get('BL_ONLY_ADMIN') . '</div>');
-  return;
+    $page->addHtml('<div class="alert alert-warning">' . $gL10n->get('BL_ONLY_ADMIN') . '</div>');
+    return;
 }
 
 $chargeStatus = admFuncVariableIsValid($_GET, 'charge_status', 'string');
 $chargeMessage = admFuncVariableIsValid($_GET, 'charge_message', 'string');
 if ($chargeStatus === 'saved') {
-  $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_CHARGERS_SAVED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_CHARGERS_SAVED') . '</div>');
 } elseif ($chargeStatus === 'deleted') {
-  $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_CHARGERS_DELETED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_CHARGERS_DELETED') . '</div>');
 } elseif ($chargeStatus === 'error') {
-  $msg = $chargeMessage !== '' ? htmlspecialchars($chargeMessage) : 'Action failed.';
-  $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
+    $msg = $chargeMessage !== '' ? htmlspecialchars($chargeMessage) : 'Action failed.';
+    $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
 }
 
 $newUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/edit.php');
 $page->addHtml('<a class="btn btn-primary" href="' . $newUrl . '"><i class="fas fa-plus"></i> ' . $gL10n->get('BL_CHARGERS_ADD') . '</a><br /><br />');
 
 if (!tableExistsBILL(TBL_BL_CHARGES)) {
-  return;
+    return;
 }
 
 $countStmt = $gDb->queryPrepared('SELECT COUNT(*) FROM ' . TBL_BL_CHARGES, array());
@@ -36,10 +36,10 @@ $totalCharges = $countStmt ? (int)$countStmt->fetchColumn() : 0;
 
 $defaultPageLength = 25;
 if (isset($gSettingsManager)) {
-  $configuredLength = (int)$gSettingsManager->getInt('system_datatables_rows');
-  if ($configuredLength > 0) {
-  $defaultPageLength = $configuredLength;
-  }
+    $configuredLength = (int)$gSettingsManager->getInt('system_datatables_rows');
+    if ($configuredLength > 0) {
+        $defaultPageLength = $configuredLength;
+    }
 }
 
 $serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/list_data.php');
@@ -51,23 +51,23 @@ $table->setDatatablesOrderColumns(array(array(2, 'asc')));
 $table->disableDatatablesColumnsSort(array(1, 7));
 $table->setColumnAlignByArray(array('center', 'left', 'left', 'right', 'left', 'left', 'center'));
 $table->addRowHeadingByArray(array(
-  '<input type="checkbox" id="billing-select-all-charges" />',
-  'ID',
-  $gL10n->get('BL_CHARGERS_NAME'),
-  $gL10n->get('BL_CHARGERS_PERIOD'),
-  $gL10n->get('BL_CHARGERS_AMOUNT'),
-  $gL10n->get('BL_CHARGERS_ROLES'),
-  $gL10n->get('BL_ACTIONS')
+'<input type="checkbox" id="billing-select-all-charges" />',
+'ID',
+$gL10n->get('BL_CHARGERS_NAME'),
+$gL10n->get('BL_CHARGERS_PERIOD'),
+$gL10n->get('BL_CHARGERS_AMOUNT'),
+$gL10n->get('BL_CHARGERS_ROLES'),
+$gL10n->get('BL_ACTIONS')
 ));
 
 if ($isAdmin) {
-  $bulkDeleteUrlCh = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/delete_all.php');
-  $bulkDeleteUrlChJs = json_encode($bulkDeleteUrlCh);
-  $chargesDeleteConfirm = json_encode($gL10n->get('BL_CHARGERS_DELETE_CONFIRM'));
-  $chargesDeleteError = json_encode('Error deleting selected charges');
-  $deleteAllLabel = json_encode($gL10n->get('BL_DELETE_ALL'));
+    $bulkDeleteUrlCh = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/delete_all.php');
+    $bulkDeleteUrlChJs = json_encode($bulkDeleteUrlCh);
+    $chargesDeleteConfirm = json_encode($gL10n->get('BL_CHARGERS_DELETE_CONFIRM'));
+    $chargesDeleteError = json_encode('Error deleting selected charges');
+    $deleteAllLabel = json_encode($gL10n->get('BL_DELETE_ALL'));
 
-  $jsCharges = <<<'JS'
+    $jsCharges = <<<'JS'
   $(function(){
     var bulkDeleteUrl = {{BULK_DELETE_URL}};
     var deleteConfirmMsg = {{DELETE_CONFIRM}};
@@ -184,13 +184,13 @@ if ($isAdmin) {
     updateDeleteButtonState();
   });
   JS;
-  $jsCharges = strtr($jsCharges, array(
+    $jsCharges = strtr($jsCharges, array(
     '{{BULK_DELETE_URL}}' => $bulkDeleteUrlChJs,
     '{{DELETE_CONFIRM}}' => $chargesDeleteConfirm,
     '{{DELETE_ERROR}}' => $chargesDeleteError,
     '{{DELETE_BUTTON_LABEL}}' => $deleteAllLabel,
-  ));
-  $page->addJavascript("\n".$jsCharges."\n", true);
+    ));
+    $page->addJavascript("\n".$jsCharges."\n", true);
 }
 
 $tableStyle = '#residents_chargers thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}#residents_chargers thead th{font-weight:700;color:#495057;padding:12px 30px 12px 15px !important;white-space:nowrap;position:relative;border:none;background-position: right 5px center !important;}';
@@ -199,7 +199,7 @@ $tableStyle .= '#residents_chargers_wrapper .dataTables_length,#residents_charge
 $tableStyle .= '#residents_chargers_wrapper .dataTables_length label,#residents_chargers_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
 $tableStyle .= '#residents_chargers_wrapper .dataTables_length select,#residents_chargers_length select{width:auto;min-width:70px;display:inline-block;}';
 if ($isAdmin) {
-  $tableStyle .= '#residents_chargers thead th:first-child:before,#residents_chargers thead th:first-child:after{display:none!important;}';
+    $tableStyle .= '#residents_chargers thead th:first-child:before,#residents_chargers thead th:first-child:after{display:none!important;}';
 }
 $page->addHtml('<style>'.$tableStyle.'</style>');
 

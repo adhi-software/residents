@@ -1,23 +1,23 @@
 <?php
 /**
- * CCAvenue CORE logic for MOBILE
- * Common CCAvenue transaction functions (shared by web & mobile)
- * No session, no $gMessage, WebView compatible
- */
+    * CCAvenue CORE logic for MOBILE
+    * Common CCAvenue transaction functions (shared by web & mobile)
+    * No session, no $gMessage, WebView compatible
+    */
 
 require_once __DIR__ . '/../common_function.php';
 require_once __DIR__ . '/ccavenue_config.php';
 require_once __DIR__ . '/ccavenue_crypto.php';
 
 /**
- * Common CCAvenue transaction initiation
- * Used by both web and mobile to start payment
- * 
- * @param array $invoiceIds Array of invoice IDs to pay
- * @param int $userId User ID making the payment
- * @param string $source 'web' or 'mobile' - determines redirect URLs
- * @return array Payment data including encrypted request
- */
+    * Common CCAvenue transaction initiation
+    * Used by both web and mobile to start payment
+    * 
+    * @param array $invoiceIds Array of invoice IDs to pay
+    * @param int $userId User ID making the payment
+    * @param string $source 'web' or 'mobile' - determines redirect URLs
+    * @return array Payment data including encrypted request
+    */
 function initCcavenueTransaction(array $invoiceIds, int $userId, string $source = 'web'): array
 {
     global $gDb, $gCurrentOrgId, $pgConf;
@@ -193,9 +193,9 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
 }
 
 /**
- * Render auto-submit HTML form for mobile WebView
- * Uses common initCcavenueTransaction function
- */
+    * Render auto-submit HTML form for mobile WebView
+    * Uses common initCcavenueTransaction function
+    */
 function renderCcavenueForMobile(array $invoiceIds, int $userId)
 {
     // Use common transaction init with mobile source

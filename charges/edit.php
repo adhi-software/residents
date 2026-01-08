@@ -1,7 +1,7 @@
 <?php
 /**
- * Create or edit a charge definition.
- */
+    * Create or edit a charge definition.
+    */
 
 require_once(__DIR__ . '/../common_function.php');
 require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
@@ -10,11 +10,11 @@ global $gDb, $gL10n;
 
 $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
 if (!isUserAuthorizedForBilling($scriptUrl)) {
-  $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
+    $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 if (!isBillingAdminBySettings()) {
-  $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
+    $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 $chargeId = admFuncVariableIsValid($_GET, 'id', 'int');
@@ -22,64 +22,64 @@ $rolesOptions = billingGetRoleOptions();
 $rawPeriodOptions = TableRoles::getCostPeriods();
 $periodOptions = array();
 foreach ($rawPeriodOptions as $key => $label) {
-  if ((int)$key === -1) {
-    continue;
-  }
-  $periodOptions[(string)$key] = $label;
+    if ((int)$key === -1) {
+        continue;
+    }
+    $periodOptions[(string)$key] = $label;
 }
 
 $charge = new TableResidentsCharge($gDb, $chargeId);
 if ($chargeId > 0 && $charge->isNewRecord()) {
-  $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
+    $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
 $errors = array();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $chargeId = (int)($_POST['charge_id'] ?? $chargeId);
-  if ($chargeId !== (int)$charge->getValue('bch_id')) {
-  $charge = new TableResidentsCharge($gDb, $chargeId);
-  if ($chargeId > 0 && $charge->isNewRecord()) {
-      $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
-  }
-  }
-  $name = trim((string)($_POST['charge_name'] ?? ''));
-  $period = trim((string)($_POST['charge_period'] ?? ''));
-  $amountRaw = trim((string)($_POST['charge_amount'] ?? ''));
-  $rolesSelected = isset($_POST['charge_roles']) ? array_map('intval', (array)$_POST['charge_roles']) : array();
+    $chargeId = (int)($_POST['charge_id'] ?? $chargeId);
+    if ($chargeId !== (int)$charge->getValue('bch_id')) {
+        $charge = new TableResidentsCharge($gDb, $chargeId);
+        if ($chargeId > 0 && $charge->isNewRecord()) {
+            $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
+    }
+    }
+    $name = trim((string)($_POST['charge_name'] ?? ''));
+    $period = trim((string)($_POST['charge_period'] ?? ''));
+    $amountRaw = trim((string)($_POST['charge_amount'] ?? ''));
+    $rolesSelected = isset($_POST['charge_roles']) ? array_map('intval', (array)$_POST['charge_roles']) : array();
 
-  if ($period !== '' && !array_key_exists($period, $periodOptions)) {
-  $period = '';
-  }
+    if ($period !== '' && !array_key_exists($period, $periodOptions)) {
+        $period = '';
+    }
 
-  if ($name === '') {
-  $errors[] = $gL10n->get('BL_CHARGERS_NAME_REQUIRED');
-  }
-  if ($amountRaw === '' || !is_numeric($amountRaw)) {
-  $errors[] = $gL10n->get('BL_CHARGERS_AMOUNT_REQUIRED');
-  }
-  if ($amountRaw !== '' && is_numeric($amountRaw) && (float)$amountRaw <= 0) {
-  $errors[] = $gL10n->get('BL_VALIDATION_AMOUNT_POSITIVE');
-  }
+    if ($name === '') {
+        $errors[] = $gL10n->get('BL_CHARGERS_NAME_REQUIRED');
+    }
+    if ($amountRaw === '' || !is_numeric($amountRaw)) {
+        $errors[] = $gL10n->get('BL_CHARGERS_AMOUNT_REQUIRED');
+    }
+    if ($amountRaw !== '' && is_numeric($amountRaw) && (float)$amountRaw <= 0) {
+        $errors[] = $gL10n->get('BL_VALIDATION_AMOUNT_POSITIVE');
+    }
 
 
-  if (empty($errors)) {
-  $charge->setValue('bch_name', $name);
-  $charge->setValue('bch_period', $period);
-  $charge->setAmountFromString($amountRaw);
-  $charge->setRoleIds($rolesSelected);
-  $saved = $charge->save();
-  if ($saved || ($chargeId > 0 && !$saved)) {
-    // For edits, save() can return false when no columns changed.
-    admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', array('tab' => 'chargers', 'charge_status' => 'saved')));
-  }
-  $errors[] = 'Failed to save charge. Please try again.';
-  }
+    if (empty($errors)) {
+        $charge->setValue('bch_name', $name);
+        $charge->setValue('bch_period', $period);
+        $charge->setAmountFromString($amountRaw);
+        $charge->setRoleIds($rolesSelected);
+        $saved = $charge->save();
+        if ($saved || ($chargeId > 0 && !$saved)) {
+        // For edits, save() can return false when no columns changed.
+        admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', array('tab' => 'chargers', 'charge_status' => 'saved')));
+    }
+        $errors[] = 'Failed to save charge. Please try again.';
+    }
 
-  $charge->setValue('bch_name', $name);
-  $charge->setValue('bch_period', $period);
-  $charge->setValue('bch_amount', $amountRaw);
-  $charge->setRoleIds($rolesSelected);
+    $charge->setValue('bch_name', $name);
+    $charge->setValue('bch_period', $period);
+    $charge->setValue('bch_amount', $amountRaw);
+    $charge->setRoleIds($rolesSelected);
 }
 
 $pageTitle = $chargeId > 0 ? $gL10n->get('BL_CHARGERS_EDIT_TITLE') : $gL10n->get('BL_CHARGERS_ADD_TITLE');
@@ -89,14 +89,14 @@ $page->setHeadline($gL10n->get('BL_TAB_CHARGERS'));
 $pageTitleJs = json_encode($pageTitle);
 $jsChargeEdit = <<<JS
   $(function(){
-    document.title = {$pageTitleJs};
+      document.title = {$pageTitleJs};
   });
 JS;
 $page->addJavascript("\n".$jsChargeEdit."\n", true);
 billingEnqueueStyles($page);
 
 if (!empty($errors)) {
-  $page->addHtml('<div class="alert alert-danger">' . implode('<br />', array_map('htmlspecialchars', $errors)) . '</div>');
+    $page->addHtml('<div class="alert alert-danger">' . implode('<br />', array_map('htmlspecialchars', $errors)) . '</div>');
 }
 
 $formAction = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/edit.php', $chargeId > 0 ? array('id' => $chargeId) : array());
@@ -104,17 +104,18 @@ $form = new HtmlForm('charge_edit_form', $formAction, $page);
 $form->addInput('charge_id', '', (string)$charge->getValue('bch_id'), array('property' => HtmlForm::FIELD_HIDDEN));
 $form->addInput('charge_name', $gL10n->get('BL_CHARGERS_NAME'), (string)$charge->getValue('bch_name'), array('maxLength' => 150, 'property' => HtmlForm::FIELD_REQUIRED));
 $form->addSelectBox('charge_period', $gL10n->get('BL_CHARGERS_PERIOD'), $periodOptions, array(
-  'defaultValue' => (string)$charge->getValue('bch_period'),
-  'showContextDependentFirstEntry' => false
+    'defaultValue' => (string)$charge->getValue('bch_period'),
+    'showContextDependentFirstEntry' => false
 ));
 $form->addInput('charge_amount', $gL10n->get('BL_CHARGERS_AMOUNT'), (string)$charge->getValue('bch_amount'), array('type' => 'number', 'step' => '0.01', 'minNumber' => 0.01, 'property' => HtmlForm::FIELD_REQUIRED));
 $form->addSelectBox('charge_roles', $gL10n->get('BL_CHARGERS_ROLES'), $rolesOptions, array(
-  'defaultValue' => $charge->getRoleIds(),
-  'multiselect' => true,
-  'showContextDependentFirstEntry' => true
+    'defaultValue' => $charge->getRoleIds(),
+    'multiselect' => true,
+    'showContextDependentFirstEntry' => true
 ));
 $form->addSubmitButton('charge_save', $gL10n->get('SYS_SAVE'));
 $form->addButton('charge_cancel', $gL10n->get('SYS_CANCEL'), array('link' => SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', array('tab' => 'chargers'))));
 
 $page->addHtml($form->show(false));
+$page->addHtml('<div style="height: 50px;"></div>');
 $page->show();

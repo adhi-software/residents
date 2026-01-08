@@ -1,8 +1,8 @@
 <?php
 /**
- * Serve the organization logo image from the protected adm_my_files folder.
- * This script streams the logo image with proper headers for browser display.
- */
+    * Serve the organization logo image from the protected adm_my_files folder.
+    * This script streams the logo image with proper headers for browser display.
+    */
 
 require_once(__DIR__ . '/../../../adm_program/system/common.php');
 require_once(__DIR__ . '/../common_function.php');

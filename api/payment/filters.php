@@ -10,61 +10,61 @@ $currentUser = validateApiKey();
 $currentUserId = (int) $currentUser->getValue('usr_id');
 
 try {
-  // Permission check: only billing admin or payment admin can see group/user filters
-  $canViewAll = isBillingAdmin() || isPaymentAdmin();
-  
-  $groups = [];
-  $users = [];
-
-  // Groups and Users filters only available for admins
-  if ($canViewAll) {
-    // 1. Fetch Groups (Roles)
-    $allRoles = billingGetRoleOptions();
-    foreach ($allRoles as $id => $name) {
-      $groups[] = ['id' => $id, 'name' => $name];
-    }
-
-    // 2. Fetch Users
-    $filterGroupId = admFuncVariableIsValid($_GET, 'group_id', 'int');
+    // Permission check: only billing admin or payment admin can see group/user filters
+    $canViewAll = isBillingAdmin() || isPaymentAdmin();
     
-    $firstNameFieldId = (int)$gProfileFields->getProperty('FIRST_NAME', 'usf_id');
-    $lastNameFieldId = (int)$gProfileFields->getProperty('LAST_NAME', 'usf_id');
+    $groups = [];
+    $users = [];
 
-    $allUsers = TableResidentsPayment::fetchUserOptions(
-      $gDb,
-      true,
-      $firstNameFieldId,
-      $lastNameFieldId,
-      $currentUserId,
-      $filterGroupId
-    );
-
-    foreach ($allUsers as $id => $name) {
-      $users[] = ['id' => $id, 'name' => $name];
+    // Groups and Users filters only available for admins
+    if ($canViewAll) {
+        // 1. Fetch Groups (Roles)
+        $allRoles = billingGetRoleOptions();
+        foreach ($allRoles as $id => $name) {
+            $groups[] = ['id' => $id, 'name' => $name];
     }
-  }
 
-  // 3. Types (hardcoded) - available to all users
-  $types = ['Online', 'Offline'];
+        // 2. Fetch Users
+        $filterGroupId = admFuncVariableIsValid($_GET, 'group_id', 'int');
+    
+        $firstNameFieldId = (int)$gProfileFields->getProperty('FIRST_NAME', 'usf_id');
+        $lastNameFieldId = (int)$gProfileFields->getProperty('LAST_NAME', 'usf_id');
 
-  $defaultDates = [
+        $allUsers = TableResidentsPayment::fetchUserOptions(
+            $gDb,
+            true,
+            $firstNameFieldId,
+            $lastNameFieldId,
+            $currentUserId,
+            $filterGroupId
+        );
+
+        foreach ($allUsers as $id => $name) {
+            $users[] = ['id' => $id, 'name' => $name];
+    }
+    }
+
+    // 3. Types (hardcoded) - available to all users
+    $types = ['Online', 'Offline'];
+
+    $defaultDates = [
     'start' => date('Y-m-01'),
     'end' => date('Y-m-t')
-  ];
+    ];
 
-  echo json_encode([
+    echo json_encode([
     'is_admin' => $canViewAll,
     'groups' => $groups,
     'users' => $users,
     'types' => $types,
     'dates' => $defaultDates
-  ]);
+    ]);
 
 } catch (Exception $exception) {
-  admidioApiError($exception->getMessage(), 500, [
+    admidioApiError($exception->getMessage(), 500, [
     'endpoint' => $endpointName,
     'user_id' => $currentUserId,
     'exception' => get_class($exception)
-  ]);
+    ]);
 }
 

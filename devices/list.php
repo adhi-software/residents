@@ -1,29 +1,29 @@
 <?php
 /**
- * Manage Device tab content: manage mobile login devices.
- */
+* Manage Device tab content: manage mobile login devices.
+*/
 
 global $gDb, $gL10n, $gSettingsManager, $page;
 
 $isAdmin = isBillingAdminBySettings();
 if (!$isAdmin) {
-  $page->addHtml('<div class="alert alert-warning">' . $gL10n->get('SYS_NO_RIGHTS') . '</div>');
-  return;
+    $page->addHtml('<div class="alert alert-warning">' . $gL10n->get('SYS_NO_RIGHTS') . '</div>');
+    return;
 }
 
 $deviceStatus = admFuncVariableIsValid($_GET, 'device_status', 'string');
 $deviceMessage = admFuncVariableIsValid($_GET, 'device_message', 'string');
 if ($deviceStatus === 'deleted') {
-  $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_DELETED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_DELETED') . '</div>');
 } elseif ($deviceStatus === 'approved') {
-  $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_APPROVED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_APPROVED') . '</div>');
 }elseif ($deviceStatus === 'reset') {
-  $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_RESET') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_RESET') . '</div>');
 } elseif ($deviceStatus === 'unapproved') {
-  $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_UNAPPROVED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_UNAPPROVED') . '</div>');
 } elseif ($deviceStatus === 'error') {
-  $msg = $deviceMessage !== '' ? htmlspecialchars($deviceMessage) : 'Action failed.';
-  $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
+    $msg = $deviceMessage !== '' ? htmlspecialchars($deviceMessage) : 'Action failed.';
+    $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
 }
 $baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
 
@@ -39,123 +39,123 @@ $getQ      = admFuncVariableIsValid($_GET, 'q', 'string');
 
 // Default to current month range on initial load when no explicit filter provided
 // if ($getDateFrom === '' && $getDateTo === '') {
-//   $getDateFrom = date('Y-m-01');
-//   $getDateTo = date('Y-m-t');
-// }
+    //   $getDateFrom = date('Y-m-01');
+    //   $getDateTo = date('Y-m-t');
+    // }
 
 if (!tableExistsBILL(TBL_BL_DEVICES)) {
-  return;
+    return;
 }
 
 $defaultPageLength = 25;
 if (isset($gSettingsManager)) {
-  $configuredLength = (int)$gSettingsManager->getInt('system_datatables_rows');
-  if ($configuredLength > 0) {
-  $defaultPageLength = $configuredLength;
-  }
+    $configuredLength = (int)$gSettingsManager->getInt('system_datatables_rows');
+    if ($configuredLength > 0) {
+        $defaultPageLength = $configuredLength;
+    }
 }
 
 if ($isAdmin) {
-  // Navbar-like filter form
-  $cfg = billingReadConfig();
-  $ownerGroupId = (int)($cfg['owners']['group_id'] ?? 0);
-  $effectiveOwnerGroup = $getGroup > 0 ? $getGroup : $ownerGroupId;
+    // Navbar-like filter form
+    $cfg = billingReadConfig();
+    $ownerGroupId = (int)($cfg['owners']['group_id'] ?? 0);
+    $effectiveOwnerGroup = $getGroup > 0 ? $getGroup : $ownerGroupId;
 
-  // Build user dropdown options
-  if ($effectiveOwnerGroup === 0) {
-  $lnId = (int) $gProfileFields->getProperty('LAST_NAME', 'usf_id');
-  $fnId = (int) $gProfileFields->getProperty('FIRST_NAME', 'usf_id');
-  $sqlUsers = 'SELECT DISTINCT u.usr_id, u.usr_login_name AS login_name'
-      . ' FROM ' . TBL_USERS . ' u'
-      . ' WHERE u.usr_valid = true'
-      . ' ORDER BY u.usr_login_name';
-  $stmtUsers = $gDb->queryPrepared($sqlUsers, array());
-  if (!empty($_GET['debug_users'])) {
-      $debugRows = array();
-      $stmtUsersDebug = $gDb->queryPrepared($sqlUsers, array());
-      if ($stmtUsersDebug !== false) {
-    while ($r = $stmtUsersDebug->fetch(PDO::FETCH_ASSOC)) {
-          $debugRows[] = $r;
+    // Build user dropdown options
+    if ($effectiveOwnerGroup === 0) {
+        $lnId = (int) $gProfileFields->getProperty('LAST_NAME', 'usf_id');
+        $fnId = (int) $gProfileFields->getProperty('FIRST_NAME', 'usf_id');
+        $sqlUsers = 'SELECT DISTINCT u.usr_id, u.usr_login_name AS login_name'
+        . ' FROM ' . TBL_USERS . ' u'
+        . ' WHERE u.usr_valid = true'
+        . ' ORDER BY u.usr_login_name';
+        $stmtUsers = $gDb->queryPrepared($sqlUsers, array());
+        if (!empty($_GET['debug_users'])) {
+            $debugRows = array();
+            $stmtUsersDebug = $gDb->queryPrepared($sqlUsers, array());
+            if ($stmtUsersDebug !== false) {
+                while ($r = $stmtUsersDebug->fetch(PDO::FETCH_ASSOC)) {
+                    $debugRows[] = $r;
+                }
+            }
+            echo '<pre class="billing-debug-users">'
+            . htmlspecialchars($sqlUsers) . "\n\n"
+            . htmlspecialchars(json_encode($debugRows, JSON_PRETTY_PRINT))
+            . '</pre>';
+            exit;
+        }
+        $userOptions = array();
+        if ($stmtUsers !== false) {
+            while ($row = $stmtUsers->fetch()) {
+                $loginName = trim((string)($row['login_name'] ?? ''));
+                if ($loginName === '') {
+                    $loginName = 'User #' . (int)$row['usr_id'];
+                }
+                $userOptions[(int)$row['usr_id']] = $loginName;
+            }
+        }
+    } else {
+        $userOptions = billingGetOwnerOptions($effectiveOwnerGroup);
     }
-      }
-      echo '<pre class="billing-debug-users">'
-    . htmlspecialchars($sqlUsers) . "\n\n"
-    . htmlspecialchars(json_encode($debugRows, JSON_PRETTY_PRINT))
-    . '</pre>';
-      exit;
-  }
-  $userOptions = array();
-  if ($stmtUsers !== false) {
-      while ($row = $stmtUsers->fetch()) {
-    $loginName = trim((string)($row['login_name'] ?? ''));
-    if ($loginName === '') {
-          $loginName = 'User #' . (int)$row['usr_id'];
+
+    if ($getUser > 0 && !isset($userOptions[$getUser])) {
+        $userOptions[$getUser] = billingFetchUserNameById($getUser);
     }
-    $userOptions[(int)$row['usr_id']] = $loginName;
-      }
-  }
-  } else {
-  $userOptions = billingGetOwnerOptions($effectiveOwnerGroup);
-  }
+    $userOptionsWithAll = array('0' => $gL10n->get('BL_ALL')) + $userOptions;
 
-  if ($getUser > 0 && !isset($userOptions[$getUser])) {
-  $userOptions[$getUser] = billingFetchUserNameById($getUser);
-  }
-  $userOptionsWithAll = array('0' => $gL10n->get('BL_ALL')) + $userOptions;
+    $roles = billingGetRoleOptions();
+    $rolesWithAll = array('0' => $gL10n->get('BL_ALL')) + $roles;
 
-  $roles = billingGetRoleOptions();
-  $rolesWithAll = array('0' => $gL10n->get('BL_ALL')) + $roles;
-
-  $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
-  $labelGroup  = '<i class="fas fa-users" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
-  $labelUser   = '<i class="fas fa-user" alt="'.$gL10n->get('BL_USER').'" title="'.$gL10n->get('BL_USER').'"></i>';
+    $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
+    $labelGroup  = '<i class="fas fa-users" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
+    $labelUser   = '<i class="fas fa-user" alt="'.$gL10n->get('BL_USER').'" title="'.$gL10n->get('BL_USER').'"></i>';
 
 
-  $filterNavbar = new HtmlNavbar('navbar_filter', '', $page, 'filter');
-  $filterForm = new HtmlForm(
-  'device_filter',
-  SecurityUtils::encodeUrl($baseUrl, array('tab' => 'devices')),
-  $page,
-  array('type' => 'navbar', 'setFocus' => false)
-  );
+    $filterNavbar = new HtmlNavbar('navbar_filter', '', $page, 'filter');
+    $filterForm = new HtmlForm(
+    'device_filter',
+    SecurityUtils::encodeUrl($baseUrl, array('tab' => 'devices')),
+    $page,
+    array('type' => 'navbar', 'setFocus' => false)
+    );
 
-  $filterForm->addSelectBox(
-  'filter_group',
-  $labelGroup,
-  $rolesWithAll,
-  array('defaultValue' => (string)$getGroup, 'showContextDependentFirstEntry' => false)
-  );
+    $filterForm->addSelectBox(
+    'filter_group',
+    $labelGroup,
+    $rolesWithAll,
+    array('defaultValue' => (string)$getGroup, 'showContextDependentFirstEntry' => false)
+    );
 
-  $filterForm->addSelectBox(
-  'filter_user',
-  $labelUser,
-  $userOptionsWithAll,
-  array('defaultValue' => (string)$getUser, 'showContextDependentFirstEntry' => false)
-  );
+    $filterForm->addSelectBox(
+    'filter_user',
+    $labelUser,
+    $userOptionsWithAll,
+    array('defaultValue' => (string)$getUser, 'showContextDependentFirstEntry' => false)
+    );
 
-  $filterForm->addCheckbox(
-  'filter_active',
-  '<span class="billing-check-square-checked" aria-hidden="true"><i class="fas fa-check-square"></i></span><span class="billing-check-square-unchecked" aria-hidden="true"></span> '.$gL10n->get('BL_DEVICE_ACTIVE'),
-  ($getActive === '1'),
-  array('class' => 'billing-filter-checkbox')
-  );
+    $filterForm->addCheckbox(
+    'filter_active',
+    '<span class="billing-check-square-checked" aria-hidden="true"><i class="fas fa-check-square"></i></span><span class="billing-check-square-unchecked" aria-hidden="true"></span> '.$gL10n->get('BL_DEVICE_ACTIVE'),
+    ($getActive === '1'),
+    array('class' => 'billing-filter-checkbox')
+    );
 
-  $filterForm->addInput('q', $labelSearch, $getQ);
-  $filterForm->addInput('tab', '', 'devices', array('type' => 'hidden'));
-  // $filterForm->addInput('date_from', $gL10n->get('SYS_START'), $getDateFrom, array('type' => 'date', 'maxLength' => 10));
-  // $filterForm->addInput('date_to', $gL10n->get('SYS_END'), $getDateTo, array('type' => 'date', 'maxLength' => 10));
-  $filterForm->addButton(
-  'device_filter_apply',
-  $gL10n->get('SYS_FILTER'),
-  array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
-  );
+    $filterForm->addInput('q', $labelSearch, $getQ);
+    $filterForm->addInput('tab', '', 'devices', array('type' => 'hidden'));
+    // $filterForm->addInput('date_from', $gL10n->get('SYS_START'), $getDateFrom, array('type' => 'date', 'maxLength' => 10));
+    // $filterForm->addInput('date_to', $gL10n->get('SYS_END'), $getDateTo, array('type' => 'date', 'maxLength' => 10));
+    $filterForm->addButton(
+    'device_filter_apply',
+    $gL10n->get('SYS_FILTER'),
+    array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
+    );
 
-  $loadUsersUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/load_users.php');
-  $loadUsersUrlJs = json_encode($loadUsersUrl);
+    $loadUsersUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/load_users.php');
+    $loadUsersUrlJs = json_encode($loadUsersUrl);
 
-  $allLabelJs = json_encode($gL10n->get('BL_ALL'));
+    $allLabelJs = json_encode($gL10n->get('BL_ALL'));
 
-  $jsFilter = <<<'JS'
+    $jsFilter = <<<'JS'
   $(function(){
     var loadUsersUrl = {{LOAD_USERS_URL}};
     var allLabel = {{ALL_LABEL}};
@@ -197,21 +197,21 @@ if ($isAdmin) {
     $('input[name=q], input[name=date_from], input[name=date_to]').on('change', submitFilters);
   });
   JS;
-  $jsFilter = str_replace('{{LOAD_USERS_URL}}', $loadUsersUrlJs, $jsFilter);
-  $jsFilter = str_replace('{{ALL_LABEL}}', $allLabelJs, $jsFilter);
-  $page->addJavascript("\n".$jsFilter."\n", true);
+    $jsFilter = str_replace('{{LOAD_USERS_URL}}', $loadUsersUrlJs, $jsFilter);
+    $jsFilter = str_replace('{{ALL_LABEL}}', $allLabelJs, $jsFilter);
+    $page->addJavascript("\n".$jsFilter."\n", true);
 
-  $filterNavbar->addForm($filterForm->show());
-  $page->addHtml($filterNavbar->show());
+    $filterNavbar->addForm($filterForm->show());
+    $page->addHtml($filterNavbar->show());
 }
 
 $serverParams = array(
-  'filter_group' => $getGroup,
-  'filter_user' => $getUser,
-  'filter_active' => $getActive,
-  'q' => $getQ
-  // 'date_from' => $getDateFrom,
-  // 'date_to' => $getDateTo
+'filter_group' => $getGroup,
+'filter_user' => $getUser,
+'filter_active' => $getActive,
+'q' => $getQ
+// 'date_from' => $getDateFrom,
+// 'date_to' => $getDateTo
 );
 
 $serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/devices/list_data.php', $serverParams);
@@ -219,21 +219,21 @@ $serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLD
 
 $tableHeaderStyle = '#table_billing_devices thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}#table_billing_devices thead th{font-weight:700;color:#495057;padding:12px 15px;white-space:nowrap;border:none;}';
 $tableHeaderStyle .= 'input.billing-filter-checkbox{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0;}'
-  . '.billing-check-square-checked{display:none!important;}'
-  . '.billing-check-square-unchecked{display:inline-block;}'
-  . 'input.billing-filter-checkbox:checked ~ .billing-check-square-checked{display:inline-block!important;}'
-  . 'input.billing-filter-checkbox:checked ~ .billing-check-square-unchecked{display:none!important;}'
-  . '.billing-check-square-checked{margin-right:0.35rem;line-height:1;font-size:1.15em;vertical-align:-0.1em;}'
-  . '.billing-check-square-unchecked{margin-right:0.35rem;display:inline-block;width:1.05em;height:1.05em;border:2px solid currentColor;border-radius:0.15em;opacity:0.7;vertical-align:-0.15em;box-sizing:border-box;}'
-  . '.checkbox label{cursor:pointer;}';
+. '.billing-check-square-checked{display:none!important;}'
+. '.billing-check-square-unchecked{display:inline-block;}'
+. 'input.billing-filter-checkbox:checked ~ .billing-check-square-checked{display:inline-block!important;}'
+. 'input.billing-filter-checkbox:checked ~ .billing-check-square-unchecked{display:none!important;}'
+. '.billing-check-square-checked{margin-right:0.35rem;line-height:1;font-size:1.15em;vertical-align:-0.1em;}'
+. '.billing-check-square-unchecked{margin-right:0.35rem;display:inline-block;width:1.05em;height:1.05em;border:2px solid currentColor;border-radius:0.15em;opacity:0.7;vertical-align:-0.15em;box-sizing:border-box;}'
+. '.checkbox label{cursor:pointer;}';
 $tableHeaderStyle .= '#table_billing_devices_wrapper .dataTables_length,#table_billing_devices_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}'
-  . '#table_billing_devices_wrapper .dataTables_length label,#table_billing_devices_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
+. '#table_billing_devices_wrapper .dataTables_length label,#table_billing_devices_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
 $tableHeaderStyle .= '#table_billing_devices_wrapper .dataTables_length select,#table_billing_devices_length select{width:auto;min-width:70px;display:inline-block;}';
 $tableHeaderStyle .= '#table_billing_devices thead th:nth-last-child(2){padding-right:34px;}';
 $tableHeaderStyle .= '#table_billing_devices thead th:last-child{padding-left:22px;padding-right:22px;}';
 $tableHeaderStyle .= '#table_billing_devices_filter{display:none!important;}';
 if ($isAdmin) {
-  $tableHeaderStyle .= '#table_billing_devices thead th:first-child:before,#table_billing_devices thead th:first-child:after{display:none!important;}';
+    $tableHeaderStyle .= '#table_billing_devices thead th:first-child:before,#table_billing_devices thead th:first-child:after{display:none!important;}';
 }
 $page->addHtml('<style>'.$tableHeaderStyle.'</style>');
 
@@ -244,26 +244,26 @@ $table->setDatatablesOrderColumns(array(array(2, 'desc')));
 $table->disableDatatablesColumnsSort(array(1,10));
 $table->setColumnAlignByArray(array('center', 'left', 'left', 'left', 'left', 'left', 'left', 'left', 'left', 'left'));
 $table->addRowHeadingByArray(array(
-  '<input type="checkbox" id="billing-select-all-devices" />',
-  $gL10n->get('BL_DEVICE_NUMBER'),
-  $gL10n->get('BL_USER'),
-  $gL10n->get('BL_DEVICE_ID'),
-  $gL10n->get('BL_DEVICE_ACTIVE'),
-  $gL10n->get('BL_DEVICE_ACTIVE_DATE'),
-  $gL10n->get('BL_DEVICE_PLATFORM'),
-  $gL10n->get('BL_DEVICE_BRAND'),
-  $gL10n->get('BL_DEVICE_MODEL'),
-  $gL10n->get('BL_ACTIONS')
+'<input type="checkbox" id="billing-select-all-devices" />',
+$gL10n->get('BL_DEVICE_NUMBER'),
+$gL10n->get('BL_USER'),
+$gL10n->get('BL_DEVICE_ID'),
+$gL10n->get('BL_DEVICE_ACTIVE'),
+$gL10n->get('BL_DEVICE_ACTIVE_DATE'),
+$gL10n->get('BL_DEVICE_PLATFORM'),
+$gL10n->get('BL_DEVICE_BRAND'),
+$gL10n->get('BL_DEVICE_MODEL'),
+$gL10n->get('BL_ACTIONS')
 ));
 
 if ($isAdmin) {
-  $bulkDeleteUrlDev = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/devices/delete_all.php');
-  $bulkDeleteUrlDevJs = json_encode($bulkDeleteUrlDev);
-  $devicesDeleteConfirm = json_encode($gL10n->get('BL_DELETE_DEVICE_CONFIRM'));
-  $devicesDeleteError = json_encode('Error deleting selected devices');
-  $deleteAllLabel = json_encode($gL10n->get('BL_DELETE_ALL'));
+    $bulkDeleteUrlDev = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/devices/delete_all.php');
+    $bulkDeleteUrlDevJs = json_encode($bulkDeleteUrlDev);
+    $devicesDeleteConfirm = json_encode($gL10n->get('BL_DELETE_DEVICE_CONFIRM'));
+    $devicesDeleteError = json_encode('Error deleting selected devices');
+    $deleteAllLabel = json_encode($gL10n->get('BL_DELETE_ALL'));
 
-  $jsDevices = <<<'JS'
+    $jsDevices = <<<'JS'
   $(function(){
     var bulkDeleteUrl = {{BULK_DELETE_URL}};
     var deleteConfirmMsg = {{DELETE_CONFIRM}};
@@ -380,13 +380,13 @@ if ($isAdmin) {
     updateDeleteButtonState();
   });
   JS;
-  $jsDevices = strtr($jsDevices, array(
+    $jsDevices = strtr($jsDevices, array(
     '{{BULK_DELETE_URL}}' => $bulkDeleteUrlDevJs,
     '{{DELETE_CONFIRM}}' => $devicesDeleteConfirm,
     '{{DELETE_ERROR}}' => $devicesDeleteError,
     '{{DELETE_BUTTON_LABEL}}' => $deleteAllLabel,
-  ));
-  $page->addJavascript("\n".$jsDevices."\n", true);
+    ));
+    $page->addJavascript("\n".$jsDevices."\n", true);
 }
 
 $page->addHtml($table->show(false));
