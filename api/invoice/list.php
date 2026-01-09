@@ -28,7 +28,7 @@ try {
     // -------------------------------------------------------------------------
     // PERMISSION
     // -------------------------------------------------------------------------
-    $canViewAll = isBillingAdmin() || isPaymentAdmin();
+    $canViewAll = isResidentsAdmin() || isPaymentAdmin();
 
     // -------------------------------------------------------------------------
     // FILTERS
@@ -121,21 +121,21 @@ try {
     $invoices = [];
 
     foreach ($rows as $row) {
-        $isPaid = (int) ($row['biv_is_paid'] ?? 0) === 1;
-        $ownsInvoice = ((int)($row['biv_usr_id'] ?? 0) === $currentUserId);
+        $isPaid = (int) ($row['riv_is_paid'] ?? 0) === 1;
+        $ownsInvoice = ((int)($row['riv_usr_id'] ?? 0) === $currentUserId);
         $currencySymbol = !empty($row['total_currency'])
         ? (string)$row['total_currency']
         : (string)$currencyFallback;
 
         $invoices[] = [
-            'id'         => (int) $row['biv_id'],
+            'id'         => (int) $row['riv_id'],
             'user'       => $row['user_name'],
-            'user_id'    => (int) ($row['biv_usr_id'] ?? 0), // Added for frontend consistency
-            'number'     => $row['biv_number'],
-            'date'       => billingFormatDateForApi((string)($row['biv_date'] ?? '')),
-            'start_date' => billingFormatDateForApi((string)($row['biv_start_date'] ?? '')),
-            'end_date'   => billingFormatDateForApi((string)($row['biv_end_date'] ?? '')),
-            'due_date'   => billingFormatDateForApi((string)($row['biv_due_date'] ?? '')),
+            'user_id'    => (int) ($row['riv_usr_id'] ?? 0), // Added for frontend consistency
+            'number'     => $row['riv_number'],
+            'date'       => residentsFormatDateForApi((string)($row['riv_date'] ?? '')),
+            'start_date' => residentsFormatDateForApi((string)($row['riv_start_date'] ?? '')),
+            'end_date'   => residentsFormatDateForApi((string)($row['riv_end_date'] ?? '')),
+            'due_date'   => residentsFormatDateForApi((string)($row['riv_due_date'] ?? '')),
             'amount'     => (float) $row['total_amount'],
             'currency_symbol' => $currencySymbol,
             'is_paid'    => $isPaid ? 'Paid' : 'Unpaid',

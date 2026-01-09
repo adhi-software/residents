@@ -16,15 +16,10 @@ global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gSettingsManager, $gCurren
 
 header('Content-Type: application/json');
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     http_response_code(403);
     echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array(), 'error' => $gL10n->get('SYS_NO_RIGHTS')));
-    exit;
-}
-
-if (!tableExistsBILL(TBL_BL_INVOICES)) {
-    echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array()));
     exit;
 }
 
@@ -80,7 +75,7 @@ if ($getDateFrom === '' && $getDateTo === '') {
 }
 $getQ = admFuncVariableIsValid($_GET, 'q', 'string');
 
-$isAdmin = isBillingAdminBySettings();
+$isAdmin = isResidentsAdminBySettings();
 
 $listFilters = array(
     'org_id' => isset($gCurrentOrganization) ? (int)$gCurrentOrganization->getValue('org_id') : (int)$gCurrentOrgId,
@@ -114,8 +109,7 @@ $rows = $listResult['rows'];
 $recordsFiltered = (int)($listResult['total'] ?? 0);
 $recordsTotal = (int)($listResult['total_base'] ?? $recordsFiltered);
 $currencyFallback = $gSettingsManager->getString('system_currency');
-$hasPaidColumn = columnExistsBILL(TBL_BL_INVOICES, 'biv_is_paid');
-    $paidLabel = $gL10n->get('BL_PAID');
+    $paidLabel = $gL10n->get('RE_PAID');
     $unpaidLabel = 'Unpaid';
 $currentUserId = (int)$gCurrentUser->getValue('usr_id');
     $csrfToken = htmlspecialchars($GLOBALS['gCurrentSession']->getCsrfToken(), ENT_QUOTES, 'UTF-8');
@@ -128,7 +122,6 @@ $formatDate = static function ($value) use ($gSettingsManager) {
         $dt = new DateTime((string)$value);
         return $dt->format($gSettingsManager->getString('system_date'));
     } catch (Exception $e) {
-        // Fallback: show only YYYY-MM-DD if available
         $s = (string)$value;
         return strlen($s) >= 10 ? substr($s, 0, 10) : $s;
     }
@@ -139,22 +132,22 @@ foreach ($rows as $row) {
     $currency = $row['total_currency'] ?: $currencyFallback;
     $amountDisplay = htmlspecialchars(trim($currency . ' ' . number_format((float)$row['total_amount'], 2, '.', '')), ENT_QUOTES, 'UTF-8');
 
-    $isPaid = ((int)($row['biv_is_paid'] ?? 0) === 1);
+    $isPaid = ((int)($row['riv_is_paid'] ?? 0) === 1);
     $statusText = $isPaid ? $paidLabel : $unpaidLabel;
     $badgeClass = $isPaid ? 'badge bg-success' : 'badge bg-warning text-dark';
     $statusHtml = '<span class="' . $badgeClass . '">' . htmlspecialchars($statusText, ENT_QUOTES, 'UTF-8') . '</span>';
 
-    $actionIcons = '<a class="admidio-icon-link" title="' . $gL10n->get('BL_VIEW') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/detail.php', array('id' => $row['biv_id'])) . '"><i class="fas fa-eye"></i></a>';
-    $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_PDF') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/pdf.php', array('id' => $row['biv_id'])) . '"><i class="fas fa-file-pdf"></i></a>';
+    $actionIcons = '<a class="admidio-icon-link" title="' . $gL10n->get('RE_VIEW') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/detail.php', array('id' => $row['riv_id'])) . '"><i class="fas fa-eye"></i></a>';
+    $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_PDF') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/pdf.php', array('id' => $row['riv_id'])) . '"><i class="fas fa-file-pdf"></i></a>';
     if ($isAdmin) {
         if (!$isPaid) {
-            $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_EDIT') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/edit.php', array('id' => $row['biv_id'])) . '"><i class="fas fa-edit"></i></a>';
+            $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_EDIT') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php', array('id' => $row['riv_id'])) . '"><i class="fas fa-edit"></i></a>';
     }
-        $confirmText = htmlspecialchars($gL10n->get('BL_DELETE_INVOICE_CONFIRM'), ENT_QUOTES, 'UTF-8');
+        $confirmText = htmlspecialchars($gL10n->get('RE_DELETE_INVOICE_CONFIRM'), ENT_QUOTES, 'UTF-8');
         if (!$isPaid) {
-            $deleteActionUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/delete.php';
+            $deleteActionUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/delete.php';
             $actionIcons .= ' <form method="post" action="' . $deleteActionUrl . '" class="d-inline" onsubmit="return confirm(\'' . $confirmText . '\');">'
-            . '<input type="hidden" name="id" value="' . (int)$row['biv_id'] . '" />'
+            . '<input type="hidden" name="id" value="' . (int)$row['riv_id'] . '" />'
             . '<input type="hidden" name="admidio-csrf-token" value="' . $csrfToken . '" />'
             . '<button type="submit" class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" style="border:0;background:none;padding:0;">'
             . '<i class="fas fa-trash"></i>'
@@ -163,29 +156,29 @@ foreach ($rows as $row) {
     }
     }
 
-    $ownsInvoice = ((int)$row['biv_usr_id'] === $currentUserId);
+    $ownsInvoice = ((int)$row['riv_usr_id'] === $currentUserId);
     $payButtonHtml = '';
     if ($ownsInvoice && !$isPaid) {
-        $payButtonHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payment_gateway/confirm_pay.php', array('invoice_id' => $row['biv_id'])) . '"><i class="fas fa-credit-card"></i> ' . $gL10n->get('BL_PAY_NOW') . '</a>';
+        $payButtonHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/confirm_pay.php', array('invoice_id' => $row['riv_id'])) . '"><i class="fas fa-credit-card"></i> ' . $gL10n->get('RE_PAY_NOW') . '</a>';
     }
-    $actions = '<div class="billing-actions"><span class="billing-actions-icons">' . $actionIcons . '</span>';
+    $actions = '<div class="re-actions"><span class="re-actions-icons">' . $actionIcons . '</span>';
     if ($payButtonHtml !== '') {
-        $actions .= '<span class="billing-actions-pay">' . $payButtonHtml . '</span>';
+        $actions .= '<span class="re-actions-pay">' . $payButtonHtml . '</span>';
     }
     $actions .= '</div>';
 
     $amountRaw = number_format((float)$row['total_amount'], 2, '.', '');
     $currencyAttr = htmlspecialchars($currency, ENT_QUOTES, 'UTF-8');
-    $ownerId = (int)$row['biv_usr_id'];
-    $selectHtml = '<input type="checkbox" class="billing-row-select" value="'.(int)$row['biv_id'].'" data-amount="' . htmlspecialchars($amountRaw, ENT_QUOTES, 'UTF-8') . '" data-currency="' . $currencyAttr . '" data-owner="' . $ownerId . '" data-paid="' . ($isPaid ? '1' : '0') . '" />';
+    $ownerId = (int)$row['riv_usr_id'];
+    $selectHtml = '<input type="checkbox" class="re-row-select" value="'.(int)$row['riv_id'].'" data-amount="' . htmlspecialchars($amountRaw, ENT_QUOTES, 'UTF-8') . '" data-currency="' . $currencyAttr . '" data-owner="' . $ownerId . '" data-paid="' . ($isPaid ? '1' : '0') . '" />';
     $data[] = array(
     $selectHtml,
-    htmlspecialchars((string)$row['biv_number'], ENT_QUOTES, 'UTF-8'),
-    htmlspecialchars($formatDate($row['biv_start_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
-    htmlspecialchars($formatDate($row['biv_end_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
+    htmlspecialchars((string)$row['riv_number'], ENT_QUOTES, 'UTF-8'),
+    htmlspecialchars($formatDate($row['riv_start_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
+    htmlspecialchars($formatDate($row['riv_end_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
     $statusHtml,
     htmlspecialchars((string)($row['user_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
-    htmlspecialchars($formatDate($row['biv_due_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
+    htmlspecialchars($formatDate($row['riv_due_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
     $amountDisplay,
     $actions
     );

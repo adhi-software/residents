@@ -204,7 +204,6 @@ function renderMobileResultPage(bool $success, array $data): void
                     data: {$resultData}
                 }));
             }
-            // Fallback: navigate to custom scheme that mobile app can intercept
             window.location.href = 'madmidio://payment/result?' + 
                 'success=' + {$success} + 
                 '&order_id=' + encodeURIComponent('{$orderId}') +
@@ -265,7 +264,7 @@ $paymentId = (int)$orderId;
 $pgPaymentData = null;
 
 try {
-    $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_BL_TRANS . ' WHERE btr_id = ?', [$paymentId], false);
+    $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_TRANS . ' WHERE rtr_id = ?', [$paymentId], false);
     if ($stmt !== false) {
         $pgPaymentData = $stmt->fetch();
     }
@@ -293,7 +292,7 @@ if (!$pgPaymentData) {
     ]);
 }
 
-$orgId = isset($pgPaymentData['btr_org_id']) ? (int)$pgPaymentData['btr_org_id'] : null;
+$orgId = isset($pgPaymentData['rtr_org_id']) ? (int)$pgPaymentData['rtr_org_id'] : null;
 
 // Format transaction date
 $transDate = $received['trans_date'] ?? '';
@@ -307,24 +306,24 @@ if ($transDate !== '') {
 
 // Update payment record
 try {
-    $updateSql = 'UPDATE ' . TBL_BL_TRANS . ' SET
-        btr_pg_id = ?,
-        btr_bank_ref_no = ?,
-        btr_status = ?,
-        btr_amount = ?,
-        btr_currency = ?,
-        btr_pg_pay_method = ?,
-        btr_pg_msg = ?,
-        btr_pg_response = ?,
-        btr_usr_id_change = ?,
-        btr_pg_trans_date = ?,
-        btr_timestamp_change = NOW()
-    WHERE btr_id = ?';
+    $updateSql = 'UPDATE ' . TBL_RE_TRANS . ' SET
+        rtr_pg_id = ?,
+        rtr_bank_ref_no = ?,
+        rtr_status = ?,
+        rtr_amount = ?,
+        rtr_currency = ?,
+        rtr_pg_pay_method = ?,
+        rtr_pg_msg = ?,
+        rtr_pg_response = ?,
+        rtr_usr_id_change = ?,
+        rtr_pg_trans_date = ?,
+        rtr_timestamp_change = NOW()
+    WHERE rtr_id = ?';
 
     $updated = $gDb->queryPrepared($updateSql, [
-        !empty($trackingId) ? substr((string)$trackingId, 0, 30) : $pgPaymentData['btr_pg_id'],
+        !empty($trackingId) ? substr((string)$trackingId, 0, 30) : $pgPaymentData['rtr_pg_id'],
         !empty($bankRefNo) ? substr((string)$bankRefNo, 0, 255) : null,
-        billingGetPaymentStatus($status),
+        residentsGetPaymentStatus($status),
         !empty($amount) ? $amount : null,
         !empty($currency) ? $currency : null,
         $received['payment_mode'] ?? null,
@@ -347,24 +346,26 @@ $isSuccess = in_array($status, $successIndicators, true);
 
 // Process success: create bil_payments and update invoices
 if ($isSuccess) {
-    $hasInvoicePaidColumn = columnExistsBILL(TBL_BL_INVOICES, 'biv_is_paid');
-    
     try {
-        $itemStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_BL_TRANS_ITEMS . ' WHERE bti_pg_payment_id = ?', [$paymentId], false);
+        $itemStmt = $gDb->queryPrepared(
+            'SELECT * FROM ' . TBL_RE_TRANS_ITEMS . ' WHERE rti_pg_payment_id = ? AND rti_org_id = ?',
+            [$paymentId, $orgId],
+            false
+        );
         $pgPaymentItems = $itemStmt ? $itemStmt->fetchAll() : array();
 
         if ($pgPaymentItems) {
-            $insertPaymentSql = 'INSERT INTO ' . TBL_BL_PAYMENTS . ' (
-                bpa_status, bpa_date, bpa_pg_pay_method, bpa_pay_type, bpa_trans_id, bpa_bank_ref_no, bpa_usr_id, bpa_org_id, bpa_usr_id_create, bpa_usr_id_change
+            $insertPaymentSql = 'INSERT INTO ' . TBL_RE_PAYMENTS . ' (
+                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_bank_ref_no, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
-            $paymentStatus = billingGetPaymentStatus($status);
+            $paymentStatus = residentsGetPaymentStatus($status);
             $merchantUser = is_numeric($merchantParam) ? (int)$merchantParam : null;
             
             $insertedPayment = $gDb->queryPrepared($insertPaymentSql, [
                 $paymentStatus,
                 $formattedTransDate,
-                $received['payment_mode'] ?? $pgPaymentData['btr_pg_pay_method'] ?? null,
+                $received['payment_mode'] ?? $pgPaymentData['rtr_pg_pay_method'] ?? null,
                 'Online',
                 $trackingId,
                 $bankRefNo,
@@ -384,7 +385,7 @@ if ($isSuccess) {
             if ($bilPaymentId > 0) {
                 // Link to pg_payment
                 $linked = $gDb->queryPrepared(
-                    'UPDATE ' . TBL_BL_TRANS . ' SET btr_payment_id = ?, btr_usr_id_change = ?, btr_timestamp_change = NOW() WHERE btr_id = ?',
+                    'UPDATE ' . TBL_RE_TRANS . ' SET rtr_payment_id = ?, rtr_usr_id_change = ?, rtr_timestamp_change = NOW() WHERE rtr_id = ?',
                     [$bilPaymentId, $merchantUser, $paymentId],
                     false
                 );
@@ -393,16 +394,16 @@ if ($isSuccess) {
                 }
 
                 // Insert payment items and mark invoices paid
-                $insertItemSql = 'INSERT INTO ' . TBL_BL_PAYMENT_ITEMS . ' (
-                    bpi_payment_id, bpi_inv_id, bpi_amount, bpi_currency, bpi_usr_id, bpi_org_id, bpi_usr_id_create, bpi_usr_id_change
+                $insertItemSql = 'INSERT INTO ' . TBL_RE_PAYMENT_ITEMS . ' (
+                    rpi_payment_id, rpi_inv_id, rpi_amount, rpi_currency, rpi_usr_id, rpi_org_id, rpi_usr_id_create, rpi_usr_id_change
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
                 foreach ($pgPaymentItems as $item) {
                     $insertedItem = $gDb->queryPrepared($insertItemSql, [
                         $bilPaymentId,
-                        $item['bti_inv_id'] ?? null,
-                        $item['bti_amount'] ?? null,
-                        $item['bti_currency'] ?? null,
+                        $item['rti_inv_id'] ?? null,
+                        $item['rti_amount'] ?? null,
+                        $item['rti_currency'] ?? null,
                         $merchantUser,
                         $orgId,
                         $merchantUser,
@@ -414,10 +415,10 @@ if ($isSuccess) {
                     }
 
                     // Mark invoice as paid
-                    if ($paymentStatus === 'SU' && $hasInvoicePaidColumn && !empty($item['bti_inv_id'])) {
+                    if ($paymentStatus === 'SU' && !empty($item['rti_inv_id'])) {
                         $marked = $gDb->queryPrepared(
-                            'UPDATE ' . TBL_BL_INVOICES . ' SET biv_is_paid = ? WHERE biv_id = ?',
-                            [1, (int)$item['bti_inv_id']],
+                            'UPDATE ' . TBL_RE_INVOICES . ' SET riv_is_paid = ? WHERE riv_id = ? AND riv_org_id = ?',
+                            [1, (int)$item['rti_inv_id'], $orgId],
                             false
                         );
                         if ($marked === false) {

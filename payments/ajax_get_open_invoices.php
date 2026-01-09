@@ -9,8 +9,8 @@ require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 global $gDb, $gL10n;
 
 // Check if user has rights (same as edit.php)
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     http_response_code(403);
     echo json_encode(['error' => $gL10n->get('SYS_NO_RIGHTS')]);
     exit;
@@ -28,11 +28,11 @@ $openInvoices = TableResidentsInvoice::fetchOpenInvoicesByUser($gDb, $userId);
 $invoices = array();
 
 foreach ($openInvoices as $row) {
-    $totals = billingGetInvoiceTotals((int)$row['biv_id']);
+    $totals = residentsGetInvoiceTotals((int)$row['riv_id']);
     $invoices[] = array(
-    'id' => (int)$row['biv_id'],
-    'number' => $row['biv_number'],
-    'date' => $row['biv_date'],
+    'id' => (int)$row['riv_id'],
+    'number' => $row['riv_number'],
+    'date' => $row['riv_date'],
     'amount' => $totals['amount'],
     'currency' => $totals['currency']
     );

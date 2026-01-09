@@ -22,7 +22,7 @@ global $gDb, $gCurrentUser, $gCurrentOrgId, $gSettingsManager, $gL10n, $gProfile
 
 // Validate Configuration
 if (empty(CCAVENUE_MERCHANT_ID) || empty(CCAVENUE_ACCESS_CODE) || empty(CCAVENUE_WORKING_KEY) || empty(CCAVENUE_API_URL)) {
-    $gMessage->show($gL10n->get('BL_PG_CONFIG_MISSING'));
+    $gMessage->show($gL10n->get('RE_PG_CONFIG_MISSING'));
 }
 
 $invoiceIds = array();
@@ -40,7 +40,7 @@ elseif (isset($_GET['invoice_id'])) {
 $invoiceIds = array_filter($invoiceIds, function($id) { return $id > 0; });
 
 if (empty($invoiceIds)) {
-    $gMessage->show($gL10n->get('BL_NO_DATA'));
+    $gMessage->show($gL10n->get('RE_NO_DATA'));
 }
 
 // Validate all invoices belong to user and are open
@@ -49,7 +49,7 @@ $currency = '';
 $ownerId = 0;
 
 foreach ($invoiceIds as $invId) {
-    $invoiceStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_BL_INVOICES . ' WHERE biv_id = ?', array($invId), false);
+    $invoiceStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ?', array($invId), false);
     if ($invoiceStmt === false) {
         $gMessage->show($gL10n->get('SYS_DATABASE_ERROR'));
     }
@@ -60,29 +60,29 @@ foreach ($invoiceIds as $invId) {
     }
     
     // Check paid flag
-    $isPaid = (int)$invoice['biv_is_paid'] === 1;
+    $isPaid = (int)$invoice['riv_is_paid'] === 1;
     if ($isPaid) {
-        $gMessage->show($gL10n->get('BL_INVOICE_ALREADY_PAID') . ' (ID: ' . $invId . ')');
+        $gMessage->show($gL10n->get('RE_INVOICE_ALREADY_PAID') . ' (ID: ' . $invId . ')');
     }
     
     // Check owner (must be same for all)
     if ($ownerId === 0) {
-        $ownerId = (int)$invoice['biv_usr_id'];
-    } elseif ($ownerId !== (int)$invoice['biv_usr_id']) {
+        $ownerId = (int)$invoice['riv_usr_id'];
+    } elseif ($ownerId !== (int)$invoice['riv_usr_id']) {
         $gMessage->show('All invoices must belong to the same user.');
     }
     
     // Add to total
-    $totals = billingGetInvoiceTotals($invId);
+    $totals = residentsGetInvoiceTotals($invId);
     $totalAmount += (float)$totals['amount'];
     $currency = $totals['currency'];
 }
 
 if ($totalAmount <= 0) {
-    $gMessage->show($gL10n->get('BL_PAYMENT_FAILED') . ' (Total Amount: ' . $totalAmount . ')');
+    $gMessage->show($gL10n->get('RE_PAYMENT_FAILED') . ' (Total Amount: ' . $totalAmount . ')');
 }
 
-$isAdmin = isBillingAdmin();
+$isAdmin = isResidentsAdmin();
 if (!$isAdmin && $ownerId !== (int)$gCurrentUser->getValue('usr_id')) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
@@ -99,15 +99,15 @@ $initiatedInvoices = array();
 foreach ($invoiceIds as $invId) {
     // Check for RECENTLY INITIATED payments (within last X mins)
     $checkRecentSql = 'SELECT COUNT(*)
-            FROM ' . TBL_BL_TRANS_ITEMS . ' i
-            JOIN ' . TBL_BL_TRANS . ' p ON p.btr_id = i.bti_pg_payment_id
-            WHERE i.bti_inv_id = ? AND p.btr_status = ? AND p.btr_timestamp_create >= ?';
+            FROM ' . TBL_RE_TRANS_ITEMS . ' i
+            JOIN ' . TBL_RE_TRANS . ' p ON p.rtr_id = i.rti_pg_payment_id
+            WHERE i.rti_inv_id = ? AND p.rtr_status = ? AND p.rtr_timestamp_create >= ?';
     $checkRecentStmt = $gDb->queryPrepared($checkRecentSql, array($invId, 'IT', $timeoutTime), false);
     if ($checkRecentStmt === false) {
         $gMessage->show($gL10n->get('SYS_DATABASE_ERROR'));
     }
     if ($checkRecentStmt->fetchColumn() > 0) {
-        $invNumStmt = $gDb->queryPrepared('SELECT biv_number FROM ' . TBL_BL_INVOICES . ' WHERE biv_id = ?', array($invId), false);
+        $invNumStmt = $gDb->queryPrepared('SELECT riv_number FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ?', array($invId), false);
         if ($invNumStmt === false) {
         $gMessage->show($gL10n->get('SYS_DATABASE_ERROR'));
     }
@@ -117,17 +117,17 @@ foreach ($invoiceIds as $invId) {
 }
 
 if (!empty($initiatedInvoices)) {
-    $gMessage->show(sprintf($gL10n->get('BL_PAYMENT_ALREADY_INITIATED'), $timeoutMins) . ' (Invoices: ' . implode(', ', $initiatedInvoices) . ')');
+    $gMessage->show(sprintf($gL10n->get('RE_PAYMENT_ALREADY_INITIATED'), $timeoutMins) . ' (Invoices: ' . implode(', ', $initiatedInvoices) . ')');
 }
 
 // Mark OLD initiated payments as TIMEOUT (global check)
 // Pass custom timeout to the function if possible, or update the function.
-// For now, billingCheckPaymentTimeouts() likely uses a hardcoded value or needs update.
+// For now, residentsCheckPaymentTimeouts() likely uses a hardcoded value or needs update.
 // We will look at that function later if needed, but for now we proceed.
-billingCheckPaymentTimeouts();
+residentsCheckPaymentTimeouts();
 
-$isAdmin = isBillingAdmin();
-$ownerId = (int)$invoice['biv_usr_id'];
+$isAdmin = isResidentsAdmin();
+$ownerId = (int)$invoice['riv_usr_id'];
 if (!$isAdmin && $ownerId !== (int)$gCurrentUser->getValue('usr_id')) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
@@ -138,7 +138,7 @@ $amount = $totalAmount;
 // order_id will be set to the inserted bil_pg_payments.id
 $order_id = null;
 
-$defaultResponseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payment_gateway/ccavenue_response.php';
+$defaultResponseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/ccavenue_response.php';
 $redirectUrl = !empty($pgConf['redirect_url']) ? $pgConf['redirect_url'] : $defaultResponseUrl;
 $cancelUrl = !empty($pgConf['cancel_url']) ? $pgConf['cancel_url'] : $defaultResponseUrl;
 
@@ -146,11 +146,11 @@ $cancelUrl = !empty($pgConf['cancel_url']) ? $pgConf['cancel_url'] : $defaultRes
 $paymentId = 0;
 try {
     // Insert into bil_pg_payments with IT status (pg_request NULL for now)
-    $insertSql = 'INSERT INTO ' . TBL_BL_TRANS . ' (
-            btr_pg_id, btr_status,
-            btr_amount, btr_currency, btr_payment_id, btr_usr_id, btr_org_id,
-            btr_pg_pay_method, btr_pg_msg, btr_pg_trans_date, btr_pg_request,
-            btr_pg_response, btr_usr_id_create, btr_usr_id_change
+    $insertSql = 'INSERT INTO ' . TBL_RE_TRANS . ' (
+            rtr_pg_id, rtr_status,
+            rtr_amount, rtr_currency, rtr_payment_id, rtr_usr_id, rtr_org_id,
+            rtr_pg_pay_method, rtr_pg_msg, rtr_pg_trans_date, rtr_pg_request,
+            rtr_pg_response, rtr_usr_id_create, rtr_usr_id_change
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
     if ($gDb->queryPrepared($insertSql, array(
@@ -177,13 +177,13 @@ try {
 
     // Insert into bil_pg_payment_items with IT status (linked to the payment)
     if ($paymentId > 0) {
-        $insertItemSql = 'INSERT INTO ' . TBL_BL_TRANS_ITEMS . ' (
-        bti_pg_payment_id, bti_inv_id,
-        bti_amount, bti_currency, bti_usr_id, bti_org_id, bti_usr_id_create, bti_usr_id_change
+        $insertItemSql = 'INSERT INTO ' . TBL_RE_TRANS_ITEMS . ' (
+        rti_pg_payment_id, rti_inv_id,
+        rti_amount, rti_currency, rti_usr_id, rti_org_id, rti_usr_id_create, rti_usr_id_change
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
         foreach ($invoiceIds as $invId) {
-            $invTotal = billingGetInvoiceTotals($invId);
+            $invTotal = residentsGetInvoiceTotals($invId);
             $invAmount = (float)$invTotal['amount'];
             
             if ($gDb->queryPrepared($insertItemSql, array(
@@ -205,27 +205,27 @@ try {
     error_log('Payment INIT persist failed: ' . $e->getMessage());
 }
 
-// Get billing information for the payer (current session user)
+// Get user information for the payer (current session user)
 $payer = $gCurrentUser;
 // Fetch address details from profile fields
 $payerId = $payer->getValue('usr_id');
-$addr = billingGetUserAddress($payerId);
+$addr = residentsGetUserAddress($payerId);
 
-$billing_name    = $addr['name'];
-$billing_email   = $addr['email'];
-$billing_address = $addr['address'];
-$billing_city    = $addr['city'];
-$billing_zip     = $addr['zip'];
-$billing_country = $addr['country'];
-$billing_tel     = $addr['tel'];
-$billing_state   = $addr['state'];
+$re_name    = $addr['name'];
+$re_email   = $addr['email'];
+$re_address = $addr['address'];
+$re_city    = $addr['city'];
+$re_zip     = $addr['zip'];
+$re_country = $addr['country'];
+$re_tel     = $addr['tel'];
+$re_state   = $addr['state'];
 
 // Set defaults if empty
-if ($billing_address === '') $billing_address = 'NA';
-if ($billing_city === '')    $billing_city = 'NA';
-if ($billing_country === '') $billing_country = 'India';
-if ($billing_tel === '')     $billing_tel = '0000000000';
-if ($billing_state === '')   $billing_state = 'TN';
+if ($re_address === '') $re_address = 'NA';
+if ($re_city === '')    $re_city = 'NA';
+if ($re_country === '') $re_country = 'India';
+if ($re_tel === '')     $re_tel = '0000000000';
+if ($re_state === '')   $re_state = 'TN';
 // Set order_id to the inserted payment id
 $order_id = (string)$paymentId;
 
@@ -238,14 +238,14 @@ $merchantData = array(
     'redirect_url' => $redirectUrl,
     'cancel_url' => $cancelUrl,
     'language' => 'EN',
-    'billing_name' => $billing_name !== '' ? $billing_name : 'Member',
-    'billing_address' => $billing_address,
-    'billing_city' => $billing_city,
-    'billing_state' => $billing_state,
-    'billing_zip' => $billing_zip,
-    'billing_country' => $billing_country,
-    'billing_tel' => $billing_tel,
-    'billing_email' => $billing_email !== '' ? $billing_email : 'member@example.com',
+    're_name' => $re_name !== '' ? $re_name : 'Member',
+    're_address' => $re_address,
+    're_city' => $re_city,
+    're_state' => $re_state,
+    're_zip' => $re_zip,
+    're_country' => $re_country,
+    're_tel' => $re_tel,
+    're_email' => $re_email !== '' ? $re_email : 'member@example.com',
     'merchant_param2' => implode(',', $invoiceIds),
     'merchant_param3' => strval($ownerId),
     'merchant_param4' => strval($paymentId),
@@ -263,7 +263,7 @@ $merchantDataStr = rtrim($merchantDataStr, '&'); // Remove trailing &
 if ($paymentId > 0) {
     try {
         if ($gDb->queryPrepared(
-            'UPDATE ' . TBL_BL_TRANS . ' SET btr_pg_request = ?, btr_timestamp_change = CURRENT_TIMESTAMP, btr_usr_id_change = ? WHERE btr_id = ?',
+            'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_request = ?, rtr_timestamp_change = CURRENT_TIMESTAMP, rtr_usr_id_change = ? WHERE rtr_id = ?',
             array($merchantDataStr, $ownerId, $paymentId),
             false
         ) === false) {

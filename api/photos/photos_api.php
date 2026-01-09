@@ -15,10 +15,17 @@ header('Content-Type: application/json; charset=utf-8');
 
 $currentUser = validateApiKey();
 
+$currentOrgId = isset($gCurrentOrgId)
+    ? (int) $gCurrentOrgId
+    : (isset($gCurrentOrganization) ? (int) $gCurrentOrganization->getValue('org_id') : 0);
+
 // Check user permissions for photos
 $canEditPhotos = $currentUser->editPhotoRight();
 
-$sql ='SELECT pho_id, pho_name, pho_quantity, pho_begin, pho_end, pho_description, pho_pho_id_parent FROM adm_photos WHERE pho_locked = 0';
+$sql = 'SELECT pho_id, pho_name, pho_quantity, pho_begin, pho_end, pho_description, pho_pho_id_parent
+    FROM adm_photos
+    WHERE pho_locked = 0 AND pho_org_id = ?';
+$sqlParams = array($currentOrgId);
 
 $albumId = $_GET['album_id'] ?? '';
 
@@ -65,16 +72,17 @@ if ($pagingEnabled) {
 }
 
 if ($albumId) {
-    $sql .= ' AND pho_id = ' . (int)$albumId;
+    $sql .= ' AND pho_id = ?';
+    $sqlParams[] = (int) $albumId;
 }
-$sqlalbums = $gDb->queryPrepared($sql, array(), false);
+$sqlalbums = $gDb->queryPrepared($sql, $sqlParams, false);
 if ($sqlalbums === false) {
     admidioApiError('Database error', 500);
 }
 
 function getAlbums(array $obj, bool $canEdit, bool $pagingEnabled, int $offset, int $limit, bool $isRootAlbum, ?array &$rootPaging, bool $metaOnly, ?array $namesFilter): array
 {
-    global $gDb; 
+    global $gDb, $currentOrgId; 
     $baseFolder = ADMIDIO_PATH . FOLDER_DATA . '/photos/';
     $photoFiles = [];
     $photoInfos = [];
@@ -122,8 +130,8 @@ function getAlbums(array $obj, bool $canEdit, bool $pagingEnabled, int $offset, 
             }
     }
     }
-    $sqlChild = "SELECT * FROM adm_photos WHERE pho_pho_id_parent = ?";
-    $stmtChild = $gDb->queryPrepared($sqlChild, [$obj['pho_id']], false);
+    $sqlChild = 'SELECT * FROM adm_photos WHERE pho_org_id = ? AND pho_pho_id_parent = ?';
+    $stmtChild = $gDb->queryPrepared($sqlChild, [$currentOrgId, $obj['pho_id']], false);
     $childRows = $stmtChild ? $stmtChild->fetchAll() : array();
 
     $childAlbums = [];

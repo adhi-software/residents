@@ -122,7 +122,7 @@ try {
             'subject'   => $row['msg_subject'],
             'sender'    => array(
         'id'   => (int) $row['msg_usr_id_sender'],
-        'name' => billingFetchUserNameById((int) $row['msg_usr_id_sender'])
+        'name' => residentsFetchUserNameById((int) $row['msg_usr_id_sender'])
             ),
             'is_sender' => (int) $row['msg_usr_id_sender'] === $currentUserId,
             'message'   => StringUtils::strStripTags((string) ($row['msc_message'] ?? '')),

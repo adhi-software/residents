@@ -58,95 +58,95 @@ if (defined('ADMIDIO_VERSION') && !version_compare(ADMIDIO_VERSION, '5.0', '<'))
 }
 
 // define plugin specific constants
-if (!defined('PLUGIN_FOLDER_BILL')) {
-    define('PLUGIN_FOLDER_BILL', '/' . basename(__DIR__));
+if (!defined('PLUGIN_FOLDER_RE')) {
+    define('PLUGIN_FOLDER_RE', '/' . basename(__DIR__));
 }
-if (!defined('TBL_BL_INVOICES')) {
-    define('TBL_BL_INVOICES', TABLE_PREFIX . '_bl_invoices');
+if (!defined('TBL_RE_INVOICES')) {
+    define('TBL_RE_INVOICES', TABLE_PREFIX . '_re_invoices');
 }
-if (!defined('TBL_BL_INVOICE_ITEMS')) {
-    define('TBL_BL_INVOICE_ITEMS',  TABLE_PREFIX . '_bl_invoice_items');
+if (!defined('TBL_RE_INVOICE_ITEMS')) {
+    define('TBL_RE_INVOICE_ITEMS',  TABLE_PREFIX . '_re_invoice_items');
 }
-if (!defined('TBL_BL_PAYMENTS')) {
-    define('TBL_BL_PAYMENTS', TABLE_PREFIX . '_bl_payments');
+if (!defined('TBL_RE_PAYMENTS')) {
+    define('TBL_RE_PAYMENTS', TABLE_PREFIX . '_re_payments');
 }
-if (!defined('TBL_BL_PAYMENT_ITEMS')) {
-    define('TBL_BL_PAYMENT_ITEMS', TABLE_PREFIX . '_bl_payment_items');
+if (!defined('TBL_RE_PAYMENT_ITEMS')) {
+    define('TBL_RE_PAYMENT_ITEMS', TABLE_PREFIX . '_re_payment_items');
 }
-if (!defined('TBL_BL_TRANS')) {
-    define('TBL_BL_TRANS', TABLE_PREFIX . '_bl_trans');
+if (!defined('TBL_RE_TRANS')) {
+    define('TBL_RE_TRANS', TABLE_PREFIX . '_re_trans');
 }
-if (!defined('TBL_BL_TRANS_ITEMS')) {
-    define('TBL_BL_TRANS_ITEMS', TABLE_PREFIX . '_bl_trans_items');
+if (!defined('TBL_RE_TRANS_ITEMS')) {
+    define('TBL_RE_TRANS_ITEMS', TABLE_PREFIX . '_re_trans_items');
 }
-if (!defined('TBL_BL_INVOICES_HIST')) {
-    define('TBL_BL_INVOICES_HIST', TABLE_PREFIX . '_bl_invoices_hist');
+if (!defined('TBL_RE_INVOICES_HIST')) {
+    define('TBL_RE_INVOICES_HIST', TABLE_PREFIX . '_re_invoices_hist');
 }
-if (!defined('TBL_BL_INVOICE_ITEMS_HIST')) {
-    define('TBL_BL_INVOICE_ITEMS_HIST', TABLE_PREFIX . '_bl_invoice_items_hist');
+if (!defined('TBL_RE_INVOICE_ITEMS_HIST')) {
+    define('TBL_RE_INVOICE_ITEMS_HIST', TABLE_PREFIX . '_re_invoice_items_hist');
 }
-if (!defined('TBL_BL_PAYMENTS_HIST')) {
-    define('TBL_BL_PAYMENTS_HIST', TABLE_PREFIX . '_bl_payments_hist');
+if (!defined('TBL_RE_PAYMENTS_HIST')) {
+    define('TBL_RE_PAYMENTS_HIST', TABLE_PREFIX . '_re_payments_hist');
 }
-if (!defined('TBL_BL_PAYMENT_ITEMS_HIST')) {
-    define('TBL_BL_PAYMENT_ITEMS_HIST', TABLE_PREFIX . '_bl_payment_items_hist');
+if (!defined('TBL_RE_PAYMENT_ITEMS_HIST')) {
+    define('TBL_RE_PAYMENT_ITEMS_HIST', TABLE_PREFIX . '_re_payment_items_hist');
 }
-if (!defined('TBL_BL_CHARGES_HIST')) {
-    define('TBL_BL_CHARGES_HIST', TABLE_PREFIX . '_bl_charges_hist');
+if (!defined('TBL_RE_CHARGES_HIST')) {
+    define('TBL_RE_CHARGES_HIST', TABLE_PREFIX . '_re_charges_hist');
 }
-if (!defined('TBL_BL_PG_PAYMENTS')) {
-    define('TBL_BL_PG_PAYMENTS', TABLE_PREFIX . '_bl_pg_payments');
+if (!defined('TBL_RE_PG_PAYMENTS')) {
+    define('TBL_RE_PG_PAYMENTS', TABLE_PREFIX . '_re_pg_payments');
 }
-if (!defined('TBL_BL_PG_PAYMENT_ITEMS')) {
-    define('TBL_BL_PG_PAYMENT_ITEMS', TABLE_PREFIX . '_bl_pg_payment_items');
+if (!defined('TBL_RE_PG_PAYMENT_ITEMS')) {
+    define('TBL_RE_PG_PAYMENT_ITEMS', TABLE_PREFIX . '_re_pg_payment_items');
 }
-if (!defined('TBL_BL_CHARGES')) {
-    define('TBL_BL_CHARGES', TABLE_PREFIX . '_bl_charges');
+if (!defined('TBL_RE_CHARGES')) {
+    define('TBL_RE_CHARGES', TABLE_PREFIX . '_re_charges');
 }
 if (!defined('TBL_PLUGIN_PREFERENCES')) {
     define('TBL_PLUGIN_PREFERENCES', TABLE_PREFIX . '_plugin_preferences');
 }
-if (!defined('TBL_BL_DEVICES')) {
-    define('TBL_BL_DEVICES', TABLE_PREFIX . '_bl_devices');
+if (!defined('TBL_RE_DEVICES')) {
+    define('TBL_RE_DEVICES', TABLE_PREFIX . '_re_devices');
 }
-if (!defined('TBL_BL_DEVICES_HIST')) {
-    define('TBL_BL_DEVICES_HIST', TABLE_PREFIX . '_bl_devices_hist');
+if (!defined('TBL_RE_DEVICES_HIST')) {
+    define('TBL_RE_DEVICES_HIST', TABLE_PREFIX . '_re_devices_hist');
 }
 
 // --- Invoice constants for reuse across plugin files ---
-if (!defined('BL_STATUS_OPEN')) {
-    define('BL_STATUS_OPEN', 'O');
+if (!defined('RE_STATUS_OPEN')) {
+    define('RE_STATUS_OPEN', 'O');
 }
-if (!defined('BL_STATUS_CLOSED')) {
-    define('BL_STATUS_CLOSED', 'C');
+if (!defined('RE_STATUS_CLOSED')) {
+    define('RE_STATUS_CLOSED', 'C');
 }
 
 /**
     * Ensure the Residents plugin stylesheet is only added once per request.
     */
-function billingEnqueueStyles(HtmlPage $page): void
+function residentsEnqueueStyles(HtmlPage $page): void
 {
     static $stylesAdded = false;
     if ($stylesAdded) {
         return;
     }
-    $page->addCssFile(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.css');
+    $page->addCssFile(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.css');
     $stylesAdded = true;
 }
 
 /**
     * Reusable option lists for paid status filter.
-    * Uses biv_is_paid values: 0 = Unpaid, 1 = Paid
+    * Uses riv_is_paid values: 0 = Unpaid, 1 = Paid
     * @param string $type 'paid' for payment status filter (Unpaid/Paid)
     * @param bool $includeEmpty Whether to include an empty option at the start
     */
-function billingInvoiceStatusOptions(string $type = 'paid', bool $includeEmpty = false): array
+function residentsInvoiceStatusOptions(string $type = 'paid', bool $includeEmpty = false): array
 {
     global $gL10n;
 
-    // Paid status filter based on biv_is_paid column (0 = Unpaid, 1 = Paid)
-    $unpaidLabel = isset($gL10n) ? $gL10n->get('BL_UNPAID') : 'Unpaid';
-    $paidLabel = isset($gL10n) ? $gL10n->get('BL_PAID') : 'Paid';
+    // Paid status filter based on riv_is_paid column (0 = Unpaid, 1 = Paid)
+    $unpaidLabel = isset($gL10n) ? $gL10n->get('RE_UNPAID') : 'Unpaid';
+    $paidLabel = isset($gL10n) ? $gL10n->get('RE_PAID') : 'Paid';
 
     $opts = array(
         '0' => $unpaidLabel,
@@ -170,8 +170,8 @@ function emailAttachmentLimitPayload(): array
     );
 }
 
-if (!function_exists('billingFetchUserNameById')) {
-    function billingFetchUserNameById(int $userId): string
+if (!function_exists('residentsFetchUserNameById')) {
+    function residentsFetchUserNameById(int $userId): string
     {
         global $gDb, $gProfileFields;
 
@@ -200,8 +200,8 @@ if (!function_exists('billingFetchUserNameById')) {
     }
 }
 
-if (!function_exists('billingFetchUserEmailById')) {
-    function billingFetchUserEmailById(int $userId): string
+if (!function_exists('residentsFetchUserEmailById')) {
+    function residentsFetchUserEmailById(int $userId): string
     {
         global $gDb, $gProfileFields;
 
@@ -220,7 +220,7 @@ if (!function_exists('billingFetchUserEmailById')) {
     }
 }
 
-function billingResolveDate(?string $value, ?string $fallback = null): string
+function residentsResolveDate(?string $value, ?string $fallback = null): string
 {
     $value = trim((string)$value);
     if ($value !== '') {
@@ -241,8 +241,8 @@ function billingResolveDate(?string $value, ?string $fallback = null): string
     return date('Y-m-d');
 }
 
-if (!function_exists('billingFormatDateForUi')) {
-    function billingFormatDateForUi($value): string
+if (!function_exists('residentsFormatDateForUi')) {
+    function residentsFormatDateForUi($value): string
     {
         global $gSettingsManager;
 
@@ -271,8 +271,8 @@ if (!function_exists('billingFormatDateForUi')) {
     }
 }
 
-if (!function_exists('billingFormatDateForInput')) {
-    function billingFormatDateForInput($value): string
+if (!function_exists('residentsFormatDateForInput')) {
+    function residentsFormatDateForInput($value): string
     {
         $s = trim((string)$value);
         if ($s === '') {
@@ -295,8 +295,8 @@ if (!function_exists('billingFormatDateForInput')) {
     }
 }
 
-if (!function_exists('billingFormatDateForApi')) {
-    function billingFormatDateForApi($value): string
+if (!function_exists('residentsFormatDateForApi')) {
+    function residentsFormatDateForApi($value): string
     {
         $s = trim((string)$value);
         if ($s === '') {
@@ -319,7 +319,7 @@ if (!function_exists('billingFormatDateForApi')) {
     }
 }
 
-function billingChargePeriodMonths(?string $period): int
+function residentsChargePeriodMonths(?string $period): int
 {
     $period = trim((string)$period);
     if ($period === '') {
@@ -339,40 +339,49 @@ function billingChargePeriodMonths(?string $period): int
     return 1;
 }
 
-function billingFetchChargeDefinitions(): array
+function residentsFetchChargeDefinitions(?int $orgId = null): array
 {
-    global $gDb;
+    global $gDb, $gCurrentOrgId;
 
-    static $cache = null;
-    if ($cache !== null) {
-        return $cache;
+    // Use provided org_id or fall back to current organization
+    $filterOrgId = ($orgId !== null) ? $orgId : (int)$gCurrentOrgId;
+
+    static $cache = array();
+    $cacheKey = 'org_' . $filterOrgId;
+    if (isset($cache[$cacheKey])) {
+        return $cache[$cacheKey];
     }
 
-    if (!tableExistsBILL(TBL_BL_CHARGES)) {
-        $cache = array();
-        return $cache;
+    $cache[$cacheKey] = array();
+    
+    if ($filterOrgId > 0) {
+        $stmt = $gDb->queryPrepared(
+            'SELECT * FROM ' . TBL_RE_CHARGES . ' WHERE rch_org_id = ? ORDER BY rch_name ASC',
+            array($filterOrgId)
+        );
+    } else {
+        $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_CHARGES . ' ORDER BY rch_name ASC', array());
     }
-
-    $cache = array();
-    $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_BL_CHARGES . ' ORDER BY bch_name ASC', array());
+    
     if ($stmt !== false) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $period = (string)($row['bch_period'] ?? '');
-            $cache[] = array(
-        'id' => (int)($row['bch_id'] ?? 0),
-        'name' => (string)($row['bch_name'] ?? ''),
-        'amount' => (float)($row['bch_amount'] ?? 0.0),
+            $period = (string)($row['rch_period'] ?? '');
+            $cache[$cacheKey][] = array(
+        'id' => (int)($row['rch_id'] ?? 0),
+        'org_id' => (int)($row['rch_org_id'] ?? 0),
+        'name' => (string)($row['rch_name'] ?? ''),
+        'amount' => (float)($row['rch_amount'] ?? 0.0),
         'period' => $period,
-        'period_months' => billingChargePeriodMonths($period),
-        'role_ids' => billingDeserializeRoleIds((string)($row['bch_role_ids'] ?? ''))
+        'period_months' => residentsChargePeriodMonths($period),
+        'role_ids' => residentsDeserializeRoleIds((string)($row['rch_role_ids'] ?? ''))
             );
     }
     }
 
-    return $cache;
+    return $cache[$cacheKey];
 }
 
-function billingFetchUserRoleMap(array $userIds, string $referenceDate): array
+function residentsFetchUserRoleMap(array $userIds, string $referenceDate): array
 {
     global $gDb;
 
@@ -393,7 +402,7 @@ function billingFetchUserRoleMap(array $userIds, string $referenceDate): array
                 AND mem_begin <= ?
                 AND (mem_end IS NULL OR mem_end >= ?)';
 
-    $stmt = $gDb->queryPrepared($sql, $params);
+            $stmt = $gDb->queryPrepared($sql, $params);
     if ($stmt !== false) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $uid = (int)($row['mem_usr_id'] ?? 0);
@@ -411,13 +420,13 @@ function billingFetchUserRoleMap(array $userIds, string $referenceDate): array
     return $map;
 }
 
-function billingGetActiveRoleIdsForUser(int $userId): array
+function residentsGetActiveRoleIdsForUser(int $userId): array
 {
     if ($userId <= 0) {
             return array();
     }
 
-    $roleMap = billingFetchUserRoleMap(array($userId), date('Y-m-d'));
+    $roleMap = residentsFetchUserRoleMap(array($userId), date('Y-m-d'));
     return $roleMap[$userId] ?? array();
 }
 
@@ -459,7 +468,7 @@ function residentsMessageCanDelete(TableMessage $message, int $userId): bool
     return residentsMessageIsVisibleToUser($message, $userId);
 }
 
-function billingFilterChargesForUser(array $chargeDefinitions, array $userRoleIds, ?int $groupFilter = null): array
+function residentsFilterChargesForUser(array $chargeDefinitions, array $userRoleIds, ?int $groupFilter = null): array
 {
     if (empty($chargeDefinitions)) {
         return array();
@@ -487,70 +496,10 @@ function billingFilterChargesForUser(array $chargeDefinitions, array $userRoleId
 }
 
 /**
-    * Calculate monthly membership fee for a user within optional group context.
-    * Priority order for base amount & period:
-    *   1. Plugin preference section role_<groupId>: keys contribution, period
-    *   2. Fallback plugin preference pricing.charge (already assumed monthly)
-    * Period normalization supported values (case-insensitive): month, monthly; year, yearly, annual; quarter, quarterly.
-    * If period not recognized, assume monthly.
-    * Returns array [ 'base' => amountString, 'period' => periodString, 'monthly' => monthlyAmountString ]
-    */
-function billingCalculateUserCharge(int $userId, ?int $groupId = null): array
-{
-    $empty = array(
-    'base' => number_format(0, 2, '.', ''),
-    'period' => '',
-    'monthly' => number_format(0, 2, '.', ''),
-    'period_code' => null,
-    'quantity_factor' => 1.0
-    );
-
-    $chargeDefinitions = billingFetchChargeDefinitions();
-    if (empty($chargeDefinitions)) {
-        return $empty;
-    }
-
-    $roleMap = billingFetchUserRoleMap(array($userId), date('Y-m-d'));
-    $userRoles = $roleMap[$userId] ?? array();
-    if (empty($userRoles)) {
-        return $empty;
-    }
-
-    $matches = billingFilterChargesForUser($chargeDefinitions, $userRoles, $groupId);
-    if (empty($matches)) {
-        return $empty;
-    }
-
-    $total = 0.0;
-    $periodCode = null;
-    if (count($matches) === 1) {
-        $periodValue = $matches[0]['period'] ?? '';
-        if ($periodValue !== '' && is_numeric($periodValue)) {
-            $periodCode = (int)$periodValue;
-    }
-    }
-
-    foreach ($matches as $match) {
-        $total += (float)($match['amount'] ?? 0.0);
-    }
-
-    $periodLabel = $periodCode !== null ? TableRoles::getCostPeriods($periodCode) : 'Charges';
-    $formatted = number_format($total, 2, '.', '');
-
-    return array(
-    'base' => $formatted,
-    'period' => $periodLabel,
-    'monthly' => $formatted,
-    'period_code' => $periodCode,
-    'quantity_factor' => 1.0
-    );
-}
-
-/**
     * Check if a table exists (works for MySQL and PostgreSQL when default schema equals DB_NAME/public).
     * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
     */
-function tableExistsBILL(string $tableName): bool
+function tableExistsRE(string $tableName): bool
 {
     global $gDb, $gDbType;
 
@@ -568,7 +517,7 @@ function tableExistsBILL(string $tableName): bool
     * Check if an index exists.
     * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
     */
-function indexExistsBILL(string $tableName, string $indexName): bool
+function indexExistsRE(string $tableName, string $indexName): bool
 {
     global $gDb, $gDbType;
 
@@ -582,31 +531,13 @@ function indexExistsBILL(string $tableName, string $indexName): bool
     return (int)$stmt->fetchColumn() > 0;
 }
 
-/**
-    * Check if a column exists.
-    * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
-    */
-function columnExistsBILL(string $tableName, string $columnName): bool
-{
-    global $gDb, $gDbType;
-
-    if ($gDbType === 'pgsql') {
-        $sql = 'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = current_schema() AND LOWER(table_name) = LOWER(?) AND LOWER(column_name) = LOWER(?)';
-        $stmt = $gDb->queryPrepared($sql, array($tableName, $columnName));
-    } else {
-        $sql = 'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?';
-        $stmt = $gDb->queryPrepared($sql, array(DB_NAME, $tableName, $columnName));
-    }
-    return (int)$stmt->fetchColumn() > 0;
-}
-
 
 
 /**
     * Check if a FK constraint exists.
     * Note: PostgreSQL stores unquoted identifiers in lowercase, so we use LOWER() for comparisons.
     */
-function constraintExistsBILL(string $tableName, string $constraintName): bool
+function constraintExistsRE(string $tableName, string $constraintName): bool
 {
     global $gDb, $gDbType;
 
@@ -623,7 +554,7 @@ function constraintExistsBILL(string $tableName, string $constraintName): bool
 /**
     * Simple authorization check based on menu rights of this plugin.
     */
-function isUserAuthorizedForBilling(string $scriptName): bool
+function isUserAuthorizedForResidents(string $scriptName): bool
 {
     global $gDb, $gCurrentUser;
 
@@ -642,13 +573,13 @@ function isUserAuthorizedForBilling(string $scriptName): bool
 /**
     * Check if current user is a Residents admin (belongs to any configured admin role) or Admidio administrator.
     */
-function isBillingAdmin(): bool
+function isResidentsAdmin(): bool
 {
     // Plugin admin is defined by configured Admin roles.
     // If none are configured, Admidio administrators may access admin features.
     global $gCurrentUser;
     $gCurrentUser->getRoleMemberships();
-    $config = billingReadConfig();
+    $config = residentsReadConfig();
     $roles = $config['access']['admin_roles'] ?? array();
     if (empty($roles)) {
         return isset($gCurrentUser) && $gCurrentUser->isAdministrator();
@@ -662,9 +593,9 @@ function isBillingAdmin(): bool
 }
 
 /**
-    * Check admin access strictly against configured admin roles (no Admidio admin fallback).
+    * Check admin access strictly against configured admin roles.
     */
-function isBillingAdminBySettings(): bool
+function isResidentsAdminBySettings(): bool
 {
     global $gCurrentUser;
 
@@ -672,7 +603,7 @@ function isBillingAdminBySettings(): bool
         return false;
     }
 
-    $config = billingReadConfig();
+    $config = residentsReadConfig();
     $roles = $config['access']['admin_roles'] ?? array();
 
     foreach ($roles as $roleId) {
@@ -684,13 +615,13 @@ function isBillingAdminBySettings(): bool
 }
 
 /**
-    * Check if the current user is a configured Payment Admin (or Billing Admin).
+    * Check if the current user is a configured Payment Admin (or Residents Admin).
     */
 function isPaymentAdmin(): bool
 {
     global $gCurrentUser;
 
-    $config = billingReadConfig();
+    $config = residentsReadConfig();
     $roles = $config['access']['payment_admin_roles'] ?? array();
     
     if (empty($roles)) {
@@ -708,12 +639,12 @@ function isPaymentAdmin(): bool
 /**
     * Check if the current user is leader/administrator of the configured owner group.
     */
-// isBillingOwnersLeader removed: no longer used after settings simplification
+// isResidentsOwnersLeader removed: no longer used after settings simplification
 
 /**
-    * Read plugin config (preferences) stored with BL__ prefix.
+    * Read plugin config (preferences) stored with RE__ prefix.
     */
-function billingReadConfig(): array
+function residentsReadConfig(): array
 {
     global $gDb, $gCurrentOrgId;
 
@@ -754,7 +685,7 @@ function billingReadConfig(): array
     };
 
     $sql = 'SELECT prf_name, prf_value FROM ' . TBL_PREFERENCES . ' WHERE prf_name LIKE ? AND prf_org_id = ?';
-    $st = $gDb->queryPrepared($sql, array('BL__%', $gCurrentOrgId));
+    $st = $gDb->queryPrepared($sql, array('RE__%', $gCurrentOrgId));
     while ($row = $st->fetch()) {
         $parts = explode('__', $row['prf_name']);
         if (count($parts) >= 3) {
@@ -777,22 +708,24 @@ function billingReadConfig(): array
     *
     * @return array<int,string>
     */
-function billingGetOwnerOptions($groupId): array
+function residentsGetOwnerOptions($groupId): array
 {
-    global $gDb, $gProfileFields;
+    global $gDb, $gProfileFields, $gCurrentOrgId;
     $options = array();
     
     // Base query with members filter to exclude Former users (users with no active role memberships)
+    // Filter by organization: only return users who are members of roles belonging to current org
     $select = 'SELECT DISTINCT u.usr_id, u.usr_login_name,
         fn.usd_value AS firstname, ln.usd_value AS lastname
             FROM ' . TBL_USERS . ' u
             INNER JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id AND m.mem_begin <= ? AND m.mem_end > ?
             INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = true
+            INNER JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)
             LEFT JOIN ' . TBL_USER_DATA . ' ln ON ln.usd_usr_id = u.usr_id AND ln.usd_usf_id = ' . (int) $gProfileFields->getProperty('LAST_NAME', 'usf_id') . '
             LEFT JOIN ' . TBL_USER_DATA . ' fn ON fn.usd_usr_id = u.usr_id AND fn.usd_usf_id = ' . (int) $gProfileFields->getProperty('FIRST_NAME', 'usf_id') . '
             WHERE u.usr_valid = true';
 
-    $params = array(DATE_NOW, DATE_NOW);
+    $params = array(DATE_NOW, DATE_NOW, (int)$gCurrentOrgId);
     
     // If specific group/role is provided, add additional filter
     if (is_numeric($groupId) && (int) $groupId > 0) {
@@ -826,14 +759,14 @@ function billingGetOwnerOptions($groupId): array
     * @param int $userId The user ID to ensure is in the options
     * @return void
     */
-function billingEnsureUserInOptions(array &$options, int $userId): void
+function residentsEnsureUserInOptions(array &$options, int $userId): void
 {
     if ($userId <= 0 || isset($options[$userId])) {
         return;
     }
     
     // Fetch the user's name and add them to the options
-    $userName = billingFetchUserNameById($userId);
+    $userName = residentsFetchUserNameById($userId);
     if ($userName === '') {
         $userName = 'User #' . $userId;
     }
@@ -843,7 +776,7 @@ function billingEnsureUserInOptions(array &$options, int $userId): void
 /**
     * Fetch all active roles for dropdowns (organization + global roles).
     */
-function billingGetRoleOptions(): array
+function residentsGetRoleOptions(): array
 {
     global $gDb, $gCurrentOrganization;
     $roles = array();
@@ -867,7 +800,7 @@ function billingGetRoleOptions(): array
     return $roles;
 }
 
-function billingSerializeRoleIds(array $roleIds): string
+function residentsSerializeRoleIds(array $roleIds): string
 {
     $clean = array();
     foreach ($roleIds as $rid) {
@@ -882,7 +815,7 @@ function billingSerializeRoleIds(array $roleIds): string
     return implode(',', array_values($clean));
 }
 
-function billingDeserializeRoleIds(?string $value): array
+function residentsDeserializeRoleIds(?string $value): array
 {
     if ($value === null || trim($value) === '') {
         return array();
@@ -899,14 +832,14 @@ function billingDeserializeRoleIds(?string $value): array
 }
 
 /**
-    * Write config back to DB with prefix BL__
+    * Write config back to DB with prefix RE__
     */
-function billingWriteConfig(array $config): void
+function residentsWriteConfig(array $config): void
 {
     global $gDb, $gCurrentOrgId;
     foreach ($config as $section => $data) {
         foreach ($data as $key => $value) {
-            $plpName = 'BL__' . $section . '__' . $key;
+            $plpName = 'RE__' . $section . '__' . $key;
             if (is_array($value)) {
                 $value = '((' . implode('#_#', $value) . '))';
             }
@@ -927,23 +860,23 @@ function billingWriteConfig(array $config): void
 }
 
 /**
-    * Remove all stored Residents plugin preferences (BL__ prefix) for the current org.
+    * Remove all stored Residents plugin preferences (RE__ prefix) for the current org.
     */
-function billingDeleteConfig(): void
+function residentsDeleteConfig(): void
 {
     global $gDb, $gCurrentOrgId;
-    $gDb->queryPrepared('DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_org_id = ? AND prf_name LIKE ?', array($gCurrentOrgId, 'BL__%'), false);
+    $gDb->queryPrepared('DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_org_id = ? AND prf_name LIKE ?', array($gCurrentOrgId, 'RE__%'), false);
 }
 
-function billingGetDefaultInvoiceNote(?array $config = null): string
+function residentsGetDefaultInvoiceNote(?array $config = null): string
 {
     global $gL10n;
     if ($config === null) {
-        $config = billingReadConfig();
+        $config = residentsReadConfig();
     }
     $note = trim((string)($config['defaults']['invoice_note'] ?? ''));
     if ($note === '' && isset($gL10n)) {
-        $note = $gL10n->get('BL_DEFAULT_NOTE_TEXT');
+        $note = $gL10n->get('RE_DEFAULT_NOTE_TEXT');
     }
     return $note;
 }
@@ -952,100 +885,112 @@ function billingGetDefaultInvoiceNote(?array $config = null): string
     * Create plugin menu item under Plugins if missing.
     * The menu item is only visible to logged-in users (members of any role).
     */
-function ensureBillingMenuItem(): void
+function ensureResidentsMenuItem(): void
 {
     // Use Ramsey\Uuid if available in Admidio core
     if (!class_exists('Ramsey\Uuid\Uuid')) {
         return;
     }
-    $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
+    $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
 
-    global $gDb, $gL10n, $gCurrentOrgId;
-    $menuTitle = $gL10n->get('BL_TITLE');
-    $menuDescription = $gL10n->get('BL_DESC');
+    global $gDb, $gL10n;
+    $menuTitle = $gL10n->get('RE_TITLE');
+    $menuDescription = $gL10n->get('RE_DESC');
+
+    $menuId = 0;
     $exists = $gDb->queryPrepared('SELECT men_id FROM ' . TBL_MENU . ' WHERE men_url = ?', array($scriptUrl), false);
     if ($exists !== false && $exists->rowCount() > 0) {
-        return;
+        $menuId = (int)$exists->fetchColumn();
     }
 
-    $pluginsRow = $gDb->queryPrepared('SELECT men_id FROM ' . TBL_MENU . ' WHERE men_name_intern = ?', array('plugins'), false);
-    if ($pluginsRow === false) {
-        return;
-    }
-    $menIdPlugins = (int)$pluginsRow->fetch()['men_id'];
+    $createdMenu = false;
+    if ($menuId <= 0) {
+        $pluginsRow = $gDb->queryPrepared('SELECT men_id FROM ' . TBL_MENU . ' WHERE men_name_intern = ?', array('plugins'), false);
+        if ($pluginsRow === false) {
+            return;
+        }
+        $menIdPlugins = (int)$pluginsRow->fetch()['men_id'];
 
-    $sequence = 0;
-    $seqStmt = $gDb->queryPrepared('SELECT men_order FROM ' . TBL_MENU . ' WHERE men_men_id_parent = ? ORDER BY men_order ASC', array($menIdPlugins), false);
-    if ($seqStmt !== false) {
-        while ($r = $seqStmt->fetch()) {
-            $sequence = (int)$r['men_order'];
-    }
-    }
-    $orderNew = $sequence + 1;
+        $sequence = 0;
+        $seqStmt = $gDb->queryPrepared('SELECT men_order FROM ' . TBL_MENU . ' WHERE men_men_id_parent = ? ORDER BY men_order ASC', array($menIdPlugins), false);
+        if ($seqStmt !== false) {
+            while ($r = $seqStmt->fetch()) {
+                $sequence = (int)$r['men_order'];
+            }
+        }
+        $orderNew = $sequence + 1;
 
-    $uuid = Ramsey\Uuid\Uuid::uuid4();
-    
-    // Use integer 0 for boolean columns (works for both MySQL and PostgreSQL)
-    $menNode = 0;
-    $menStandard = 0;
-    
-    $sql = 'INSERT INTO ' . TBL_MENU . ' (men_com_id, men_men_id_parent, men_uuid, men_node, men_order, men_standard, men_name_intern, men_url, men_icon, men_name, men_description)
-            VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    $params = array(
-        $menIdPlugins,
-        (string)$uuid,
-        $menNode,
-        $orderNew,
-        $menStandard,
-        'residents',
-        $scriptUrl,
-        'fa-file-invoice-dollar',
-        $menuTitle,
-        $menuDescription
-    );
-    $gDb->queryPrepared($sql, $params, false);
-    
-    // Get the newly inserted menu ID
-    $newMenuId = (int)$gDb->lastInsertId();
-    
-    // Assign all active roles from current organization to menu view rights
-    // This ensures only logged-in users can see the menu (not guests)
-    if ($newMenuId > 0 && class_exists('RolesRights')) {
+        $uuid = Ramsey\Uuid\Uuid::uuid4();
+
+        // Use integer 0 for boolean columns (works for both MySQL and PostgreSQL)
+        $menNode = 0;
+        $menStandard = 0;
+
+        $sql = 'INSERT INTO ' . TBL_MENU . ' (men_com_id, men_men_id_parent, men_uuid, men_node, men_order, men_standard, men_name_intern, men_url, men_icon, men_name, men_description)
+                VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        $params = array(
+            $menIdPlugins,
+            (string)$uuid,
+            $menNode,
+            $orderNew,
+            $menStandard,
+            'residents',
+            $scriptUrl,
+            'fa-file-invoice-dollar',
+            $menuTitle,
+            $menuDescription
+        );
+        $gDb->queryPrepared($sql, $params, false);
+
+        $menuId = (int)$gDb->lastInsertId();
+        $createdMenu = ($menuId > 0);
+    }
+
+    // Keep menu visible to logged-in users: assign all active roles (across all organizations)
+    $changedRights = false;
+    if ($menuId > 0 && class_exists('RolesRights')) {
         $rolesStmt = $gDb->queryPrepared(
-            'SELECT rol_id FROM ' . TBL_ROLES . ' 
-             INNER JOIN ' . TBL_CATEGORIES . ' ON cat_id = rol_cat_id 
-             WHERE rol_valid = 1 AND cat_org_id = ?',
-            array($gCurrentOrgId),
+            'SELECT rol_id FROM ' . TBL_ROLES . '
+             INNER JOIN ' . TBL_CATEGORIES . ' ON cat_id = rol_cat_id
+             WHERE rol_valid = 1',
+            array(),
             false
         );
         if ($rolesStmt !== false) {
-            $roleIds = array();
+            $allRoleIds = array();
             while ($row = $rolesStmt->fetch()) {
-                $roleIds[] = (int)$row['rol_id'];
+                $allRoleIds[] = (int)$row['rol_id'];
             }
-            if (!empty($roleIds)) {
-                $rightMenuView = new RolesRights($gDb, 'menu_view', $newMenuId);
-                $rightMenuView->saveRoles($roleIds);
+            if (!empty($allRoleIds)) {
+                $rightMenuView = new RolesRights($gDb, 'menu_view', $menuId);
+                $currentRoleIds = $rightMenuView->getRolesIds();
+                sort($currentRoleIds);
+                $sortedAllRoleIds = $allRoleIds;
+                sort($sortedAllRoleIds);
+                if ($sortedAllRoleIds !== $currentRoleIds) {
+                    $rightMenuView->saveRoles($allRoleIds);
+                    $changedRights = true;
+                }
             }
         }
     }
-    
-    if (isset($GLOBALS['gCurrentSession'])) {
+
+    if (($createdMenu || $changedRights) && isset($GLOBALS['gCurrentSession'])) {
         $GLOBALS['gCurrentSession']->reloadAllSessions();
     }
 }
 
-function removeBillingMenuItem(): void
+function removeResidentsMenuItem(): void
 {
     global $gDb;
-    $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
+    $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
     $gDb->queryPrepared('DELETE FROM ' . TBL_MENU . ' WHERE men_url = ?', array($scriptUrl), false);
     if (isset($GLOBALS['gCurrentSession'])) {
         $GLOBALS['gCurrentSession']->reloadAllSessions();
     }
 }
 
-function billingGetInvoiceTotals(int $invoiceId): array
+function residentsGetInvoiceTotals(int $invoiceId): array
 {
     global $gDb, $gSettingsManager;
 
@@ -1053,22 +998,22 @@ function billingGetInvoiceTotals(int $invoiceId): array
     $currency = null;
 
     $stmt = $gDb->queryPrepared(
-    'SELECT bii_amount, bii_currency FROM ' . TBL_BL_INVOICE_ITEMS . ' WHERE bii_inv_id = ?',
+    'SELECT rii_amount, rii_currency FROM ' . TBL_RE_INVOICE_ITEMS . ' WHERE rii_inv_id = ?',
     array($invoiceId),
     false
     );
 
     if ($stmt !== false) {
         while ($row = $stmt->fetch()) {
-            $val = (string)($row['bii_amount'] ?? '0');
+            $val = (string)($row['rii_amount'] ?? '0');
             // Remove everything except digits, dots, commas, minus
             $val = preg_replace('/[^0-9.,-]/', '', $val);
             // Remove commas (assuming they are thousands separators)
             $amount = (float)str_replace(',', '', $val);
             
             $total += $amount;
-            if ($currency === null && !empty($row['bii_currency'])) {
-                $currency = (string)$row['bii_currency'];
+            if ($currency === null && !empty($row['rii_currency'])) {
+                $currency = (string)$row['rii_currency'];
             }
     }
     }
@@ -1083,28 +1028,28 @@ function billingGetInvoiceTotals(int $invoiceId): array
     );
 }
 
-function billingNextInvoiceNumberIndex(): int
+function residentsNextInvoiceNumberIndex(?int $orgId = null): int
 {
-    global $gDb, $gDbType;
+    global $gDb, $gDbType, $gCurrentOrgId;
 
-    if (!tableExistsBILL(TBL_BL_INVOICES) || !columnExistsBILL(TBL_BL_INVOICES, 'biv_number_index')) {
-        return 1;
-    }
+    // Use provided org_id or fall back to current organization
+    $filterOrgId = ($orgId !== null) ? $orgId : (int)$gCurrentOrgId;
+    $orgFilter = ($filterOrgId > 0) ? ' WHERE riv_org_id = ' . $filterOrgId : '';
 
-    // Some legacy/dev data may have biv_number_index unset (0) while biv_number is numeric.
+    // Some legacy/dev data may have riv_number_index unset (0) while riv_number is numeric.
     // Use the greater of (max index) and (max numeric number) to avoid duplicate-key errors.
     if ($gDbType === 'pgsql') {
         $sql = "SELECT GREATEST(\n"
-        . "  COALESCE(MAX(biv_number_index), 0),\n"
-        . "  COALESCE(MAX(CASE WHEN biv_number ~ '^[0-9]+$' THEN CAST(biv_number AS INTEGER) ELSE 0 END), 0)\n"
+        . "  COALESCE(MAX(riv_number_index), 0),\n"
+        . "  COALESCE(MAX(CASE WHEN riv_number ~ '^[0-9]+\$' THEN CAST(riv_number AS INTEGER) ELSE 0 END), 0)\n"
         . ")\n"
-        . "FROM " . TBL_BL_INVOICES;
+        . "FROM " . TBL_RE_INVOICES . $orgFilter;
     } else {
         $sql = "SELECT GREATEST(\n"
-        . "  COALESCE(MAX(biv_number_index), 0),\n"
-        . "  COALESCE(MAX(CASE WHEN biv_number REGEXP '^[0-9]+$' THEN CAST(biv_number AS UNSIGNED) ELSE 0 END), 0)\n"
+        . "  COALESCE(MAX(riv_number_index), 0),\n"
+        . "  COALESCE(MAX(CASE WHEN riv_number REGEXP '^[0-9]+\$' THEN CAST(riv_number AS UNSIGNED) ELSE 0 END), 0)\n"
         . ")\n"
-        . "FROM " . TBL_BL_INVOICES;
+        . "FROM " . TBL_RE_INVOICES . $orgFilter;
     }
 
     $stmt = $gDb->query($sql);
@@ -1115,7 +1060,7 @@ function billingNextInvoiceNumberIndex(): int
     return $next > 0 ? $next : 1;
 }
 
-function billingFormatInvoiceNumber(int $index): string
+function residentsFormatInvoiceNumber(int $index): string
 {
     if ($index < 1) {
         $index = 1;
@@ -1123,14 +1068,14 @@ function billingFormatInvoiceNumber(int $index): string
     return (string)$index;
 }
 
-function billingBuildInvoicePreviewData(int $groupId, array $options = array()): array
+function residentsBuildInvoicePreviewData(int $groupId, array $options = array()): array
 {
-    global $gDb, $gSettingsManager;
+    global $gDb, $gSettingsManager, $gCurrentOrgId;
 
     $defaultStart = date('Y-m-01');
-    $startDate = billingResolveDate($options['start_date'] ?? '', $defaultStart);
-    $invoiceDate = billingResolveDate($options['invoice_date'] ?? '', date('Y-m-d'));
-    // Use invoice date as the reference for membership activity checks, so back-billing includes current active users
+    $startDate = residentsResolveDate($options['start_date'] ?? '', $defaultStart);
+    $invoiceDate = residentsResolveDate($options['invoice_date'] ?? '', date('Y-m-d'));
+    // Use invoice date as the reference for membership activity checks, so back-invoicing includes current active users
     $referenceDate = $invoiceDate;
     $note = trim((string)($options['note'] ?? ''));
     $userFilterId = isset($options['user_id']) ? (int)$options['user_id'] : 0;
@@ -1143,58 +1088,43 @@ function billingBuildInvoicePreviewData(int $groupId, array $options = array()):
         $currencyLabel = 'USD';
     }
 
-    $chargeDefinitions = billingFetchChargeDefinitions();
-    $roleFilter = array();
-    $hasGlobalCharges = false;
-    foreach ($chargeDefinitions as $chargeDef) {
-        $roleIds = $chargeDef['role_ids'];
-        if (empty($roleIds)) {
-            $hasGlobalCharges = true;
-    } else {
-            foreach ($roleIds as $rid) {
-                $roleFilter[$rid] = $rid;
-            }
-    }
-    }
+    $chargeDefinitions = residentsFetchChargeDefinitions();
 
     $users = array();
     if ($userFilterId > 0) {
         $users[] = $userFilterId;
     } else {
-        $params = array($referenceDate, $referenceDate);
         if ($groupId > 0) {
+            // Filter users by organization and specific group
             $sql = 'SELECT DISTINCT u.usr_id FROM ' . TBL_USERS . ' u
                     INNER JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id
                     INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = true
+                    INNER JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)
                     WHERE u.usr_valid = true
-            AND m.mem_begin <= ?
-            AND (m.mem_end IS NULL OR m.mem_end >= ?)
-            AND m.mem_rol_id = ?
-                    ORDER BY u.usr_id';
-            $params[] = (int)$groupId;
-    } elseif (!empty($roleFilter) && !$hasGlobalCharges) {
-            $placeholders = implode(',', array_fill(0, count($roleFilter), '?'));
-            $sql = 'SELECT DISTINCT m.mem_usr_id AS usr_id
-        FROM ' . TBL_MEMBERS . ' m
-                    INNER JOIN ' . TBL_USERS . ' u ON u.usr_id = m.mem_usr_id
-                    INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = true
-                WHERE u.usr_valid = true
                     AND m.mem_begin <= ?
                     AND (m.mem_end IS NULL OR m.mem_end >= ?)
-                    AND m.mem_rol_id IN (' . $placeholders . ')
-            ORDER BY m.mem_usr_id';
-            $params = array_merge($params, array_values($roleFilter));
-    } else {
-            $sql = 'SELECT DISTINCT u.usr_id FROM ' . TBL_USERS . ' u WHERE u.usr_valid = true ORDER BY u.usr_id';
-            $params = array();
-    }
+                    AND m.mem_rol_id = ?
+                    ORDER BY u.usr_id';
+            $params = array((int)$gCurrentOrgId, $referenceDate, $referenceDate, (int)$groupId);
+        } else {
+            // Filter all valid users by organization membership
+            $sql = 'SELECT DISTINCT u.usr_id FROM ' . TBL_USERS . ' u
+                    INNER JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id
+                    INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = true
+                    INNER JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)
+                    WHERE u.usr_valid = true
+                    AND m.mem_begin <= ?
+                    AND (m.mem_end IS NULL OR m.mem_end >= ?)
+                    ORDER BY u.usr_id';
+            $params = array((int)$gCurrentOrgId, $referenceDate, $referenceDate);
+        }
 
         $stmt = $gDb->queryPrepared($sql, $params);
         if ($stmt !== false) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $users[] = (int)($row['usr_id'] ?? 0);
             }
-    }
+        }
     }
 
     if (empty($users) || empty($chargeDefinitions)) {
@@ -1213,19 +1143,19 @@ function billingBuildInvoicePreviewData(int $groupId, array $options = array()):
         );
     }
 
-    $roleMap = billingFetchUserRoleMap($users, $referenceDate);
+    $roleMap = residentsFetchUserRoleMap($users, $referenceDate);
     $rows = array();
     $includedUsers = array();
     $totalAmount = 0.0;
     $summaryEndDate = $startDate;
-    $cfg = billingReadConfig();
+    $cfg = residentsReadConfig();
     $dueDays = (int)($cfg['defaults']['due_days'] ?? 15);
     if ($dueDays <= 0) { $dueDays = 15; }
     $dueDate = date('Y-m-d', strtotime($invoiceDate . ' +' . $dueDays . ' days'));
 
     foreach ($users as $uid) {
         $userRoles = $roleMap[$uid] ?? array();
-        $matches = billingFilterChargesForUser($chargeDefinitions, $userRoles, $groupId > 0 ? $groupId : null);
+        $matches = residentsFilterChargesForUser($chargeDefinitions, $userRoles, $groupId > 0 ? $groupId : null);
         if (empty($matches)) {
             continue;
     }
@@ -1272,7 +1202,7 @@ function billingBuildInvoicePreviewData(int $groupId, array $options = array()):
         $summaryEndDate = $coverageEnd;
     }
 
-        $displayName = billingFetchUserNameById($uid);
+        $displayName = residentsFetchUserNameById($uid);
         $includedUsers[] = $uid;
         $totalAmount += $userTotal;
 
@@ -1308,7 +1238,7 @@ function billingBuildInvoicePreviewData(int $groupId, array $options = array()):
 /**
     * Get payment status code from status string
     */
-function billingGetPaymentStatus(string $status): string
+function residentsGetPaymentStatus(string $status): string
 {
     global $gL10n;
     $status = trim($status);
@@ -1320,13 +1250,13 @@ function billingGetPaymentStatus(string $status): string
 
     $s = strtolower($status);
     
-    if ($s === strtolower($gL10n->get('BL_STATUS_INITIATED')) || $s === 'initiated') return 'IT';
-    if ($s === strtolower($gL10n->get('BL_STATUS_SUCCESS')) || $s === 'success' || $s === 'captured' || $s === 'authorised') return 'SU';
-    if ($s === strtolower($gL10n->get('BL_STATUS_FAILURE')) || $s === 'failure' || $s === 'failed') return 'FA';
-    if ($s === strtolower($gL10n->get('BL_STATUS_TIMEOUT')) || $s === 'timeout') return 'TO';
-    if ($s === strtolower($gL10n->get('BL_STATUS_INVALID')) || $s === 'invalid') return 'IV';
-    if ($s === strtolower($gL10n->get('BL_STATUS_TERMINATE')) || $s === 'terminate') return 'TE';
-    if ($s === strtolower($gL10n->get('BL_STATUS_ABORTED')) || $s === 'aborted') return 'AB';
+    if ($s === strtolower($gL10n->get('RE_STATUS_INITIATED')) || $s === 'initiated') return 'IT';
+    if ($s === strtolower($gL10n->get('RE_STATUS_SUCCESS')) || $s === 'success' || $s === 'captured' || $s === 'authorised') return 'SU';
+    if ($s === strtolower($gL10n->get('RE_STATUS_FAILURE')) || $s === 'failure' || $s === 'failed') return 'FA';
+    if ($s === strtolower($gL10n->get('RE_STATUS_TIMEOUT')) || $s === 'timeout') return 'TO';
+    if ($s === strtolower($gL10n->get('RE_STATUS_INVALID')) || $s === 'invalid') return 'IV';
+    if ($s === strtolower($gL10n->get('RE_STATUS_TERMINATE')) || $s === 'terminate') return 'TE';
+    if ($s === strtolower($gL10n->get('RE_STATUS_ABORTED')) || $s === 'aborted') return 'AB';
 
     return 'IV';
 }
@@ -1334,17 +1264,17 @@ function billingGetPaymentStatus(string $status): string
 /**
     * Get localized payment status label from code
     */
-function billingGetPaymentStatusLabel(string $code): string
+function residentsGetPaymentStatusLabel(string $code): string
 {
     global $gL10n;
     switch ($code) {
-        case 'IT': return $gL10n->get('BL_STATUS_INITIATED');
-        case 'SU': return $gL10n->get('BL_STATUS_SUCCESS');
-        case 'FA': return $gL10n->get('BL_STATUS_FAILURE');
-        case 'TO': return $gL10n->get('BL_STATUS_TIMEOUT');
-        case 'IV': return $gL10n->get('BL_STATUS_INVALID');
-        case 'TE': return $gL10n->get('BL_STATUS_TERMINATE');
-        case 'AB': return $gL10n->get('BL_STATUS_ABORTED');
+        case 'IT': return $gL10n->get('RE_STATUS_INITIATED');
+        case 'SU': return $gL10n->get('RE_STATUS_SUCCESS');
+        case 'FA': return $gL10n->get('RE_STATUS_FAILURE');
+        case 'TO': return $gL10n->get('RE_STATUS_TIMEOUT');
+        case 'IV': return $gL10n->get('RE_STATUS_INVALID');
+        case 'TE': return $gL10n->get('RE_STATUS_TERMINATE');
+        case 'AB': return $gL10n->get('RE_STATUS_ABORTED');
         default: return $code;
     }
 }
@@ -1353,7 +1283,7 @@ function billingGetPaymentStatusLabel(string $code): string
     * Fetch user address details from profile fields.
     * Returns array with keys: address, city, state, zip, country, tel, email, name
     */
-function billingGetUserAddress(int $userId): array
+function residentsGetUserAddress(int $userId): array
 {
     global $gDb, $gProfileFields, $gCurrentUser;
 
@@ -1397,16 +1327,16 @@ function billingGetUserAddress(int $userId): array
 /**
     * Check for timed out payments (Initiated > 15 mins ago) and update status to TO.
     */
-function billingCheckPaymentTimeouts(): void
+function residentsCheckPaymentTimeouts(): void
 {
     global $gDb;
     $timeoutMinutes = 15;
     $timeoutDate = date('Y-m-d H:i:s', strtotime("-{$timeoutMinutes} minutes"));
     
-    // Update TBL_BL_TRANS
-    $updateTimeoutSql = 'UPDATE ' . TBL_BL_TRANS . ' 
-                            SET btr_status = ? 
-                            WHERE btr_status = ? AND btr_timestamp_create < ?';
+    // Update TBL_RE_TRANS
+    $updateTimeoutSql = 'UPDATE ' . TBL_RE_TRANS . ' 
+                            SET rtr_status = ? 
+                            WHERE rtr_status = ? AND rtr_timestamp_create < ?';
                          
     // Never allow a background maintenance update to trigger the SQL error page.
     $gDb->queryPrepared($updateTimeoutSql, array('TO', 'IT', $timeoutDate), false);
@@ -1415,34 +1345,94 @@ function billingCheckPaymentTimeouts(): void
 /**
     * Get total amount for an invoice as float.
     */
-function billingGetInvoiceTotalAmount(int $invId): float
+function residentsGetInvoiceTotalAmount(int $invId): float
 {
-    $totals = billingGetInvoiceTotals($invId);
+    $totals = residentsGetInvoiceTotals($invId);
     return (float)$totals['amount'];
 }
 
 function validateApiKey(): User
 {
-    global $gDb, $gCurrentUserId, $gProfileFields;
+    global $gDb, $gCurrentUserId, $gProfileFields, $gCurrentOrgId, $gCurrentOrganization, $gSettingsManager, $gCurrentSession;
 
-    if (!tableExistsBILL(TBL_BL_DEVICES)) {
-        http_response_code(503);
-        echo json_encode(['error' => 'Devices table not found. Please run the residents plugin installation first.']);
-        exit();
-    }
+    $getRequestedOrgId = function (): int {
+        $headers = function_exists('getallheaders') ? getallheaders() : array();
+
+        $candidates = array();
+        foreach ($headers as $headerName => $headerValue) {
+            $name = strtolower((string) $headerName);
+            if ($name === 'org_id') {
+                $candidates[] = (string) $headerValue;
+            }
+        }
+
+        if (isset($_SERVER['HTTP_ORG_ID'])) {
+            $candidates[] = (string) $_SERVER['HTTP_ORG_ID'];
+        }
+
+        if (isset($_GET['org_id'])) {
+            $candidates[] = (string) $_GET['org_id'];
+        }
+        if (isset($_POST['org_id'])) {
+            $candidates[] = (string) $_POST['org_id'];
+        }
+
+        foreach ($candidates as $raw) {
+            $raw = trim((string) $raw);
+            if ($raw === '') {
+                continue;
+            }
+            $id = (int) $raw;
+            if ($id > 0) {
+                return $id;
+            }
+        }
+
+        return 0;
+    };
+
+    $applyOrgContext = function (int $orgId) use ($gDb, &$gCurrentOrgId, &$gCurrentOrganization, &$gSettingsManager, &$gCurrentSession, &$gProfileFields): void {
+        if ($orgId <= 0) {
+            return;
+        }
+
+        $gCurrentOrgId = $orgId;
+
+        if (class_exists('Organization')) {
+            $gCurrentOrganization = new Organization($gDb, $orgId);
+            $gSettingsManager =& $gCurrentOrganization->getSettingsManager();
+            if (isset($gCurrentSession) && is_object($gCurrentSession)) {
+                $gCurrentSession->setValue('ses_org_id', $orgId);
+            }
+        }
+
+        if (class_exists('ProfileFields')) {
+            $gProfileFields = new ProfileFields($gDb, $orgId);
+            if (isset($gCurrentSession) && is_object($gCurrentSession)) {
+                $gCurrentSession->addObject('gProfileFields', $gProfileFields);
+            }
+        }
+    };
 
     $headers = function_exists('getallheaders') ? getallheaders() : array();
     $apiKey = null;
     foreach ($headers as $headerName => $headerValue) {
-            if (strcasecmp((string) $headerName, 'api_key') === 0 ||
-        strcasecmp((string) $headerName, 'apikey') === 0 || strcasecmp((string) $headerName, 'api-key') === 0) {
-                    $apiKey = trim((string) $headerValue);
-                    break;
-            }
+        if (strcasecmp((string) $headerName, 'api_key') === 0) {
+            $apiKey = trim((string) $headerValue);
+            break;
+        }
     }
 
     if ($apiKey === null && isset($_SERVER['HTTP_API_KEY'])) {
-            $apiKey = trim((string) $_SERVER['HTTP_API_KEY']);
+        $apiKey = trim((string) $_SERVER['HTTP_API_KEY']);
+    }
+
+    if ($apiKey === null && isset($_GET['api_key'])) {
+        $apiKey = trim((string) $_GET['api_key']);
+    }
+
+    if ($apiKey === null && isset($_POST['api_key'])) {
+        $apiKey = trim((string) $_POST['api_key']);
     }
 
     if ($apiKey === null || $apiKey === '') {
@@ -1451,14 +1441,20 @@ function validateApiKey(): User
             exit();
     }
 
-    // Ensure API key belongs to an approved device and a valid (enabled) user.
-    $sql = 'SELECT d.bde_usr_id, d.bde_is_active
-            FROM ' . TBL_BL_DEVICES . ' d
-            JOIN ' . TBL_USERS . ' u ON u.usr_id = d.bde_usr_id
-            WHERE d.bde_api_key = ?
-                AND u.usr_valid = true
+    $requestedOrgId = $getRequestedOrgId();
+    $orgFilter = ($requestedOrgId > 0) ? ' AND d.rde_org_id = ?' : '';
+    $params = array($apiKey);
+    if ($requestedOrgId > 0) {
+        $params[] = $requestedOrgId;
+    }
+    
+    $sql = 'SELECT d.rde_usr_id, d.rde_is_active, d.rde_org_id
+            FROM ' . TBL_RE_DEVICES . ' d
+            JOIN ' . TBL_USERS . ' u ON u.usr_id = d.rde_usr_id
+            WHERE d.rde_api_key = ?
+                AND u.usr_valid = true' . $orgFilter . '
             LIMIT 1';
-    $row = $gDb->queryPrepared($sql, array($apiKey), false);
+    $row = $gDb->queryPrepared($sql, $params, false);
     if ($row === false) {
         http_response_code(500);
         echo json_encode(['error' => 'Database error']);
@@ -1472,7 +1468,18 @@ function validateApiKey(): User
             exit();
     }
 
-    if (!(bool) $deviceRecord['bde_is_active']) {
+    $deviceOrgId = (int) ($deviceRecord['rde_org_id'] ?? 0);
+    if ($requestedOrgId > 0 && $deviceOrgId > 0 && $deviceOrgId !== $requestedOrgId) {
+        http_response_code(403);
+        echo json_encode(['error' => 'API key is invalid']);
+        exit();
+    }
+
+    if ($deviceOrgId > 0) {
+        $applyOrgContext($deviceOrgId);
+    }
+
+    if (!(bool) $deviceRecord['rde_is_active']) {
             http_response_code(403);
             echo json_encode([
         'status' => 'pending',
@@ -1481,7 +1488,7 @@ function validateApiKey(): User
             exit();
     }
 
-    $userId = (int) $deviceRecord['bde_usr_id'];
+    $userId = (int) $deviceRecord['rde_usr_id'];
     $user = new User($gDb, $gProfileFields, $userId);
 
     if ($userId <= 0 || (int) $user->getValue('usr_id') !== $userId) {

@@ -139,22 +139,24 @@ function encodeProfileImage(string $binary): array
     ];
 }
 
-$sqlUsers = 'SELECT usr_id, usr_login_name, usr_photo FROM ' . TBL_USERS . ' WHERE usr_valid = true';
-
-if ($userId) {
-    $sqlUsers .= ' AND usr_id = ' . (int)$userId;
-}
-
-$users = $gDb->queryPrepared($sqlUsers, array(), false);
-if ($users === false) {
-    admidioApiError('Database error', 500);
-}
 $contact = (object)[];
 
-$row = $users->fetch();
-if($row){
-    $user = new User($gDb, $gProfileFields);
-    $user->readDataById($row['usr_id']);
+$requestedId = (int) $userId;
+if ($requestedId <= 0) {
+    admidioApiError('Contact identifier missing', 400);
+}
+
+$user = new User($gDb, $gProfileFields);
+$user->readDataById($requestedId);
+if ((int) $user->getValue('usr_id') <= 0) {
+    admidioApiError('Contact not found', 404);
+}
+
+// Enforce org membership to avoid cross-org access by ID
+if (!isMemberOfOrganization($user)) {
+    admidioApiError('Contact not found', 404);
+}
+
     $profileBinary = '';
     if ((int) $gSettingsManager->get('profile_photo_storage') === 0) {
         $usr_photo = $user->getValue('usr_photo');
@@ -173,7 +175,7 @@ if($row){
 
     $sections = buildProfileSections($currentUser, $user, $gProfileFields);
     $contact = [
-    'id'            => $row['usr_id'],
+    'id'            => (int) $user->getValue('usr_id'),
     'login'         => $user->getValue('usr_login_name'),
     'first_name'    => $user->getValue('FIRST_NAME'),
     'last_name'     => $user->getValue('LAST_NAME'),
@@ -192,6 +194,6 @@ if($row){
     'profile_has_image' => $encodedProfile['profile_has_image'],
     'sections'           => $sections
     ];
-}
+
 
 echo json_encode([ 'contact' => $contact ]);

@@ -15,12 +15,12 @@ require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
 global $gDb, $gProfileFields, $gCurrentUser, $gL10n, $gSettingsManager;
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
-$isAdmin = isBillingAdminBySettings();
+$isAdmin = isResidentsAdminBySettings();
 if (!$isAdmin) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
@@ -31,9 +31,9 @@ if ($id > 0 && $invoice->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 if ($id > 0) {
-    $isPaidExisting = (int)$invoice->getValue('biv_is_paid') === 1;
+    $isPaidExisting = (int)$invoice->getValue('riv_is_paid') === 1;
     if ($isPaidExisting) {
-        $gMessage->show($gL10n->get('BL_INVOICE_ALREADY_PAID'));
+        $gMessage->show($gL10n->get('RE_INVOICE_ALREADY_PAID'));
     }
 }
 
@@ -43,10 +43,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'owner_charge') {
     $ownerIdAjax = admFuncVariableIsValid($_GET, 'owner_id', 'int');
     $currencyAjax = isset($gSettingsManager) ? (string)$gSettingsManager->getString('system_currency') : '';
 
-    $chargeDefinitionsAjax = billingFetchChargeDefinitions();
+    $chargeDefinitionsAjax = residentsFetchChargeDefinitions();
     $activeRoleIds = array();
     if ($ownerIdAjax > 0) {
-        $activeRoleIds = billingGetActiveRoleIdsForUser((int)$ownerIdAjax);
+        $activeRoleIds = residentsGetActiveRoleIdsForUser((int)$ownerIdAjax);
     }
 
     $allowedDefs = array();
@@ -104,8 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $gMessage->show($e->getMessage());
     }
 
-    $postedId = (int)($_POST['biv_id'] ?? 0);
-    if ($postedId !== (int)$invoice->getValue('biv_id')) {
+    $postedId = (int)($_POST['riv_id'] ?? 0);
+    if ($postedId !== (int)$invoice->getValue('riv_id')) {
         $invoice = new TableResidentsInvoice($gDb, $postedId);
         if ($postedId > 0 && $invoice->isNewRecord()) {
             $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
@@ -114,14 +114,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Do not allow changing invoice owner once the invoice exists
     if ($invoice->isNewRecord()) {
-        $ownerId = (int)($_POST['biv_usr_id'] ?? $gCurrentUser->getValue('usr_id'));
+        $ownerId = (int)($_POST['riv_usr_id'] ?? $gCurrentUser->getValue('usr_id'));
     } else {
-        $ownerId = (int)$invoice->getValue('biv_usr_id');
+        $ownerId = (int)$invoice->getValue('riv_usr_id');
     }
 
     // Validate owner and at least one invoice item
-    $chgIdsV = $_POST['bii_chg_id'] ?? array();
-    $amtsV = $_POST['bii_amount'] ?? array();
+    $chgIdsV = $_POST['rii_chg_id'] ?? array();
+    $amtsV = $_POST['rii_amount'] ?? array();
     $hasItem = false;
     $cntV = max(count($chgIdsV), count($amtsV));
     for ($vi = 0; $vi < $cntV; $vi++) {
@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     }
     if ($ownerId <= 0 || !$hasItem) {
-        $gMessage->show($gL10n->get('BL_VALIDATION_OWNER_AND_ITEM'));
+        $gMessage->show($gL10n->get('RE_VALIDATION_OWNER_AND_ITEM'));
     }
 
     // Validate that all charge amounts are greater than zero
@@ -142,31 +142,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($amtVal !== '') {
             $amtNum = (float)$amtVal;
             if ($amtNum <= 0) {
-                $gMessage->show($gL10n->get('BL_VALIDATION_AMOUNT_POSITIVE'));
+                $gMessage->show($gL10n->get('RE_VALIDATION_AMOUNT_POSITIVE'));
             }
     }
     }
 
     // Validate required date fields
-    $invoiceDatePost = trim((string)($_POST['biv_date'] ?? ''));
-    $startDatePost = trim((string)($_POST['biv_start_date'] ?? ''));
-    $endDatePost = trim((string)($_POST['biv_end_date'] ?? ''));
+    $invoiceDatePost = trim((string)($_POST['riv_date'] ?? ''));
+    $startDatePost = trim((string)($_POST['riv_start_date'] ?? ''));
+    $endDatePost = trim((string)($_POST['riv_end_date'] ?? ''));
     if ($invoiceDatePost === '' || $startDatePost === '' || $endDatePost === '') {
-        $gMessage->show($gL10n->get('SYS_FIELD_EMPTY', array($gL10n->get('BL_DATE') . ', ' . $gL10n->get('BL_START_DATE') . ', ' . $gL10n->get('BL_END_DATE'))));
+        $gMessage->show($gL10n->get('SYS_FIELD_EMPTY', array($gL10n->get('RE_DATE') . ', ' . $gL10n->get('RE_START_DATE') . ', ' . $gL10n->get('RE_END_DATE'))));
     }
 
     // Numbering: generate next if creating and number empty
-    $number = trim((string)($_POST['biv_number'] ?? ''));
+    $number = trim((string)($_POST['riv_number'] ?? ''));
     if ($invoice->isNewRecord() && $number === '') {
-        $cfg = billingReadConfig();
+        $cfg = residentsReadConfig();
         $last = (int)($cfg['numbering']['last_number'] ?? 0);
         $try = $last + 1;
         while (true) {
             // NOTE: PDO::rowCount() is not reliable for SELECT (especially on MySQL).
             // Use fetchColumn() to detect an existing row.
+            // Filter by org_id since invoice numbers are unique per organization
             $st = $gDb->queryPrepared(
-        'SELECT 1 FROM ' . TBL_BL_INVOICES . ' WHERE biv_number = ? LIMIT 1',
-        array((string)$try),
+        'SELECT 1 FROM ' . TBL_RE_INVOICES . ' WHERE riv_org_id = ? AND riv_number = ? LIMIT 1',
+        array($gCurrentOrgId, (string)$try),
         false
             );
             $exists = ($st !== false && $st->fetchColumn() !== false);
@@ -178,14 +179,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $number = (string)$try;
         // Persist new last_number
         $cfg['numbering']['last_number'] = $try;
-        billingWriteConfig($cfg);
+        residentsWriteConfig($cfg);
     }
 
     // Validate uniqueness of invoice number (prevents Database->showError on duplicate key)
+    // Filter by org_id since invoice numbers are unique per organization
     if (!$hasSaveError && $number !== '') {
         $dupStmt = $gDb->queryPrepared(
-            'SELECT biv_id FROM ' . TBL_BL_INVOICES . ' WHERE biv_number = ? LIMIT 1',
-            array((string)$number),
+            'SELECT riv_id FROM ' . TBL_RE_INVOICES . ' WHERE riv_org_id = ? AND riv_number = ? LIMIT 1',
+            array($gCurrentOrgId, (string)$number),
             false
         );
         if ($dupStmt === false) {
@@ -193,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $inlineErrorMessage = $gL10n->get('SYS_DATABASE_ERROR');
     } else {
             $dupId = (int)$dupStmt->fetchColumn();
-            $currentId = (int)$invoice->getValue('biv_id');
+            $currentId = (int)$invoice->getValue('riv_id');
             if ($dupId > 0 && ($invoice->isNewRecord() || $dupId !== $currentId)) {
                 $hasSaveError = true;
                 $inlineErrorMessage = 'Invoice number already exists. Please choose another number.';
@@ -201,30 +203,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     }
 
-    $invoice->setValue('biv_number', $number);
+    $invoice->setValue('riv_number', $number);
 
     if ($invoice->isNewRecord()) {
         // Required (NOT NULL) on many installs; also used for sorting.
-        $invoice->setValue('biv_number_index', billingNextInvoiceNumberIndex());
+        $invoice->setValue('riv_number_index', residentsNextInvoiceNumberIndex());
+        $invoice->setValue('riv_org_id', $gCurrentOrgId);
     }
 
-    $invoiceDatePost = (string)($_POST['biv_date'] ?? '');
-    $invoice->setValue('biv_date', $invoiceDatePost);
-    $invoice->setValue('biv_usr_id', $ownerId);
-    $invoice->setValue('biv_start_date', (string)($_POST['biv_start_date'] ?? null));
-    $invoice->setValue('biv_end_date', (string)($_POST['biv_end_date'] ?? null));
-    $postedDue = (string)($_POST['biv_due_date'] ?? '');
+    $invoiceDatePost = (string)($_POST['riv_date'] ?? '');
+    $invoice->setValue('riv_date', $invoiceDatePost);
+    $invoice->setValue('riv_usr_id', $ownerId);
+    $invoice->setValue('riv_start_date', (string)($_POST['riv_start_date'] ?? null));
+    $invoice->setValue('riv_end_date', (string)($_POST['riv_end_date'] ?? null));
+    $postedDue = (string)($_POST['riv_due_date'] ?? '');
     if ($postedDue === '') {
-        $cfgTmp = billingReadConfig();
+        $cfgTmp = residentsReadConfig();
         $dueDaysCfg = (int)($cfgTmp['defaults']['due_days'] ?? 15);
         if ($dueDaysCfg <= 0) { $dueDaysCfg = 15; }
         $baseDate = $invoiceDatePost !== '' ? $invoiceDatePost : date('Y-m-d');
         $computedDue = date('Y-m-d', strtotime($baseDate . ' +' . $dueDaysCfg . ' days'));
-        $invoice->setValue('biv_due_date', $computedDue);
+        $invoice->setValue('riv_due_date', $computedDue);
     } else {
-        $invoice->setValue('biv_due_date', $postedDue);
+        $invoice->setValue('riv_due_date', $postedDue);
     }
-    $invoice->setValue('biv_notes', (string)($_POST['biv_notes'] ?? ''));
+    $invoice->setValue('riv_notes', (string)($_POST['riv_notes'] ?? ''));
 
     if (!$hasSaveError) {
         try {
@@ -238,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $saveOk = false;
     }
 
-    $invoiceId = (int)$invoice->getValue('biv_id');
+    $invoiceId = (int)$invoice->getValue('riv_id');
     // TableAccess::save() returns false if no invoice header fields changed.
     // That is NOT an error for editing items on an existing invoice.
     // Only treat it as an error if we don't have a valid invoice id.
@@ -249,20 +252,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     }
 
-    $chgIds = $_POST['bii_chg_id'] ?? array();
-    $startDates = $_POST['bii_start_date'] ?? array();
-    $endDates = $_POST['bii_end_date'] ?? array();
-    $types = $_POST['bii_type'] ?? array();
-    $currs = $_POST['bii_currency'] ?? array();
-    $rates = $_POST['bii_rate'] ?? array();
-    $qtys = $_POST['bii_quantity'] ?? array();
-    $amts = $_POST['bii_amount'] ?? array();
+    $chgIds = $_POST['rii_chg_id'] ?? array();
+    $startDates = $_POST['rii_start_date'] ?? array();
+    $endDates = $_POST['rii_end_date'] ?? array();
+    $types = $_POST['rii_type'] ?? array();
+    $currs = $_POST['rii_currency'] ?? array();
+    $rates = $_POST['rii_rate'] ?? array();
+    $qtys = $_POST['rii_quantity'] ?? array();
+    $amts = $_POST['rii_amount'] ?? array();
     $count = max(count($chgIds), count($startDates), count($endDates), count($types), count($currs), count($rates), count($qtys), count($amts));
     $itemRows = array();
     $itemsFromPost = array();
 
     // Resolve posted charge ids to names (single source of truth is charges table)
-    $chargeDefinitionsForSave = billingFetchChargeDefinitions();
+    $chargeDefinitionsForSave = residentsFetchChargeDefinitions();
     $chargeNameById = array();
     foreach ($chargeDefinitionsForSave as $cd) {
         $cid = (int)($cd['id'] ?? 0);
@@ -287,15 +290,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         $itemsFromPost[] = array(
-            'bii_chg_id' => $chargeId,
-            'bii_name' => $chargeName,
-            'bii_start_date' => $startDates[$i] ?? null,
-            'bii_end_date' => $endDates[$i] ?? null,
-            'bii_type' => $types[$i] ?? '',
-            'bii_currency' => $currs[$i] ?? '',
-            'bii_rate' => $rates[$i] ?? null,
-            'bii_quantity' => $qtys[$i] ?? null,
-            'bii_amount' => $amts[$i] ?? null
+            'rii_chg_id' => $chargeId,
+            'rii_name' => $chargeName,
+            'rii_start_date' => $startDates[$i] ?? null,
+            'rii_end_date' => $endDates[$i] ?? null,
+            'rii_type' => $types[$i] ?? '',
+            'rii_currency' => $currs[$i] ?? '',
+            'rii_rate' => $rates[$i] ?? null,
+            'rii_quantity' => $qtys[$i] ?? null,
+            'rii_amount' => $amts[$i] ?? null
         );
     }
 
@@ -309,24 +312,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$hasSaveError) {
-        admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/detail.php', array('id' => $invoiceId)));
+        admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/detail.php', array('id' => $invoiceId)));
     }
 }
 
 // GET: load data
 $row = array(
-    'biv_id' => (int)$invoice->getValue('biv_id'),
-    'biv_number' => (string)$invoice->getValue('biv_number'),
-    'biv_date' => (string)$invoice->getValue('biv_date'),
-    'biv_usr_id' => (int)($invoice->getValue('biv_usr_id') ?: $gCurrentUser->getValue('usr_id')),
-    'biv_start_date' => (string)$invoice->getValue('biv_start_date'),
-    'biv_end_date' => (string)$invoice->getValue('biv_end_date'),
-    'biv_due_date' => (string)$invoice->getValue('biv_due_date'),
-    'biv_notes' => (string)$invoice->getValue('biv_notes')
+    'riv_id' => (int)$invoice->getValue('riv_id'),
+    'riv_number' => (string)$invoice->getValue('riv_number'),
+    'riv_date' => (string)$invoice->getValue('riv_date'),
+    'riv_usr_id' => (int)($invoice->getValue('riv_usr_id') ?: $gCurrentUser->getValue('usr_id')),
+    'riv_start_date' => (string)$invoice->getValue('riv_start_date'),
+    'riv_end_date' => (string)$invoice->getValue('riv_end_date'),
+    'riv_due_date' => (string)$invoice->getValue('riv_due_date'),
+    'riv_notes' => (string)$invoice->getValue('riv_notes')
 );
 if ($invoice->isNewRecord()) {
-    $row['biv_id'] = 0;
-    $row['biv_usr_id'] = (int)$gCurrentUser->getValue('usr_id');
+    $row['riv_id'] = 0;
+    $row['riv_usr_id'] = (int)$gCurrentUser->getValue('usr_id');
 }
 
 $items = $invoice->isNewRecord() ? array() : $invoice->getItems();
@@ -334,22 +337,22 @@ if ($hasSaveError && is_array($itemsFromPost)) {
     $items = $itemsFromPost;
 }
 
-$page = new HtmlPage('bl-residents-edit', $gL10n->get('BL_TITLE'));
-$page->setHeadline($gL10n->get('BL_TAB_INVOICES'));
-billingEnqueueStyles($page);
+$page = new HtmlPage('bl-residents-edit', $gL10n->get('RE_TITLE'));
+$page->setHeadline($gL10n->get('RE_TAB_INVOICES'));
+residentsEnqueueStyles($page);
 
-$cfg = billingReadConfig();
+$cfg = residentsReadConfig();
 $ownerGroupId = (int)($cfg['owners']['group_id'] ?? 0);
-$users = billingGetOwnerOptions($ownerGroupId);
+$users = residentsGetOwnerOptions($ownerGroupId);
 
 // For existing invoices, ensure the invoice owner is in the dropdown even if they are now a "Former" user
-if (!$invoice->isNewRecord() && !empty($row['biv_usr_id'])) {
-    billingEnsureUserInOptions($users, (int)$row['biv_usr_id']);
+if (!$invoice->isNewRecord() && !empty($row['riv_usr_id'])) {
+    residentsEnsureUserInOptions($users, (int)$row['riv_usr_id']);
 }
 
 $ownerDetails = array();
-if (!empty($row['biv_usr_id'])) {
-    $ownerDetails = billingGetUserAddress((int)$row['biv_usr_id']);
+if (!empty($row['riv_usr_id'])) {
+    $ownerDetails = residentsGetUserAddress((int)$row['riv_usr_id']);
     if (!empty($ownerDetails['name'])) {
         $ownerDetails['name'] = ucwords((string)$ownerDetails['name']);
     }
@@ -357,14 +360,14 @@ if (!empty($row['biv_usr_id'])) {
 
 
 $isNewInvoice = $invoice->isNewRecord();
-$chargeDefinitions = billingFetchChargeDefinitions();
+$chargeDefinitions = residentsFetchChargeDefinitions();
 
 // Filter charge definitions for the currently selected owner
 $chargeDefinitionsForOwner = $chargeDefinitions;
 {
     $activeRoleIdsForOwner = array();
-    if (!empty($row['biv_usr_id'])) {
-        $activeRoleIdsForOwner = billingGetActiveRoleIdsForUser((int)$row['biv_usr_id']);
+    if (!empty($row['riv_usr_id'])) {
+        $activeRoleIdsForOwner = residentsGetActiveRoleIdsForUser((int)$row['riv_usr_id']);
     }
     $chargeDefinitionsForOwner = array();
     foreach ($chargeDefinitions as $chargeDef) {
@@ -410,14 +413,14 @@ if ($isNewInvoice && !$isPost && is_array($items) && count($items) === 0 && coun
     }
         $chargeAmount = (float)($chargeDef['amount'] ?? 0.0);
         $items[] = array(
-            'bii_chg_id' => $chargeId,
-            'bii_name' => $chargeName,
-            'bii_start_date' => $todayIso,
-            'bii_end_date' => '',
-            'bii_currency' => $defaultCurrency,
-            'bii_rate' => number_format($chargeAmount, 2, '.', ''),
-            'bii_quantity' => '1',
-            'bii_amount' => number_format($chargeAmount, 2, '.', '')
+            'rii_chg_id' => $chargeId,
+            'rii_name' => $chargeName,
+            'rii_start_date' => $todayIso,
+            'rii_end_date' => '',
+            'rii_currency' => $defaultCurrency,
+            'rii_rate' => number_format($chargeAmount, 2, '.', ''),
+            'rii_quantity' => '1',
+            'rii_amount' => number_format($chargeAmount, 2, '.', '')
         );
     }
 }
@@ -426,30 +429,30 @@ $rowsCount = ($isNewInvoice && !$isPost) ? max(1, count($items)) : (count($items
 $currencyLabel = $gSettingsManager->getString('system_currency');
 $initialTotal = 0.0;
 foreach ($items as $item) {
-    $val = preg_replace('/[^0-9.,-]/', '', (string)($item['bii_amount'] ?? '0'));
+    $val = preg_replace('/[^0-9.,-]/', '', (string)($item['rii_amount'] ?? '0'));
     $initialTotal += (float)str_replace(',', '', $val);
-    if (!empty($item['bii_currency'])) {
-        $currencyLabel = (string)$item['bii_currency'];
+    if (!empty($item['rii_currency'])) {
+        $currencyLabel = (string)$item['rii_currency'];
     }
 }
 $initialTotalFormatted = number_format($initialTotal, 2, '.', ',');
 
-$formAction = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/edit.php');
+$formAction = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php');
 
 ob_start();
 ?>
 <style>
-    .billing-editor .card {
+    .re-editor .card {
         border: none;
         border-radius: 0.9rem;
         box-shadow: 0 12px 24px rgba(20, 24, 45, 0.08);
     }
 
-    .billing-editor .card+.card {
+    .re-editor .card+.card {
         margin-top: 1.5rem;
     }
 
-    .billing-editor .card-header {
+    .re-editor .card-header {
         border-bottom: none;
         background: transparent;
         font-weight: 600;
@@ -459,7 +462,7 @@ ob_start();
         color: #6c757d;
     }
 
-    .billing-editor .table thead th {
+    .re-editor .table thead th {
         font-size: .8rem;
         letter-spacing: .04em;
         text-transform: uppercase;
@@ -467,43 +470,43 @@ ob_start();
         border-bottom: 1px solid #eef2f7;
     }
 
-    .billing-editor .table td {
+    .re-editor .table td {
         vertical-align: middle;
     }
 
-    .billing-editor .form-label {
+    .re-editor .form-label {
         display: block;
         font-weight: 600;
         letter-spacing: .05em;
     }
 
-    .billing-editor .invoice-hero {
+    .re-editor .invoice-hero {
         background: #f6f8fb;
         color: #0f172a;
     }
 
-    .billing-editor .invoice-hero .form-label {
+    .re-editor .invoice-hero .form-label {
         color: #111827;
     }
 
-    .billing-editor .invoice-hero input,
-    .billing-editor .invoice-hero select {
+    .re-editor .invoice-hero input,
+    .re-editor .invoice-hero select {
         background: #fff;
         border: 1px solid rgba(15, 23, 42, 0.15);
         color: #0f172a;
     }
 
-    .billing-editor .invoice-hero select:disabled {
+    .re-editor .invoice-hero select:disabled {
         background: #eef2f7;
         cursor: not-allowed;
     }
 
     /* Uniform sizing for all visible inputs on this page (header + items) */
-    .billing-editor input.form-control:not([type="hidden"]),
-    .billing-editor select.form-control,
-    .billing-editor select.form-select,
-    .billing-editor textarea.form-control,
-    .billing-editor #billing-items-table .billing-end-date-label {
+    .re-editor input.form-control:not([type="hidden"]),
+    .re-editor select.form-control,
+    .re-editor select.form-select,
+    .re-editor textarea.form-control,
+    .re-editor #re-items-table .re-end-date-label {
         font-size: 1rem !important;
         line-height: 1.5 !important;
         padding: 0.5rem 0.75rem !important;
@@ -511,41 +514,41 @@ ob_start();
         box-sizing: border-box !important;
     }
 
-    .billing-editor #billing-items-table .billing-end-date-input {
+    .re-editor #re-items-table .re-end-date-input {
         /* Editable end date input styling */
     }
 
-    .billing-editor .invoice-hero input::placeholder {
+    .re-editor .invoice-hero input::placeholder {
         color: rgba(15, 23, 42, 0.45);
     }
 
-    .billing-editor .invoice-hero option {
+    .re-editor .invoice-hero option {
         color: #111;
     }
 
-    .billing-editor .invoice-hero .col-md-6 {
+    .re-editor .invoice-hero .col-md-6 {
         max-width: 25%;
     }
 
-    .billing-editor td.amount {
+    .re-editor td.amount {
         display: flex;
         align-items: center;
         justify-content: flex-end;
         gap: 0.5rem;
     }
 
-    .billing-editor .billing-amount-input {
+    .re-editor .re-amount-input {
         width: 10rem;
         max-width: 100%;
     }
 </style>
 
-<form id="billing_edit" class="billing-editor" method="post" action="<?php echo $formAction; ?>">
+<form id="re_edit" class="re-editor" method="post" action="<?php echo $formAction; ?>">
     <?php if (!empty($inlineErrorMessage)) : ?>
     <div class="alert alert-danger mb-4" role="alert"><?php echo $inlineErrorMessage; ?></div>
     <?php endif; ?>
     <div class="card invoice-hero mb-4">
-    <div class="card-header"><?php echo $gL10n->get('BL_USER'); ?></div>
+    <div class="card-header"><?php echo $gL10n->get('RE_USER'); ?></div>
     <div class="card-body">
             <?php if (!empty($ownerDetails)) : ?>
     <div class="mb-3">
@@ -565,18 +568,18 @@ ob_start();
     <div class="card-body">
             <div class="row g-4 align-items-center">
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('BL_NUMBER'); ?></label>
-                    <input class="form-control form-control-lg" name="biv_number" value="<?php echo htmlspecialchars((string)$row['biv_number']); ?>" maxlength="10" style="width: 50%;" />
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_NUMBER'); ?></label>
+                    <input class="form-control form-control-lg" name="riv_number" value="<?php echo htmlspecialchars((string)$row['riv_number']); ?>" maxlength="10" style="width: 50%;" />
     </div>
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('BL_USER'); ?></label>
-        <select class="form-control form-control-lg" name="biv_usr_id" id="biv_usr_id" <?php echo $isNewInvoice ? '' : 'disabled'; ?>>
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_USER'); ?></label>
+        <select class="form-control form-control-lg" name="riv_usr_id" id="riv_usr_id" <?php echo $isNewInvoice ? '' : 'disabled'; ?>>
             <?php foreach ($users as $uid => $uname) : ?>
-                            <option value="<?php echo (int)$uid; ?>" <?php echo ((int)$row['biv_usr_id'] === (int)$uid ? ' selected' : ''); ?>><?php echo htmlspecialchars((string)$uname); ?></option>
+                            <option value="<?php echo (int)$uid; ?>" <?php echo ((int)$row['riv_usr_id'] === (int)$uid ? ' selected' : ''); ?>><?php echo htmlspecialchars((string)$uname); ?></option>
             <?php endforeach; ?>
                     </select>
         <?php if (!$isNewInvoice) : ?>
-            <input type="hidden" name="biv_usr_id" value="<?php echo (int)$row['biv_usr_id']; ?>" />
+            <input type="hidden" name="riv_usr_id" value="<?php echo (int)$row['riv_usr_id']; ?>" />
         <?php endif; ?>
     </div>
             </div>
@@ -587,20 +590,20 @@ ob_start();
     <div class="card-body">
             <div class="row g-4">
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('BL_DATE'); ?> <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control form-control-lg" name="biv_date" value="<?php echo htmlspecialchars(billingFormatDateForInput((string)($row['biv_date'] ?? ''))); ?>" required />
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_DATE'); ?> <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control form-control-lg" name="riv_date" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($row['riv_date'] ?? ''))); ?>" required />
     </div>
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('BL_START_DATE'); ?> <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control form-control-lg" name="biv_start_date" value="<?php echo htmlspecialchars(billingFormatDateForInput((string)($row['biv_start_date'] ?? ''))); ?>" required />
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_START_DATE'); ?> <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control form-control-lg" name="riv_start_date" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($row['riv_start_date'] ?? ''))); ?>" required />
     </div>
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('BL_END_DATE'); ?> <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control form-control-lg" name="biv_end_date" value="<?php echo htmlspecialchars(billingFormatDateForInput((string)($row['biv_end_date'] ?? ''))); ?>" required />
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_END_DATE'); ?> <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control form-control-lg" name="riv_end_date" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($row['riv_end_date'] ?? ''))); ?>" required />
     </div>
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('BL_DUE_DATE'); ?></label>
-                    <input type="date" class="form-control form-control-lg" name="biv_due_date" value="<?php echo htmlspecialchars(billingFormatDateForInput((string)($row['biv_due_date'] ?? ''))); ?>" />
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_DUE_DATE'); ?></label>
+                    <input type="date" class="form-control form-control-lg" name="riv_due_date" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($row['riv_due_date'] ?? ''))); ?>" />
     </div>
             </div>
     </div>
@@ -608,33 +611,33 @@ ob_start();
 
     <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-            <span><?php echo $gL10n->get('BL_INVOICE_ITEMS'); ?></span>
-            <button type="button" class="btn btn-primary btn-sm" id="billing-add-item"><i class="fas fa-plus"></i> <?php echo $gL10n->get('BL_INVOICE_ITEMS'); ?></button>
+            <span><?php echo $gL10n->get('RE_INVOICE_ITEMS'); ?></span>
+            <button type="button" class="btn btn-primary btn-sm" id="re-add-item"><i class="fas fa-plus"></i> <?php echo $gL10n->get('RE_INVOICE_ITEMS'); ?></button>
     </div>
     <div class="card-body p-0">
             <div class="table-responsive">
-    <table class="table mb-0" id="billing-items-table">
+    <table class="table mb-0" id="re-items-table">
                     <thead>
             <tr>
                     <th style="width:30%"><?php echo $gL10n->get('SYS_NAME'); ?></th>
-                            <th style="width:17%"><?php echo $gL10n->get('BL_START_DATE'); ?></th>
-                            <th style="width:17%"><?php echo $gL10n->get('BL_END_DATE'); ?></th>
-                            <th class="text-end" style="width:30%"><?php echo $gL10n->get('BL_AMOUNT'); ?></th>
+                            <th style="width:17%"><?php echo $gL10n->get('RE_START_DATE'); ?></th>
+                            <th style="width:17%"><?php echo $gL10n->get('RE_END_DATE'); ?></th>
+                            <th class="text-end" style="width:30%"><?php echo $gL10n->get('RE_AMOUNT'); ?></th>
                             <th class="text-center" style="width:6%"></th>
             </tr>
                     </thead>
                     <tbody>
             <?php for ($i = 0; $i < $rowsCount; $i++) :
-            $it = $items[$i] ?? array('bii_chg_id' => 0, 'bii_name' => '', 'bii_start_date' => '', 'bii_end_date' => '', 'bii_currency' => '', 'bii_rate' => '', 'bii_quantity' => '', 'bii_amount' => '');
-                            $nameId = $i === 0 ? ' id="bii_name_0"' : '';
-                            $amountId = $i === 0 ? ' id="bii_amount_0"' : '';
-                    $endId = $i === 0 ? ' id="bii_end_date_0"' : '';
-                    $endLabelId = $i === 0 ? ' id="bii_end_date_label_0"' : '';
-                            $itemCurrency = trim((string)$it['bii_currency']) !== '' ? (string)$it['bii_currency'] : (string)$currencyLabel;
+            $it = $items[$i] ?? array('rii_chg_id' => 0, 'rii_name' => '', 'rii_start_date' => '', 'rii_end_date' => '', 'rii_currency' => '', 'rii_rate' => '', 'rii_quantity' => '', 'rii_amount' => '');
+                            $nameId = $i === 0 ? ' id="rii_name_0"' : '';
+                            $amountId = $i === 0 ? ' id="rii_amount_0"' : '';
+                    $endId = $i === 0 ? ' id="rii_end_date_0"' : '';
+                    $endLabelId = $i === 0 ? ' id="rii_end_date_label_0"' : '';
+                            $itemCurrency = trim((string)$it['rii_currency']) !== '' ? (string)$it['rii_currency'] : (string)$currencyLabel;
             ?>
                             <tr class="align-middle">
         <td>
-                    <select class="form-control form-control-sm billing-charge-select" name="bii_chg_id[]" <?php echo $nameId; ?>>
+                    <select class="form-control form-control-sm re-charge-select" name="rii_chg_id[]" <?php echo $nameId; ?>>
                 <?php if (count($chargeDefinitionsForOwner) === 0) : ?>
                     <option value="0" selected></option>
                 <?php else : ?>
@@ -643,26 +646,26 @@ ob_start();
                     $chargeName = (string)($chargeDef['name'] ?? '');
                     $chargeAmount = (string)number_format((float)($chargeDef['amount'] ?? 0.0), 2, '.', '');
                     $chargeMonths = (int)($chargeDef['period_months'] ?? 1);
-                    $selected = ((int)($it['bii_chg_id'] ?? 0) > 0 && (int)($it['bii_chg_id'] ?? 0) === $chargeId) ? ' selected' : '';
+                    $selected = ((int)($it['rii_chg_id'] ?? 0) > 0 && (int)($it['rii_chg_id'] ?? 0) === $chargeId) ? ' selected' : '';
         ?>
         <option value="<?php echo (int)$chargeId; ?>" data-name="<?php echo htmlspecialchars($chargeName); ?>" data-period-months="<?php echo (int)$chargeMonths; ?>" data-amount="<?php echo htmlspecialchars($chargeAmount); ?>"<?php echo $selected; ?>><?php echo htmlspecialchars($chargeName); ?></option>
                 <?php endforeach; ?>
                 <?php endif; ?>
                     </select>
         </td>
-                            <td><input type="date" class="form-control form-control-sm" name="bii_start_date[]" value="<?php echo htmlspecialchars(billingFormatDateForInput((string)($it['bii_start_date'] ?? ''))); ?>" /></td>
+                            <td><input type="date" class="form-control form-control-sm" name="rii_start_date[]" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($it['rii_start_date'] ?? ''))); ?>" /></td>
                     <td>
-                    <input type="date" class="form-control form-control-sm billing-end-date-input" name="bii_end_date[]"<?php echo $endId; ?> value="<?php echo htmlspecialchars(billingFormatDateForInput((string)($it['bii_end_date'] ?? ''))); ?>" />
+                    <input type="date" class="form-control form-control-sm re-end-date-input" name="rii_end_date[]"<?php echo $endId; ?> value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($it['rii_end_date'] ?? ''))); ?>" />
                     </td>
         <td class="amount">
-                                    <span class="billing-row-currency"><?php echo htmlspecialchars($itemCurrency); ?></span>
-                                    <input type="hidden" name="bii_currency[]" value="<?php echo htmlspecialchars((string)$itemCurrency); ?>" />
-                                    <input type="hidden" name="bii_quantity[]" value="<?php echo htmlspecialchars((string)$it['bii_quantity']); ?>" />
-                                    <input type="hidden" name="bii_rate[]" value="<?php echo htmlspecialchars((string)$it['bii_rate']); ?>" />
-                                    <input class="form-control form-control-sm text-end billing-amount-input" name="bii_amount[]" <?php echo $amountId; ?> value="<?php echo htmlspecialchars((string)$it['bii_amount']); ?>" />
+                                    <span class="re-row-currency"><?php echo htmlspecialchars($itemCurrency); ?></span>
+                                    <input type="hidden" name="rii_currency[]" value="<?php echo htmlspecialchars((string)$itemCurrency); ?>" />
+                                    <input type="hidden" name="rii_quantity[]" value="<?php echo htmlspecialchars((string)$it['rii_quantity']); ?>" />
+                                    <input type="hidden" name="rii_rate[]" value="<?php echo htmlspecialchars((string)$it['rii_rate']); ?>" />
+                                    <input class="form-control form-control-sm text-end re-amount-input" name="rii_amount[]" <?php echo $amountId; ?> value="<?php echo htmlspecialchars((string)$it['rii_amount']); ?>" />
         </td>
         <td class="text-center">
-                                    <button type="button" class="btn btn-link text-danger text-decoration-none billing-remove-row" title="<?php echo htmlspecialchars($gL10n->get('SYS_DELETE')); ?>">
+                                    <button type="button" class="btn btn-link text-danger text-decoration-none re-remove-row" title="<?php echo htmlspecialchars($gL10n->get('SYS_DELETE')); ?>">
                     <i class="fas fa-times"></i>
                                     </button>
         </td>
@@ -676,22 +679,22 @@ ob_start();
             <div class="text-muted small">Click "+" to insert more rows.</div>
             <div class="ms-auto text-end">
     <div class="text-muted small">Estimated total</div>
-    <div class="fs-4 fw-semibold"><span id="billing-total-currency"><?php echo htmlspecialchars((string)$currencyLabel); ?></span> <span id="billing-total-value"><?php echo htmlspecialchars($initialTotalFormatted); ?></span></div>
+    <div class="fs-4 fw-semibold"><span id="re-total-currency"><?php echo htmlspecialchars((string)$currencyLabel); ?></span> <span id="re-total-value"><?php echo htmlspecialchars($initialTotalFormatted); ?></span></div>
             </div>
     </div>
     </div>
 
     <div class="card mt-4">
-    <div class="card-header"><?php echo $gL10n->get('BL_NOTES'); ?></div>
+    <div class="card-header"><?php echo $gL10n->get('RE_NOTES'); ?></div>
     <div class="card-body">
-            <textarea class="form-control" name="biv_notes" rows="6" style="min-height: 140px;" placeholder="Add note for this invoice..."><?php echo htmlspecialchars((string)$row['biv_notes']); ?></textarea>
+            <textarea class="form-control" name="riv_notes" rows="6" style="min-height: 140px;" placeholder="Add note for this invoice..."><?php echo htmlspecialchars((string)$row['riv_notes']); ?></textarea>
     </div>
     </div>
 
-    <template id="billing-row-template">
+    <template id="re-row-template">
     <tr class="align-middle">
             <td>
-        <select class="form-control form-control-sm billing-charge-select" name="bii_chg_id[]">
+        <select class="form-control form-control-sm re-charge-select" name="rii_chg_id[]">
                     <?php if (count($chargeDefinitionsForOwner) === 0) : ?>
             <option value="0" selected></option>
                     <?php else : ?>
@@ -706,29 +709,29 @@ ob_start();
                     <?php endif; ?>
         </select>
             </td>
-            <td><input type="date" class="form-control form-control-sm" name="bii_start_date[]" /></td>
+            <td><input type="date" class="form-control form-control-sm" name="rii_start_date[]" /></td>
             <td>
-        <input type="date" class="form-control form-control-sm billing-end-date-input" name="bii_end_date[]" />
+        <input type="date" class="form-control form-control-sm re-end-date-input" name="rii_end_date[]" />
             </td>
             <td class="amount">
-    <span class="billing-row-currency"><?php echo htmlspecialchars((string)$currencyLabel); ?></span>
-    <input type="hidden" name="bii_currency[]" value="<?php echo htmlspecialchars((string)$currencyLabel); ?>" />
-    <input type="hidden" name="bii_quantity[]" />
-    <input type="hidden" name="bii_rate[]" />
-    <input class="form-control form-control-sm text-end billing-amount-input" name="bii_amount[]" />
+    <span class="re-row-currency"><?php echo htmlspecialchars((string)$currencyLabel); ?></span>
+    <input type="hidden" name="rii_currency[]" value="<?php echo htmlspecialchars((string)$currencyLabel); ?>" />
+    <input type="hidden" name="rii_quantity[]" />
+    <input type="hidden" name="rii_rate[]" />
+    <input class="form-control form-control-sm text-end re-amount-input" name="rii_amount[]" />
             </td>
             <td class="text-center">
-    <button type="button" class="btn btn-link text-danger text-decoration-none billing-remove-row" title="<?php echo htmlspecialchars($gL10n->get('SYS_DELETE')); ?>">
+    <button type="button" class="btn btn-link text-danger text-decoration-none re-remove-row" title="<?php echo htmlspecialchars($gL10n->get('SYS_DELETE')); ?>">
                     <i class="fas fa-times"></i>
     </button>
             </td>
     </tr>
     </template>
 
-    <input type="hidden" name="biv_id" value="<?php echo (int)$row['biv_id']; ?>" />
+    <input type="hidden" name="riv_id" value="<?php echo (int)$row['riv_id']; ?>" />
     <input type="hidden" name="admidio-csrf-token" value="<?php echo htmlspecialchars($gCurrentSession->getCsrfToken(), ENT_QUOTES, 'UTF-8'); ?>" />
     <div class="d-flex justify-content-end mt-4" style="gap:0.5rem;">
-    <a class="btn btn-outline-secondary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', array('tab' => 'invoices')); ?>"><?php echo $gL10n->get('SYS_CANCEL'); ?></a>
+    <a class="btn btn-outline-secondary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'invoices')); ?>"><?php echo $gL10n->get('SYS_CANCEL'); ?></a>
     <button type="submit" class="btn btn-primary px-4">
             <i class="fas fa-save me-2"></i><?php echo $gL10n->get('SYS_SAVE'); ?>
     </button>
@@ -737,31 +740,31 @@ ob_start();
 <?php
 $page->addHtml(ob_get_clean());
 
-$ownerChargeEndpoint = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/edit.php');
+$ownerChargeEndpoint = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php');
 $ownerChargeEndpointJs = addslashes($ownerChargeEndpoint);
 
 $script = <<<'JS'
 (function($) {
     $(function() {
       var isNewInvoice = {{isNewInvoice}};
-      var $itemsTable = $("#billing-items-table");
+      var $itemsTable = $("#re-items-table");
       var $itemsBody = $itemsTable.length ? $itemsTable.find("tbody") : $();
-      var $templateEl = $("#billing-row-template");
+      var $templateEl = $("#re-row-template");
       var templateMarkup = $templateEl.length ? $.trim($templateEl.html()) : "";
-      var $addBtn = $("#billing-add-item");
-      var $totalValueEl = $("#billing-total-value");
-      var $totalCurrencyEl = $("#billing-total-currency");
+      var $addBtn = $("#re-add-item");
+      var $totalValueEl = $("#re-total-value");
+      var $totalCurrencyEl = $("#re-total-currency");
       var currentCurrencyLabel = $totalCurrencyEl.length ? $.trim($totalCurrencyEl.text()) : "";
-      var $ownerSel = $("#biv_usr_id");
+      var $ownerSel = $("#riv_usr_id");
       var currentCharges = {{initialCharges}};
 
       function clearRowValues($row) {
         if (!$row || !$row.length) { return; }
-        var $start = $row.find('input[name="bii_start_date[]"]');
+        var $start = $row.find('input[name="rii_start_date[]"]');
         if ($start.length) { $start.val(""); }
-        var $amount = $row.find('.billing-amount-input');
+        var $amount = $row.find('.re-amount-input');
         if ($amount.length) { $amount.val(""); }
-        var $end = $row.find('.billing-end-date-input');
+        var $end = $row.find('.re-end-date-input');
         if ($end.length) { $end.val(""); }
     }
 
@@ -807,7 +810,7 @@ $script = <<<'JS'
         var hasCharges = !!(currentCharges && currentCharges.length);
         $itemsBody.find('tr').each(function() {
           var $row = $(this);
-          var $select = $row.find('.billing-charge-select');
+          var $select = $row.find('.re-charge-select');
           if (!$select.length) { return; }
           var desired = $select.data('desiredCharge');
           var prev = (desired !== undefined && desired !== null && String(desired) !== '') ? String(desired) : $select.val();
@@ -819,11 +822,11 @@ $script = <<<'JS'
       }
 
           // Auto-load start/end/amount when fields are blank (common when switching from a user with no charges)
-          var $startInput = $row.find('input[name="bii_start_date[]"]');
+          var $startInput = $row.find('input[name="rii_start_date[]"]');
           if ($startInput.length && !$startInput.val()) {
           $startInput.val(currentMonthStartIso());
       }
-          var $amountInput = $row.find('.billing-amount-input');
+          var $amountInput = $row.find('.re-amount-input');
           if ($amountInput.length && $.trim($amountInput.val()) === '') {
           var $opt = $select.find('option:selected');
           var optAmount = $opt.length ? $opt.data('amount') : null;
@@ -874,20 +877,20 @@ $script = <<<'JS'
 
       function updateEndDateForRow($row, forceUpdate) {
         if (!$row || !$row.length) { return; }
-        var $endInput = $row.find('.billing-end-date-input');
+        var $endInput = $row.find('.re-end-date-input');
         if (!$endInput.length) { return; }
 
         // If end date already has a value and we're not forcing update, don't overwrite user's manual entry
         if (!forceUpdate && $endInput.val()) { return; }
 
-        var startIso = $row.find('input[name="bii_start_date[]"]').val();
+        var startIso = $row.find('input[name="rii_start_date[]"]').val();
         if (!startIso) {
           $endInput.val("");
           return;
       }
 
         var months = 0;
-        var $select = $row.find('.billing-charge-select');
+        var $select = $row.find('.re-charge-select');
         if ($select.length) {
           var $opt = $select.find('option:selected');
           if ($opt.length) {
@@ -901,7 +904,7 @@ $script = <<<'JS'
       function applyDefaultsForRow($row) {
         if (!$row || !$row.length) { return; }
 
-        var $select = $row.find('.billing-charge-select');
+        var $select = $row.find('.re-charge-select');
         var hasCharges = !!(currentCharges && currentCharges.length);
         if ($select.length && (!hasCharges || !$.trim($select.val() || ''))) {
           clearRowValues($row);
@@ -917,12 +920,12 @@ $script = <<<'JS'
         }
       }
 
-        var $startInput = $row.find('input[name="bii_start_date[]"]');
+        var $startInput = $row.find('input[name="rii_start_date[]"]');
         if ($startInput.length && !$startInput.val()) {
           $startInput.val(currentMonthStartIso());
       }
 
-        var $amountInput = $row.find('.billing-amount-input');
+        var $amountInput = $row.find('.re-amount-input');
         if ($amountInput.length && $.trim($amountInput.val()) === '' && $select.length) {
           var $opt = $select.find('option:selected');
           var optAmount = $opt.length ? $opt.data('amount') : null;
@@ -970,7 +973,7 @@ $script = <<<'JS'
       function updateTotals() {
         if (!$itemsBody.length || !$totalValueEl.length) { return; }
         var total = 0;
-        $itemsBody.find(".billing-amount-input").each(function() {
+        $itemsBody.find(".re-amount-input").each(function() {
           total += parseAmount($(this).val());
       });
         $totalValueEl.text(total.toFixed(2));
@@ -978,11 +981,11 @@ $script = <<<'JS'
 
       function syncCurrency($row, currencyText) {
         if (!$row || !$row.length || !currencyText) { return; }
-        var $currencySpan = $row.find(".billing-row-currency");
+        var $currencySpan = $row.find(".re-row-currency");
         if ($currencySpan.length) {
           $currencySpan.text(currencyText);
       }
-        var $currencyInput = $row.find('input[name="bii_currency[]"]');
+        var $currencyInput = $row.find('input[name="rii_currency[]"]');
         if ($currencyInput.length) {
           $currencyInput.val(currencyText);
       }
@@ -990,11 +993,11 @@ $script = <<<'JS'
 
       function addRow($row) {
         if (!$row || !$row.length) { return; }
-        $row.find(".billing-amount-input").each(function() {
+        $row.find(".re-amount-input").each(function() {
           $(this).on("input", updateTotals);
       });
 
-        var $removeBtn = $row.find(".billing-remove-row");
+        var $removeBtn = $row.find(".re-remove-row");
         if ($removeBtn.length) {
           $removeBtn.on("click", function() {
             if (!$itemsBody.length) { return; }
@@ -1042,16 +1045,16 @@ $script = <<<'JS'
             var chargeId = parseInt(c.id, 10);
             var chargeAmount = isFinite(parseFloat(c.amount)) ? parseFloat(c.amount) : 0;
             var $row = $(this);
-            var $select = $row.find('.billing-charge-select');
+            var $select = $row.find('.re-charge-select');
             if ($select.length) {
               // Will be applied after options are rebuilt
               $select.data('desiredCharge', chargeId);
           }
-            var $startInput = $row.find('input[name="bii_start_date[]"]');
+            var $startInput = $row.find('input[name="rii_start_date[]"]');
             if ($startInput.length) {
               $startInput.val(currentMonthStartIso());
           }
-            var $amountInput = $row.find('.billing-amount-input');
+            var $amountInput = $row.find('.re-amount-input');
             if ($amountInput.length) {
               $amountInput.val(formatCurrency(chargeAmount));
           }
@@ -1064,10 +1067,10 @@ $script = <<<'JS'
 
       // Delegated handlers (covers initial rows + dynamically added rows)
       if ($itemsBody.length) {
-        $itemsBody.on('change', '.billing-charge-select', function() {
+        $itemsBody.on('change', '.re-charge-select', function() {
           var $row = $(this).closest('tr');
-          var $amountInput = $row.find('.billing-amount-input');
-          var $startInput = $row.find('input[name="bii_start_date[]"]');
+          var $amountInput = $row.find('.re-amount-input');
+          var $startInput = $row.find('input[name="rii_start_date[]"]');
 
           if ($startInput.length && !$startInput.val()) {
             $startInput.val(currentMonthStartIso());
@@ -1086,7 +1089,7 @@ $script = <<<'JS'
           updateTotals();
       });
 
-        $itemsBody.on('change input', 'input[name="bii_start_date[]"]', function() {
+        $itemsBody.on('change input', 'input[name="rii_start_date[]"]', function() {
           // Force update end date when start date changes
           updateEndDateForRow($(this).closest('tr'), true);
       });
@@ -1164,7 +1167,7 @@ $script = <<<'JS'
         $form.on('submit', function(e) {
           var hasError = false;
           var errorMessage = '{{amountPositiveMsg}}';
-          $itemsBody.find('.billing-amount-input').each(function() {
+          $itemsBody.find('.re-amount-input').each(function() {
             var val = $.trim($(this).val());
             if (val !== '') {
               var num = parseAmount(val);
@@ -1190,7 +1193,7 @@ $script = <<<'JS'
 })(jQuery);
 JS;
 
-$amountPositiveMsg = addslashes($gL10n->get('BL_VALIDATION_AMOUNT_POSITIVE'));
+$amountPositiveMsg = addslashes($gL10n->get('RE_VALIDATION_AMOUNT_POSITIVE'));
 $script = strtr($script, array(
     '{{ownerChargeEndpoint}}' => $ownerChargeEndpointJs,
     '{{groupChargeLabel}}' => '',

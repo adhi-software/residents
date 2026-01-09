@@ -15,15 +15,14 @@ require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
 try {
     global $gL10n;
-    $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-    if (!isUserAuthorizedForBilling($scriptUrl)) {
+    $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+    if (!isUserAuthorizedForResidents($scriptUrl)) {
         http_response_code(403);
         echo 'FORBIDDEN';
         exit;
     }
 
-    // Security: only admins defined in settings (no Admidio admin fallback)
-    if (!isBillingAdminBySettings()) {
+    if (!isResidentsAdminBySettings()) {
         http_response_code(403);
         echo 'FORBIDDEN';
         exit;

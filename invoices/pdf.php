@@ -15,10 +15,14 @@ require_once(__DIR__ . '/../common_function.php');
 $useApiAuth = false;
 if (isset($_SERVER['HTTP_API_KEY']) && !empty($_SERVER['HTTP_API_KEY'])) {
     $useApiAuth = true;
+} elseif (isset($_GET['api_key']) && !empty($_GET['api_key'])) {
+    $useApiAuth = true;
+} elseif (isset($_POST['api_key']) && !empty($_POST['api_key'])) {
+    $useApiAuth = true;
 } else {
     $headers = function_exists('getallheaders') ? getallheaders() : array();
     foreach ($headers as $headerName => $headerValue) {
-        if (strcasecmp((string)$headerName, 'api_key') === 0 || strcasecmp((string)$headerName, 'apikey') === 0 || strcasecmp((string)$headerName, 'api-key') === 0) {
+        if (strcasecmp((string)$headerName, 'api_key') === 0) {
             if (!empty($headerValue)) {
                 $useApiAuth = true;
             }
@@ -49,8 +53,8 @@ if (file_exists(__DIR__ . '/../../../adm_program/libs/server/tecnickcom/tcpdf/tc
 
 global $gDb, $gL10n, $gSettingsManager, $gCurrentOrganization;
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
@@ -62,35 +66,35 @@ if ($invoice->isNewRecord()) {
 }
 
 $inv = array(
-    'biv_id' => (int)$invoice->getValue('biv_id'),
-    'biv_number' => (string)$invoice->getValue('biv_number'),
-    'biv_usr_id' => (int)$invoice->getValue('biv_usr_id'),
-    'biv_date' => (string)$invoice->getValue('biv_date'),
-    'biv_due_date' => (string)$invoice->getValue('biv_due_date'),
-    'biv_notes' => (string)$invoice->getValue('biv_notes')
+    'riv_id' => (int)$invoice->getValue('riv_id'),
+    'riv_number' => (string)$invoice->getValue('riv_number'),
+    'riv_usr_id' => (int)$invoice->getValue('riv_usr_id'),
+    'riv_date' => (string)$invoice->getValue('riv_date'),
+    'riv_due_date' => (string)$invoice->getValue('riv_due_date'),
+    'riv_notes' => (string)$invoice->getValue('riv_notes')
 );
 
-$totals = billingGetInvoiceTotals($id);
+$totals = residentsGetInvoiceTotals($id);
 $currencyLabel = $totals['currency'] ?? $gSettingsManager->getString('system_currency');
 $amountFormatted = number_format((float)$totals['amount'], 2, '.', ',');
 
 $items = $invoice->getItems();
 
-$customer = billingGetUserAddress((int)$inv['biv_usr_id']);
-$customerName = $customer['name'] ?? $gL10n->get('SYS_USER') . ' #' . (int)$inv['biv_usr_id'];
+$customer = residentsGetUserAddress((int)$inv['riv_usr_id']);
+$customerName = $customer['name'] ?? $gL10n->get('SYS_USER') . ' #' . (int)$inv['riv_usr_id'];
 
 // Helper for date formatting
-function billingPdfFormatDate($value) {
+function residentsPdfFormatDate($value) {
     if (empty($value)) {
         return '-';
     }
-    $formatted = billingFormatDateForUi($value);
+    $formatted = residentsFormatDateForUi($value);
     return $formatted !== '' ? $formatted : '-';
 }
 
 
 
-function billingPdfThreeDigitsToWords(int $number): string
+function residentsPdfThreeDigitsToWords(int $number): string
 {
     $ones = array('', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen');
     $tens = array('', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety');
@@ -116,7 +120,7 @@ function billingPdfThreeDigitsToWords(int $number): string
     return $words;
 }
 
-function billingPdfNumberToWords(int $number): string
+function residentsPdfNumberToWords(int $number): string
 {
     if ($number === 0) {
         return 'zero';
@@ -129,7 +133,7 @@ function billingPdfNumberToWords(int $number): string
     while ($number > 0) {
         $chunk = $number % 1000;
         if ($chunk > 0) {
-        $chunkWords = billingPdfThreeDigitsToWords($chunk);
+        $chunkWords = residentsPdfThreeDigitsToWords($chunk);
         $words = trim($chunkWords . $scales[$scaleIndex] . ' ' . $words);
     }
         $number = intdiv($number, 1000);
@@ -139,18 +143,18 @@ function billingPdfNumberToWords(int $number): string
     return trim($words);
 }
 
-function billingPdfAmountToWords(float $amount, string $currencyLabel): string
+function residentsPdfAmountToWords(float $amount, string $currencyLabel): string
 {
     $integerPart = (int)floor($amount);
     $fractionPart = (int)round(($amount - $integerPart) * 100);
-    $words = billingPdfNumberToWords($integerPart);
+    $words = residentsPdfNumberToWords($integerPart);
 
     if ($currencyLabel !== '') {
         $words .= ' ' . trim($currencyLabel);
     }
 
     if ($fractionPart > 0) {
-        $words .= ' and ' . billingPdfNumberToWords($fractionPart) . ' cents';
+        $words .= ' and ' . residentsPdfNumberToWords($fractionPart) . ' cents';
     } else {
         $words .= ' only';
     }
@@ -158,7 +162,7 @@ function billingPdfAmountToWords(float $amount, string $currencyLabel): string
     return ucfirst($words);
 }
 
-$amountInWords = billingPdfAmountToWords((float)$totals['amount'], '');
+$amountInWords = residentsPdfAmountToWords((float)$totals['amount'], '');
 
 // Initialize PDF
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -166,8 +170,8 @@ $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // Set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor($gCurrentOrganization->getValue('org_longname'));
-$pdf->SetTitle($gL10n->get('BL_NUMBER') . ' #' . $inv['biv_number']);
-$pdf->SetSubject($gL10n->get('BL_TAB_INVOICES'));
+$pdf->SetTitle($gL10n->get('RE_NUMBER') . ' #' . $inv['riv_number']);
+$pdf->SetSubject($gL10n->get('RE_TAB_INVOICES'));
 
 // Remove default header/footer
 $pdf->setPrintHeader(false);
@@ -236,18 +240,18 @@ if ($addressLine !== '') {
 $itemsHtml = '';
 $counter = 1;
 if (empty($items)) {
-    $itemsHtml .= '<tr><td colspan="3" align="center" style="color: #999;">' . $gL10n->get('BL_NO_DATA') . '</td></tr>';
+    $itemsHtml .= '<tr><td colspan="3" align="center" style="color: #999;">' . $gL10n->get('RE_NO_DATA') . '</td></tr>';
 } else {
     foreach ($items as $item) {
-        $lineTotal = (float)$item['bii_amount'];
+        $lineTotal = (float)$item['rii_amount'];
 
-        $itemLabel = htmlspecialchars((string)($item['bii_name'] ?? ''));
+        $itemLabel = htmlspecialchars((string)($item['rii_name'] ?? ''));
         $rangeParts = array();
-        if (!empty($item['bii_start_date'])) {
-            $rangeParts[] = billingPdfFormatDate($item['bii_start_date']);
+        if (!empty($item['rii_start_date'])) {
+            $rangeParts[] = residentsPdfFormatDate($item['rii_start_date']);
     }
-        if (!empty($item['bii_end_date'])) {
-            $rangeParts[] = billingPdfFormatDate($item['bii_end_date']);
+        if (!empty($item['rii_end_date'])) {
+            $rangeParts[] = residentsPdfFormatDate($item['rii_end_date']);
     }
         if (!empty($rangeParts)) {
             if (count($rangeParts) === 1) {
@@ -302,7 +306,7 @@ $html = '
                 </div>
                     </td>
                     <td width="50%" align="right" valign="middle" style="border-bottom: none;" colspan="2">
-            <div class="invoice-title">' . $gL10n->get('BL_INVOICE_TITLE') . ' #' . $inv['biv_number'] . '</div>
+            <div class="invoice-title">' . $gL10n->get('RE_INVOICE_TITLE') . ' #' . $inv['riv_number'] . '</div>
                     </td>
     </tr>
             </table>
@@ -317,7 +321,7 @@ $html = '
                     <td width="50%" valign="top" align="left">
             <table border="0" cellpadding="3" cellspacing="0">
                             <tr>
-        <td class="bill-to-label" style="padding-bottom: 5px;">' . $gL10n->get('BL_BILL_TO') . ':</td>
+        <td class="bill-to-label" style="padding-bottom: 5px;">' . $gL10n->get('RE_BILL_TO') . ':</td>
                             </tr>
                             <tr>
         <td>' . $customerAddress . '</td>
@@ -327,16 +331,16 @@ $html = '
                     <td width="50%" valign="top" align="right">
             <table border="0" cellpadding="3" cellspacing="0" style="margin-left: auto;">
                             <tr>
-        <td class="info-label" style="padding-right: 10px;">' . $gL10n->get('BL_NUMBER') . ':</td>
-        <td class="info-value">' . $inv['biv_number'] . '</td>
+        <td class="info-label" style="padding-right: 10px;">' . $gL10n->get('RE_NUMBER') . ':</td>
+        <td class="info-value">' . $inv['riv_number'] . '</td>
                             </tr>
                             <tr>
-        <td class="info-label" style="padding-right: 10px;">' . $gL10n->get('BL_DATE') . ':</td>
-        <td class="info-value">' . billingPdfFormatDate($inv['biv_date']) . '</td>
+        <td class="info-label" style="padding-right: 10px;">' . $gL10n->get('RE_DATE') . ':</td>
+        <td class="info-value">' . residentsPdfFormatDate($inv['riv_date']) . '</td>
                             </tr>
                             <tr>
-        <td class="info-label" style="padding-right: 10px;">' . $gL10n->get('BL_DUE_DATE') . ':</td>
-        <td class="info-value">' . billingPdfFormatDate($inv['biv_due_date']) . '</td>
+        <td class="info-label" style="padding-right: 10px;">' . $gL10n->get('RE_DUE_DATE') . ':</td>
+        <td class="info-value">' . residentsPdfFormatDate($inv['riv_due_date']) . '</td>
                             </tr>
             </table>
                     </td>
@@ -350,7 +354,7 @@ $html = '
                     <tr class="table-header">
             <th width="10%" align="center">#</th>
             <th width="70%" align="left">' . $gL10n->get('SYS_DESCRIPTION') . '</th>
-            <th width="20%" align="right">' . $gL10n->get('BL_AMOUNT') . '</th>
+            <th width="20%" align="right">' . $gL10n->get('RE_AMOUNT') . '</th>
                     </tr>
     </thead>
     <tbody>
@@ -363,7 +367,7 @@ $html = '
 
             <table border="0" cellpadding="5" cellspacing="0" width="100%">
     <tr>
-                    <td width="80%" align="right" class="total-due-label">' . $gL10n->get('BL_TOTAL') . ' (' . $currencyLabel . '):</td>
+                    <td width="80%" align="right" class="total-due-label">' . $gL10n->get('RE_TOTAL') . ' (' . $currencyLabel . '):</td>
                     <td width="20%" align="right" class="total-due-value">' . $amountFormatted . '</td>
     </tr>
             </table>
@@ -373,12 +377,12 @@ $html = '
             <table border="0" cellpadding="5" cellspacing="0" width="100%">
     <tr>
                     <td width="100%">
-                <div style="font-size: 10pt; text-align: justify;"><b>' . $gL10n->get('BL_AMOUNT_IN_WORDS') . ':</b> ' . $amountInWords . '</div>
+                <div style="font-size: 10pt; text-align: justify;"><b>' . $gL10n->get('RE_AMOUNT_IN_WORDS') . ':</b> ' . $amountInWords . '</div>
                     </td>
     </tr>
-    ' . (!empty($inv['biv_notes']) ? '<tr>
+    ' . (!empty($inv['riv_notes']) ? '<tr>
                     <td width="100%">
-                <div style="font-size: 10pt; text-align: justify;"><b>' . $gL10n->get('BL_NOTES') . ':</b> ' . nl2br(htmlspecialchars($inv['biv_notes'])) . '</div>
+                <div style="font-size: 10pt; text-align: justify;"><b>' . $gL10n->get('RE_NOTES') . ':</b> ' . nl2br(htmlspecialchars($inv['riv_notes'])) . '</div>
                     </td>
     </tr>' : '') . '
             </table>
@@ -390,16 +394,16 @@ $html = '
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
                     <td width="60%">
-            <div style="font-size: 10pt; font-weight: bold;">' . $gL10n->get('BL_DATE_SIMPLE') . ': </div>
+            <div style="font-size: 10pt; font-weight: bold;">' . $gL10n->get('RE_DATE_SIMPLE') . ': </div>
                     </td>
                     <td width="40%"></td>
     </tr>
     <tr>
                     <td width="60%">
-            <div style="font-size: 10pt; font-weight: bold; padding-top: 5px;">' . $gL10n->get('BL_PLACE') . ': </div>
+            <div style="font-size: 10pt; font-weight: bold; padding-top: 5px;">' . $gL10n->get('RE_PLACE') . ': </div>
                     </td>
                     <td width="40%" align="right">
-            <div style="font-size: 10pt; font-weight: bold; padding-top: 5px;">' . $gL10n->get('BL_AUTHORIZED_SIGNATURE') . '</div>
+            <div style="font-size: 10pt; font-weight: bold; padding-top: 5px;">' . $gL10n->get('RE_AUTHORIZED_SIGNATURE') . '</div>
                     </td>
     </tr>
             </table>
@@ -411,6 +415,6 @@ $html = '
 
 $pdf->writeHTML($html, true, false, true, false, '');
 
-$filename = 'invoice-' . (string)($inv['biv_number'] ?: $inv['biv_id']) . '.pdf';
+$filename = 'invoice-' . (string)($inv['riv_number'] ?: $inv['riv_id']) . '.pdf';
 $pdf->Output($filename, 'D');
 exit;

@@ -3,7 +3,7 @@
  ***********************************************************************************************
  * Device Login API - Authenticates a user and returns an API key if the device is approved
  *
- * Uses the TBL_BL_DEVICES table (adm_bl_devices) defined in ConfigTables.php.
+ * Uses the TBL_RE_DEVICES table (adm_re_devices) defined in ConfigTables.php.
  * The table must be installed via the residents plugin installation page.
  *
  * @copyright The Admidio Team
@@ -25,15 +25,20 @@ if ($username === '' || $password === '') {
     exit;
 }
 
-// Check if the devices table exists (should be created via installation.php)
-if (!tableExistsBILL(TBL_BL_DEVICES)) {
-    echo json_encode(['error' => 'Devices table not found. Please run the residents plugin installation first.']);
-    exit;
-}
-
+$today = date('Y-m-d');
 $guser = $gDb->queryPrepared(
-    'SELECT usr_id, usr_password FROM ' . TBL_USERS . ' WHERE usr_login_name = ? AND usr_valid = true',
-    [$username],
+    'SELECT DISTINCT u.usr_id, u.usr_password
+        FROM ' . TBL_USERS . ' u
+        INNER JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id
+            AND m.mem_begin <= ?
+            AND m.mem_end > ?
+        INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id
+        INNER JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id
+        WHERE u.usr_login_name = ?
+            AND u.usr_valid = true
+            AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)
+        LIMIT 1',
+    [$today, $today, $username, (int) $gCurrentOrgId],
     false
 );
 if ($guser === false) {
@@ -47,7 +52,6 @@ if (!$row) {
 }
 
 $userId = (int) $row['usr_id'];
-$hashedPassword = $row['usr_password'];
 
 //Check whether the user is allowed to log in
 validateUserLogin($userId, $password);
@@ -69,9 +73,15 @@ $model = (string) $device['model'];
 $deviceId = (string) $device['deviceId'];
 
 // Check device approval status
+$orgFilter = ($gCurrentOrgId > 0) ? ' AND rde_org_id = ?' : '';
+$deviceParams = [$userId, $deviceId];
+if ($gCurrentOrgId > 0) {
+    $deviceParams[] = $gCurrentOrgId;
+}
+
 $deviceStmt = $gDb->queryPrepared(
-    'SELECT bde_id, bde_is_active, bde_api_key FROM ' . TBL_BL_DEVICES . ' WHERE bde_usr_id = ? AND bde_device_id = ? ORDER BY bde_timestamp_create DESC LIMIT 1',
-    [$userId, $deviceId],
+    'SELECT rde_id, rde_is_active, rde_api_key FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_device_id = ?' . $orgFilter . ' ORDER BY rde_timestamp_create DESC LIMIT 1',
+    $deviceParams,
     false
 );
 if ($deviceStmt === false) {
@@ -81,9 +91,19 @@ $deviceRow = $deviceStmt->fetch();
 
 if (!$deviceRow) {
     // Auto-create a pending device request on first login attempt.
+    $insertColumns = 'rde_device_id, rde_usr_id, rde_is_active, rde_platform, rde_brand, rde_model, rde_timestamp_create';
+    $insertValues = '?, ?, 0, ?, ?, ?, NOW()';
+    $insertParams = [$deviceId, $userId, $platform, $brand, $model];
+    
+    if ($gCurrentOrgId > 0) {
+        $insertColumns .= ', rde_org_id';
+        $insertValues .= ', ?';
+        $insertParams[] = $gCurrentOrgId;
+    }
+    
     $inserted = $gDb->queryPrepared(
-    'INSERT INTO ' . TBL_BL_DEVICES . ' (bde_device_id, bde_usr_id, bde_is_active, bde_platform, bde_brand, bde_model, bde_timestamp_create) VALUES (?, ?, 0, ?, ?, ?, NOW())',
-    [$deviceId, $userId, $platform, $brand, $model],
+    'INSERT INTO ' . TBL_RE_DEVICES . ' (' . $insertColumns . ') VALUES (' . $insertValues . ')',
+    $insertParams,
     false
     );
     if ($inserted === false) {
@@ -99,23 +119,23 @@ if (!$deviceRow) {
     exit;
 }
 
-if (!$deviceRow['bde_is_active']) {
+if (!$deviceRow['rde_is_active']) {
     echo json_encode([
     'status' => 'pending',
     'message' => 'Device request is not approved yet.',
-    'device_id' => (int) $deviceRow['bde_id'],
+    'device_id' => (int) $deviceRow['rde_id'],
     ]);
     exit;
 }
 
 // Generate API key if not already set
-$apiKey = (string) ($deviceRow['bde_api_key'] ?? '');
+$apiKey = (string) ($deviceRow['rde_api_key'] ?? '');
 if ($apiKey === '') {
     // Safety net: in case an old device was approved without an API key.
     $apiKey = bin2hex(random_bytes(20));
     $updated = $gDb->queryPrepared(
-    'UPDATE ' . TBL_BL_DEVICES . ' SET bde_api_key = ?, bde_timestamp_change = NOW() WHERE bde_id = ?',
-    [$apiKey, $deviceRow['bde_id']],
+    'UPDATE ' . TBL_RE_DEVICES . ' SET rde_api_key = ?, rde_timestamp_change = NOW() WHERE rde_id = ?',
+    [$apiKey, $deviceRow['rde_id']],
     false
     );
     if ($updated === false) {
@@ -139,5 +159,4 @@ $userData = [
 echo json_encode([
     'status' => 'approved',
     'user'   => $userData,
-    'apiKey' => $apiKey,
 ]);

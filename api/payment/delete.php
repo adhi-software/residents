@@ -24,6 +24,14 @@ if (!isMember($currentUserId)) {
     ));
 }
 
+// Only Residents Admin / Payment Admin may delete payments
+if (!(isResidentsAdmin() || isPaymentAdmin())) {
+    admidioApiError('You do not have permission to delete payments', 403, array(
+        'endpoint' => $endpointName,
+        'user_id' => $currentUserId
+    ));
+}
+
 $payID = admFuncVariableIsValid($_GET, 'id', 'string', array('defaultValue' => ''));
 
 if ($payID === '') {
@@ -40,7 +48,16 @@ try {
         admidioApiError('payment not found', 404, array(
             'endpoint' => $endpointName,
             'user_id' => $currentUserId,
-            'bpa_id' => $payID
+            'rpa_id' => $payID
+        ));
+    }
+
+    // Enforce org ownership
+    if ((int) $payment->getValue('rpa_org_id') !== (int) $gCurrentOrgId) {
+        admidioApiError('payment not found', 404, array(
+            'endpoint' => $endpointName,
+            'user_id' => $currentUserId,
+            'rpa_id' => $payID
         ));
     }
 
@@ -49,19 +66,19 @@ try {
         admidioApiError('Unable to delete this payment', 500, array(
             'endpoint' => $endpointName,
             'user_id' => $currentUserId,
-            'bpa_id' => $payID
+            'rpa_id' => $payID
         ));
     }
 
     echo json_encode(array(
     'status' => 'deleted',
-    'bpa_id' => $payId
+    'rpa_id' => (int) $payment->getValue('rpa_id')
     ));
 } catch (Exception $exception) {
-    admidioApiError($exception->getpayment(), 500, array(
+    admidioApiError($exception->getMessage(), 500, array(
     'endpoint' => $endpointName,
     'user_id' => $currentUserId,
-    'bpa_id' => $msgUuid,
+    'rpa_id' => $payID,
     'exception' => get_class($exception)
     ));
 }

@@ -17,22 +17,17 @@ global $gDb, $gL10n, $gSettingsManager;
 
 header('Content-Type: application/json');
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     http_response_code(403);
     echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array(), 'error' => $gL10n->get('SYS_NO_RIGHTS')));
     exit;
 }
 
-$isAdmin = isBillingAdminBySettings();
+$isAdmin = isResidentsAdminBySettings();
 if (!$isAdmin) {
     http_response_code(403);
     echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array(), 'error' => $gL10n->get('SYS_NO_RIGHTS')));
-    exit;
-}
-
-if (!tableExistsBILL(TBL_BL_CHARGES)) {
-    echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array()));
     exit;
 }
 
@@ -85,16 +80,20 @@ if (isset($_GET['order'][0]['dir'])) {
     }
 }
 
-$stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_BL_CHARGES, array(), false);
+if ($gCurrentOrgId > 0) {
+    $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_CHARGES . ' WHERE rch_org_id = ?', array($gCurrentOrgId), false);
+} else {
+    $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_CHARGES, array(), false);
+}
 $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : array();
 $recordsTotal = count($rows);
 
 $searchNeedle = trim(mb_strtolower($searchValue));
 if ($searchNeedle !== '') {
     $rows = array_filter($rows, static function ($row) use ($searchNeedle) {
-        $name = mb_strtolower((string)($row['bch_name'] ?? ''));
-        $period = mb_strtolower((string)($row['bch_period'] ?? ''));
-        $amount = mb_strtolower((string)($row['bch_amount'] ?? ''));
+        $name = mb_strtolower((string)($row['rch_name'] ?? ''));
+        $period = mb_strtolower((string)($row['rch_period'] ?? ''));
+        $amount = mb_strtolower((string)($row['rch_amount'] ?? ''));
         if ($name !== '' && mb_strpos($name, $searchNeedle) !== false) {
             return true;
     }
@@ -110,18 +109,18 @@ $recordsFiltered = count($filteredRows);
 
 if ($recordsFiltered > 1) {
     $fieldMap = array(
-    'id' => 'bch_id',
-    'name' => 'bch_name',
-    'period' => 'bch_period',
-    'amount' => 'bch_amount',
-    'roles' => 'bch_role_ids'
+    'id' => 'rch_id',
+    'name' => 'rch_name',
+    'period' => 'rch_period',
+    'amount' => 'rch_amount',
+    'roles' => 'rch_role_ids'
     );
-    $field = $fieldMap[$orderColumn] ?? 'bch_name';
+    $field = $fieldMap[$orderColumn] ?? 'rch_name';
 
     usort($filteredRows, static function ($a, $b) use ($field, $orderDirection) {
         $aVal = $a[$field] ?? '';
         $bVal = $b[$field] ?? '';
-        if ($field === 'bch_amount' || $field === 'bch_id') {
+        if ($field === 'rch_amount' || $field === 'rch_id') {
             $aVal = (float)$aVal;
             $bVal = (float)$bVal;
     } else {
@@ -142,7 +141,7 @@ $currencyLabel = '';
 if (isset($gSettingsManager) && method_exists($gSettingsManager, 'getString')) {
     $currencyLabel = trim((string)$gSettingsManager->getString('system_currency'));
 }
-$rolesMap = billingGetRoleOptions();
+$rolesMap = residentsGetRoleOptions();
 $periodLabels = array();
 foreach (TableRoles::getCostPeriods() as $key => $label) {
     $periodLabels[(string)$key] = $label;
@@ -150,7 +149,7 @@ foreach (TableRoles::getCostPeriods() as $key => $label) {
 
 $data = array();
 $chargeModel = new TableResidentsCharge($gDb);
-$deleteConfirm = htmlspecialchars($gL10n->get('BL_CHARGERS_DELETE_CONFIRM'), ENT_QUOTES, 'UTF-8');
+$deleteConfirm = htmlspecialchars($gL10n->get('RE_CHARGERS_DELETE_CONFIRM'), ENT_QUOTES, 'UTF-8');
 
 foreach ($pagedRows as $row) {
     $chargeModel->clear();
@@ -163,34 +162,34 @@ foreach ($pagedRows as $row) {
     }
     }
 
-    $amountValue = number_format((float)$chargeModel->getValue('bch_amount'), 2, '.', ',');
+    $amountValue = number_format((float)$chargeModel->getValue('rch_amount'), 2, '.', ',');
     $amountDisplay = $currencyLabel !== '' ? $currencyLabel . ' ' . $amountValue : $amountValue;
 
-    $chargeId = (int)$chargeModel->getValue('bch_id');
-    $editUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/edit.php', array('id' => $chargeId));
-    $deleteUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/delete.php', array('id' => $chargeId));
+    $chargeId = (int)$chargeModel->getValue('rch_id');
+    $editUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/edit.php', array('id' => $chargeId));
+    $deleteUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/delete.php', array('id' => $chargeId));
 
     $actions = '<a class="admidio-icon-link" title="' . $gL10n->get('SYS_EDIT') . '" href="' . $editUrl . '"><i class="fas fa-edit"></i></a>';
     $actions .= ' <a class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" href="' . $deleteUrl . '" onclick="return confirm(\'' . $deleteConfirm . '\');"><i class="fas fa-trash"></i></a>';
 
-    $periodValue = (string)$chargeModel->getValue('bch_period');
+    $periodValue = (string)$chargeModel->getValue('rch_period');
     $periodDisplay = ($periodValue !== '' && isset($periodLabels[$periodValue])) ? $periodLabels[$periodValue] : $periodValue;
 
     // Selection checkbox for admins (settings-based)
-    $selectCol = $isAdmin ? '<input type="checkbox" class="billing-row-select" value="' . $chargeId . '" />' : '';
+    $selectCol = $isAdmin ? '<input type="checkbox" class="re-row-select" value="' . $chargeId . '" />' : '';
 
     $rowData = $isAdmin
     ? array(
             $selectCol,
             $chargeId,
-            htmlspecialchars((string)$chargeModel->getValue('bch_name'), ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars((string)$chargeModel->getValue('rch_name'), ENT_QUOTES, 'UTF-8'),
             htmlspecialchars($periodDisplay, ENT_QUOTES, 'UTF-8'),
             htmlspecialchars($amountDisplay, ENT_QUOTES, 'UTF-8'),
             htmlspecialchars(implode(', ', $roleLabels), ENT_QUOTES, 'UTF-8'),
             $actions
     )
     : array(
-            htmlspecialchars((string)$chargeModel->getValue('bch_name'), ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars((string)$chargeModel->getValue('rch_name'), ENT_QUOTES, 'UTF-8'),
             htmlspecialchars($periodDisplay, ENT_QUOTES, 'UTF-8'),
             htmlspecialchars($amountDisplay, ENT_QUOTES, 'UTF-8'),
             htmlspecialchars(implode(', ', $roleLabels), ENT_QUOTES, 'UTF-8'),

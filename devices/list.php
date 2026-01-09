@@ -11,7 +11,7 @@
 
 global $gDb, $gL10n, $gSettingsManager, $page;
 
-$isAdmin = isBillingAdminBySettings();
+$isAdmin = isResidentsAdminBySettings();
 if (!$isAdmin) {
     $page->addHtml('<div class="alert alert-warning">' . $gL10n->get('SYS_NO_RIGHTS') . '</div>');
     return;
@@ -20,18 +20,18 @@ if (!$isAdmin) {
 $deviceStatus = admFuncVariableIsValid($_GET, 'device_status', 'string');
 $deviceMessage = admFuncVariableIsValid($_GET, 'device_message', 'string');
 if ($deviceStatus === 'deleted') {
-    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_DELETED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_DEVICE_DELETED') . '</div>');
 } elseif ($deviceStatus === 'approved') {
-    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_APPROVED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_DEVICE_APPROVED') . '</div>');
 }elseif ($deviceStatus === 'reset') {
-    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_RESET') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_DEVICE_RESET') . '</div>');
 } elseif ($deviceStatus === 'unapproved') {
-    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_DEVICE_UNAPPROVED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_DEVICE_UNAPPROVED') . '</div>');
 } elseif ($deviceStatus === 'error') {
     $msg = $deviceMessage !== '' ? htmlspecialchars($deviceMessage) : 'Action failed.';
     $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
 }
-$baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
+$baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
 
 // Read filters
 $getGroup  = admFuncVariableIsValid($_GET, 'filter_group', 'int');
@@ -49,10 +49,6 @@ $getQ      = admFuncVariableIsValid($_GET, 'q', 'string');
     //   $getDateTo = date('Y-m-t');
     // }
 
-if (!tableExistsBILL(TBL_BL_DEVICES)) {
-    return;
-}
-
 $defaultPageLength = 25;
 if (isset($gSettingsManager)) {
     $configuredLength = (int)$gSettingsManager->getInt('system_datatables_rows');
@@ -63,7 +59,7 @@ if (isset($gSettingsManager)) {
 
 if ($isAdmin) {
     // Navbar-like filter form
-    $cfg = billingReadConfig();
+    $cfg = residentsReadConfig();
     $ownerGroupId = (int)($cfg['owners']['group_id'] ?? 0);
     $effectiveOwnerGroup = $getGroup > 0 ? $getGroup : $ownerGroupId;
 
@@ -71,20 +67,24 @@ if ($isAdmin) {
     if ($effectiveOwnerGroup === 0) {
         $lnId = (int) $gProfileFields->getProperty('LAST_NAME', 'usf_id');
         $fnId = (int) $gProfileFields->getProperty('FIRST_NAME', 'usf_id');
+        // Filter users by organization: only return users who are members of roles belonging to current org
         $sqlUsers = 'SELECT DISTINCT u.usr_id, u.usr_login_name AS login_name'
         . ' FROM ' . TBL_USERS . ' u'
+        . ' INNER JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id AND m.mem_begin <= ? AND m.mem_end > ?'
+        . ' INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = true'
+        . ' INNER JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)'
         . ' WHERE u.usr_valid = true'
         . ' ORDER BY u.usr_login_name';
-        $stmtUsers = $gDb->queryPrepared($sqlUsers, array());
+        $stmtUsers = $gDb->queryPrepared($sqlUsers, array(DATE_NOW, DATE_NOW, $gCurrentOrgId));
         if (!empty($_GET['debug_users'])) {
             $debugRows = array();
-            $stmtUsersDebug = $gDb->queryPrepared($sqlUsers, array());
+            $stmtUsersDebug = $gDb->queryPrepared($sqlUsers, array(DATE_NOW, DATE_NOW, $gCurrentOrgId));
             if ($stmtUsersDebug !== false) {
                 while ($r = $stmtUsersDebug->fetch(PDO::FETCH_ASSOC)) {
                     $debugRows[] = $r;
                 }
             }
-            echo '<pre class="billing-debug-users">'
+            echo '<pre class="re-debug-users">'
             . htmlspecialchars($sqlUsers) . "\n\n"
             . htmlspecialchars(json_encode($debugRows, JSON_PRETTY_PRINT))
             . '</pre>';
@@ -101,20 +101,20 @@ if ($isAdmin) {
             }
         }
     } else {
-        $userOptions = billingGetOwnerOptions($effectiveOwnerGroup);
+        $userOptions = residentsGetOwnerOptions($effectiveOwnerGroup);
     }
 
     if ($getUser > 0 && !isset($userOptions[$getUser])) {
-        $userOptions[$getUser] = billingFetchUserNameById($getUser);
+        $userOptions[$getUser] = residentsFetchUserNameById($getUser);
     }
-    $userOptionsWithAll = array('0' => $gL10n->get('BL_ALL')) + $userOptions;
+    $userOptionsWithAll = array('0' => $gL10n->get('RE_ALL')) + $userOptions;
 
-    $roles = billingGetRoleOptions();
-    $rolesWithAll = array('0' => $gL10n->get('BL_ALL')) + $roles;
+    $roles = residentsGetRoleOptions();
+    $rolesWithAll = array('0' => $gL10n->get('RE_ALL')) + $roles;
 
     $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
     $labelGroup  = '<i class="fas fa-users" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
-    $labelUser   = '<i class="fas fa-user" alt="'.$gL10n->get('BL_USER').'" title="'.$gL10n->get('BL_USER').'"></i>';
+    $labelUser   = '<i class="fas fa-user" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
 
 
     $filterNavbar = new HtmlNavbar('navbar_filter', '', $page, 'filter');
@@ -141,9 +141,9 @@ if ($isAdmin) {
 
     $filterForm->addCheckbox(
     'filter_active',
-    '<span class="billing-check-square-checked" aria-hidden="true"><i class="fas fa-check-square"></i></span><span class="billing-check-square-unchecked" aria-hidden="true"></span> '.$gL10n->get('BL_DEVICE_ACTIVE'),
+    '<span class="re-check-square-checked" aria-hidden="true"><i class="fas fa-check-square"></i></span><span class="re-check-square-unchecked" aria-hidden="true"></span> '.$gL10n->get('RE_DEVICE_ACTIVE'),
     ($getActive === '1'),
-    array('class' => 'billing-filter-checkbox')
+    array('class' => 're-filter-checkbox')
     );
 
     $filterForm->addInput('q', $labelSearch, $getQ);
@@ -156,10 +156,10 @@ if ($isAdmin) {
     array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
     );
 
-    $loadUsersUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/load_users.php');
+    $loadUsersUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/load_users.php');
     $loadUsersUrlJs = json_encode($loadUsersUrl);
 
-    $allLabelJs = json_encode($gL10n->get('BL_ALL'));
+    $allLabelJs = json_encode($gL10n->get('RE_ALL'));
 
     $jsFilter = <<<'JS'
   $(function(){
@@ -220,54 +220,54 @@ $serverParams = array(
 // 'date_to' => $getDateTo
 );
 
-$serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/devices/list_data.php', $serverParams);
+$serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/list_data.php', $serverParams);
 
 
-$tableHeaderStyle = '#table_billing_devices thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}#table_billing_devices thead th{font-weight:700;color:#495057;padding:12px 15px;white-space:nowrap;border:none;}';
-$tableHeaderStyle .= 'input.billing-filter-checkbox{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0;}'
-. '.billing-check-square-checked{display:none!important;}'
-. '.billing-check-square-unchecked{display:inline-block;}'
-. 'input.billing-filter-checkbox:checked ~ .billing-check-square-checked{display:inline-block!important;}'
-. 'input.billing-filter-checkbox:checked ~ .billing-check-square-unchecked{display:none!important;}'
-. '.billing-check-square-checked{margin-right:0.35rem;line-height:1;font-size:1.15em;vertical-align:-0.1em;}'
-. '.billing-check-square-unchecked{margin-right:0.35rem;display:inline-block;width:1.05em;height:1.05em;border:2px solid currentColor;border-radius:0.15em;opacity:0.7;vertical-align:-0.15em;box-sizing:border-box;}'
+$tableHeaderStyle = '#table_re_devices thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}#table_re_devices thead th{font-weight:700;color:#495057;padding:12px 15px;white-space:nowrap;border:none;}';
+$tableHeaderStyle .= 'input.re-filter-checkbox{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0;}'
+. '.re-check-square-checked{display:none!important;}'
+. '.re-check-square-unchecked{display:inline-block;}'
+. 'input.re-filter-checkbox:checked ~ .re-check-square-checked{display:inline-block!important;}'
+. 'input.re-filter-checkbox:checked ~ .re-check-square-unchecked{display:none!important;}'
+. '.re-check-square-checked{margin-right:0.35rem;line-height:1;font-size:1.15em;vertical-align:-0.1em;}'
+. '.re-check-square-unchecked{margin-right:0.35rem;display:inline-block;width:1.05em;height:1.05em;border:2px solid currentColor;border-radius:0.15em;opacity:0.7;vertical-align:-0.15em;box-sizing:border-box;}'
 . '.checkbox label{cursor:pointer;}';
-$tableHeaderStyle .= '#table_billing_devices_wrapper .dataTables_length,#table_billing_devices_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}'
-. '#table_billing_devices_wrapper .dataTables_length label,#table_billing_devices_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
-$tableHeaderStyle .= '#table_billing_devices_wrapper .dataTables_length select,#table_billing_devices_length select{width:auto;min-width:70px;display:inline-block;}';
-$tableHeaderStyle .= '#table_billing_devices thead th:nth-last-child(2){padding-right:34px;}';
-$tableHeaderStyle .= '#table_billing_devices thead th:last-child{padding-left:22px;padding-right:22px;}';
-$tableHeaderStyle .= '#table_billing_devices_filter{display:none!important;}';
+$tableHeaderStyle .= '#table_re_devices_wrapper .dataTables_length,#table_re_devices_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}'
+. '#table_re_devices_wrapper .dataTables_length label,#table_re_devices_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
+$tableHeaderStyle .= '#table_re_devices_wrapper .dataTables_length select,#table_re_devices_length select{width:auto;min-width:70px;display:inline-block;}';
+$tableHeaderStyle .= '#table_re_devices thead th:nth-last-child(2){padding-right:34px;}';
+$tableHeaderStyle .= '#table_re_devices thead th:last-child{padding-left:22px;padding-right:22px;}';
+$tableHeaderStyle .= '#table_re_devices_filter{display:none!important;}';
 if ($isAdmin) {
-    $tableHeaderStyle .= '#table_billing_devices thead th:first-child:before,#table_billing_devices thead th:first-child:after{display:none!important;}';
+    $tableHeaderStyle .= '#table_re_devices thead th:first-child:before,#table_re_devices thead th:first-child:after{display:none!important;}';
 }
 $page->addHtml('<style>'.$tableHeaderStyle.'</style>');
 
-$table = new HtmlTable('table_billing_devices', $page, true, true, 'table table-hover align-middle');
+$table = new HtmlTable('table_re_devices', $page, true, true, 'table table-hover align-middle');
 $table->setServerSideProcessing($serverUrl);
 $table->setDatatablesRowsPerPage($defaultPageLength);
 $table->setDatatablesOrderColumns(array(array(2, 'desc')));
 $table->disableDatatablesColumnsSort(array(1,10));
 $table->setColumnAlignByArray(array('center', 'left', 'left', 'left', 'left', 'left', 'left', 'left', 'left', 'left'));
 $table->addRowHeadingByArray(array(
-'<input type="checkbox" id="billing-select-all-devices" />',
-$gL10n->get('BL_DEVICE_NUMBER'),
-$gL10n->get('BL_USER'),
-$gL10n->get('BL_DEVICE_ID'),
-$gL10n->get('BL_DEVICE_ACTIVE'),
-$gL10n->get('BL_DEVICE_ACTIVE_DATE'),
-$gL10n->get('BL_DEVICE_PLATFORM'),
-$gL10n->get('BL_DEVICE_BRAND'),
-$gL10n->get('BL_DEVICE_MODEL'),
-$gL10n->get('BL_ACTIONS')
+'<input type="checkbox" id="re-select-all-devices" />',
+$gL10n->get('RE_DEVICE_NUMBER'),
+$gL10n->get('RE_USER'),
+$gL10n->get('RE_DEVICE_ID'),
+$gL10n->get('RE_DEVICE_ACTIVE'),
+$gL10n->get('RE_DEVICE_ACTIVE_DATE'),
+$gL10n->get('RE_DEVICE_PLATFORM'),
+$gL10n->get('RE_DEVICE_BRAND'),
+$gL10n->get('RE_DEVICE_MODEL'),
+$gL10n->get('RE_ACTIONS')
 ));
 
 if ($isAdmin) {
-    $bulkDeleteUrlDev = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/devices/delete_all.php');
+    $bulkDeleteUrlDev = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/delete_all.php');
     $bulkDeleteUrlDevJs = json_encode($bulkDeleteUrlDev);
-    $devicesDeleteConfirm = json_encode($gL10n->get('BL_DELETE_DEVICE_CONFIRM'));
+    $devicesDeleteConfirm = json_encode($gL10n->get('RE_DELETE_DEVICE_CONFIRM'));
     $devicesDeleteError = json_encode('Error deleting selected devices');
-    $deleteAllLabel = json_encode($gL10n->get('BL_DELETE_ALL'));
+    $deleteAllLabel = json_encode($gL10n->get('RE_DELETE_ALL'));
 
     $jsDevices = <<<'JS'
   $(function(){
@@ -276,11 +276,11 @@ if ($isAdmin) {
     var deleteErrorMsg = {{DELETE_ERROR}};
     var deleteButtonLabel = {{DELETE_BUTTON_LABEL}};
     
-    var tableEl = $('#table_billing_devices');
+    var tableEl = $('#table_re_devices');
     var dataTable = tableEl.DataTable();
-    var wrapperEl = $('#table_billing_devices_wrapper');
+    var wrapperEl = $('#table_re_devices_wrapper');
     function locateLengthContainer(){
-      var lengthEl = $('#table_billing_devices_length');
+      var lengthEl = $('#table_re_devices_length');
       if (lengthEl.length) {
         return lengthEl;
       }
@@ -295,22 +295,22 @@ if ($isAdmin) {
       if (!lengthEl.length) {
         return $();
       }
-      var buttonEl = $('#billing-delete-selected-devices');
+      var buttonEl = $('#re-delete-selected-devices');
       if (buttonEl.length) {
         return buttonEl;
       }
-      var newButtonEl = $('<button type="button" id="billing-delete-selected-devices" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
+      var newButtonEl = $('<button type="button" id="re-delete-selected-devices" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
       lengthEl.append(newButtonEl);
       return newButtonEl;
     }
     function bindDeleteButton(buttonEl){
-      if (!buttonEl.length || buttonEl.data('billingDeleteBound')) {
+      if (!buttonEl.length || buttonEl.data('residentsDeleteBound')) {
         return;
       }
-      buttonEl.data('billingDeleteBound', true).on('click', function(e){
+      buttonEl.data('residentsDeleteBound', true).on('click', function(e){
         e.preventDefault();
         var ids = [];
-        tableEl.find('tbody input.billing-row-select:checked').each(function(){ ids.push($(this).val()); });
+        tableEl.find('tbody input.re-row-select:checked').each(function(){ ids.push($(this).val()); });
         if (ids.length === 0) {
           return;
         }
@@ -334,7 +334,7 @@ if ($isAdmin) {
       if (!buttonEl.length) {
         return;
       }
-      var hasSelection = tableEl.find('tbody input.billing-row-select:checked').length > 0;
+      var hasSelection = tableEl.find('tbody input.re-row-select:checked').length > 0;
       buttonEl.prop('disabled', !hasSelection);
     }
     var deleteButtonEl = getDeleteButton();
@@ -343,26 +343,26 @@ if ($isAdmin) {
       updateDeleteButtonState();
     });
     function syncHeaderCheckboxDevices(){
-      var total = tableEl.find('tbody input.billing-row-select').length;
-      var selected = tableEl.find('tbody input.billing-row-select:checked').length;
-      var hdr = $('#billing-select-all-devices').get(0);
+      var total = tableEl.find('tbody input.re-row-select').length;
+      var selected = tableEl.find('tbody input.re-row-select:checked').length;
+      var hdr = $('#re-select-all-devices').get(0);
       if (!hdr) { return; }
       hdr.indeterminate = selected > 0 && selected < total;
       hdr.checked = total > 0 && selected === total;
     }
     tableEl.find('thead')
-      .on('click', '#billing-select-all-devices', function(e){ e.stopPropagation(); })
-      .on('change', '#billing-select-all-devices', function(e){
+      .on('click', '#re-select-all-devices', function(e){ e.stopPropagation(); })
+      .on('change', '#re-select-all-devices', function(e){
         e.stopPropagation();
         var checked = this.checked;
-        tableEl.find('tbody input.billing-row-select')
+        tableEl.find('tbody input.re-row-select')
           .prop('checked', checked)
           .trigger('change');
         syncHeaderCheckboxDevices();
       });
     function updateInfo(){
       var pageInfo = dataTable.page.info();
-      var selected = tableEl.find('tbody input.billing-row-select:checked').length;
+      var selected = tableEl.find('tbody input.re-row-select:checked').length;
       var infoEl = wrapperEl.find('.dataTables_info');
       if (selected > 0){
         infoEl.text(selected + ' selected');
@@ -376,7 +376,7 @@ if ($isAdmin) {
       deleteButtonEl = getDeleteButton();
       updateDeleteButtonState();
     });
-    tableEl.on('change', 'input.billing-row-select', function(){
+    tableEl.on('change', 'input.re-row-select', function(){
       updateInfo();
       syncHeaderCheckboxDevices();
       updateDeleteButtonState();

@@ -13,576 +13,592 @@ require_once(__DIR__ . '/../common_function.php');
 
 class ConfigTables
 {
-    private const TABLE_DEFINITION_MYSQL_BILL_INVOICES = '
-    biv_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    biv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
-    biv_is_paid TINYINT(1) NOT NULL DEFAULT 0,
-    biv_number_index INT UNSIGNED NOT NULL,
-    biv_number VARCHAR(50) NOT NULL,
-    biv_date DATE NULL,
-    biv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
-    biv_usr_id INT UNSIGNED NULL,
-    biv_start_date DATE NULL,
-    biv_end_date DATE NULL,
-    biv_due_date DATE NULL,
-    biv_notes TEXT NULL,
-    biv_usr_id_create INT UNSIGNED DEFAULT NULL,
-    biv_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    biv_usr_id_change INT UNSIGNED DEFAULT NULL,
-    biv_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (biv_id)
+    private const TABLE_DEFINITION_MYSQL_RE_INVOICES = '
+    riv_id INT NOT NULL AUTO_INCREMENT,
+    riv_org_id INT NULL,
+    riv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
+    riv_is_paid TINYINT(1) NOT NULL DEFAULT 0,
+    riv_number_index INT NOT NULL,
+    riv_number VARCHAR(50) NOT NULL,
+    riv_date DATE NULL,
+    riv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
+    riv_usr_id INT NULL,
+    riv_start_date DATE NULL,
+    riv_end_date DATE NULL,
+    riv_due_date DATE NULL,
+    riv_notes TEXT NULL,
+    riv_usr_id_create INT DEFAULT NULL,
+    riv_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    riv_usr_id_change INT DEFAULT NULL,
+    riv_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (riv_id)
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_INVOICES_HIST = '
-    ivh_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    biv_id INT UNSIGNED NOT NULL,
-    biv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
-    biv_is_paid TINYINT(1) NOT NULL DEFAULT 0,
-    biv_number_index INT UNSIGNED NOT NULL,
-    biv_number VARCHAR(50) NOT NULL,
-    biv_date DATE NULL,
-    biv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
-    biv_usr_id INT UNSIGNED NULL,
-    biv_start_date DATE NULL,
-    biv_end_date DATE NULL,
-    biv_due_date DATE NULL,
-    biv_notes TEXT NULL,
-    biv_usr_id_create INT UNSIGNED DEFAULT NULL,
-    biv_timestamp_create TIMESTAMP NULL DEFAULT NULL,
-    biv_usr_id_change INT UNSIGNED DEFAULT NULL,
-    biv_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    ivh_action VARCHAR(20) NOT NULL,
-    ivh_usr_id INT UNSIGNED DEFAULT NULL,
-    ivh_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (ivh_id)
+    private const TABLE_DEFINITION_MYSQL_RE_INVOICES_HIST = '
+    rih_id INT NOT NULL AUTO_INCREMENT,
+    riv_id INT NOT NULL,
+    riv_org_id INT NULL,
+    riv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
+    riv_is_paid TINYINT(1) NOT NULL DEFAULT 0,
+    riv_number_index INT NOT NULL,
+    riv_number VARCHAR(50) NOT NULL,
+    riv_date DATE NULL,
+    riv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
+    riv_usr_id INT NULL,
+    riv_start_date DATE NULL,
+    riv_end_date DATE NULL,
+    riv_due_date DATE NULL,
+    riv_notes TEXT NULL,
+    riv_usr_id_create INT DEFAULT NULL,
+    riv_timestamp_create TIMESTAMP NULL DEFAULT NULL,
+    riv_usr_id_change INT DEFAULT NULL,
+    riv_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    rih_action VARCHAR(20) NOT NULL,
+    rih_usr_id INT DEFAULT NULL,
+    rih_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (rih_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_INVOICES = '
-    biv_id SERIAL PRIMARY KEY,
-    biv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
-    biv_is_paid INTEGER NOT NULL DEFAULT 0,
-    biv_number_index INTEGER NOT NULL,
-    biv_number VARCHAR(50) NOT NULL,
-    biv_date DATE NULL,
-    biv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
-    biv_usr_id INTEGER NULL,
-    biv_start_date DATE NULL,
-    biv_end_date DATE NULL,
-    biv_due_date DATE NULL,
-    biv_notes TEXT NULL,
-    biv_usr_id_create INTEGER DEFAULT NULL,
-    biv_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    biv_usr_id_change INTEGER DEFAULT NULL,
-    biv_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_INVOICES = '
+    riv_id SERIAL PRIMARY KEY,
+    riv_org_id INTEGER NULL,
+    riv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
+    riv_is_paid INTEGER NOT NULL DEFAULT 0,
+    riv_number_index INTEGER NOT NULL,
+    riv_number VARCHAR(50) NOT NULL,
+    riv_date DATE NULL,
+    riv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
+    riv_usr_id INTEGER NULL,
+    riv_start_date DATE NULL,
+    riv_end_date DATE NULL,
+    riv_due_date DATE NULL,
+    riv_notes TEXT NULL,
+    riv_usr_id_create INTEGER DEFAULT NULL,
+    riv_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    riv_usr_id_change INTEGER DEFAULT NULL,
+    riv_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_INVOICES_HIST = '
-    ivh_id SERIAL PRIMARY KEY,
-    biv_id INTEGER NOT NULL,
-    biv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
-    biv_is_paid INTEGER NOT NULL DEFAULT 0,
-    biv_number_index INTEGER NOT NULL,
-    biv_number VARCHAR(50) NOT NULL,
-    biv_date DATE NULL,
-    biv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
-    biv_usr_id INTEGER NULL,
-    biv_start_date DATE NULL,
-    biv_end_date DATE NULL,
-    biv_due_date DATE NULL,
-    biv_notes TEXT NULL,
-    biv_usr_id_create INTEGER DEFAULT NULL,
-    biv_timestamp_create TIMESTAMP DEFAULT NULL,
-    biv_usr_id_change INTEGER DEFAULT NULL,
-    biv_timestamp_change TIMESTAMP DEFAULT NULL,
-    ivh_action VARCHAR(20) NOT NULL,
-    ivh_usr_id INTEGER DEFAULT NULL,
-    ivh_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    private const TABLE_DEFINITION_PGSQL_RE_INVOICES_HIST = '
+    rih_id SERIAL PRIMARY KEY,
+    riv_id INTEGER NOT NULL,
+    riv_org_id INTEGER NULL,
+    riv_status VARCHAR(30) NOT NULL DEFAULT \'O\',
+    riv_is_paid INTEGER NOT NULL DEFAULT 0,
+    riv_number_index INTEGER NOT NULL,
+    riv_number VARCHAR(50) NOT NULL,
+    riv_date DATE NULL,
+    riv_type VARCHAR(30) NOT NULL DEFAULT \'I\',
+    riv_usr_id INTEGER NULL,
+    riv_start_date DATE NULL,
+    riv_end_date DATE NULL,
+    riv_due_date DATE NULL,
+    riv_notes TEXT NULL,
+    riv_usr_id_create INTEGER DEFAULT NULL,
+    riv_timestamp_create TIMESTAMP DEFAULT NULL,
+    riv_usr_id_change INTEGER DEFAULT NULL,
+    riv_timestamp_change TIMESTAMP DEFAULT NULL,
+    rih_action VARCHAR(20) NOT NULL,
+    rih_usr_id INTEGER DEFAULT NULL,
+    rih_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_INVOICE_ITEMS = '
-    bii_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bii_inv_id INT UNSIGNED NOT NULL,
-    bii_chg_id INT UNSIGNED NOT NULL DEFAULT 0,
-    bii_name VARCHAR(255) NOT NULL,
-    bii_start_date DATE NULL,
-    bii_end_date DATE NULL,
-    bii_type VARCHAR(30) NULL,
-    bii_currency VARCHAR(8) NULL,
-    bii_rate DECIMAL(12,2) NULL,
-    bii_quantity DECIMAL(12,2) NULL,
-    bii_amount DECIMAL(12,2) NULL,
-    bii_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bii_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    bii_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bii_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (bii_id)
+    private const TABLE_DEFINITION_MYSQL_RE_INVOICE_ITEMS = '
+    rii_id INT NOT NULL AUTO_INCREMENT,
+    rii_org_id INT NULL,
+    rii_inv_id INT NOT NULL,
+    rii_chg_id INT NOT NULL DEFAULT 0,
+    rii_name VARCHAR(255) NOT NULL,
+    rii_start_date DATE NULL,
+    rii_end_date DATE NULL,
+    rii_type VARCHAR(30) NULL,
+    rii_currency VARCHAR(8) NULL,
+    rii_rate DECIMAL(12,2) NULL,
+    rii_quantity DECIMAL(12,2) NULL,
+    rii_amount DECIMAL(12,2) NULL,
+    rii_usr_id_create INT DEFAULT NULL,
+    rii_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    rii_usr_id_change INT DEFAULT NULL,
+    rii_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (rii_id)
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_INVOICE_ITEMS_HIST = '
-    iih_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bii_id INT UNSIGNED NOT NULL,
-    bii_inv_id INT UNSIGNED NOT NULL,
-    bii_chg_id INT UNSIGNED NOT NULL DEFAULT 0,
-    bii_name VARCHAR(255) NOT NULL,
-    bii_start_date DATE NULL,
-    bii_end_date DATE NULL,
-    bii_type VARCHAR(30) NULL,
-    bii_currency VARCHAR(8) NULL,
-    bii_rate DECIMAL(12,2) NULL,
-    bii_quantity DECIMAL(12,2) NULL,
-    bii_amount DECIMAL(12,2) NULL,
-    bii_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bii_timestamp_create TIMESTAMP NULL DEFAULT NULL,
-    bii_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bii_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    iih_action VARCHAR(20) NOT NULL,
-    iih_usr_id INT UNSIGNED DEFAULT NULL,
-    iih_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (iih_id)
+    private const TABLE_DEFINITION_MYSQL_RE_INVOICE_ITEMS_HIST = '
+    riih_id INT NOT NULL AUTO_INCREMENT,
+    rii_id INT NOT NULL,
+    rii_org_id INT NULL,
+    rii_inv_id INT NOT NULL,
+    rii_chg_id INT NOT NULL DEFAULT 0,
+    rii_name VARCHAR(255) NOT NULL,
+    rii_start_date DATE NULL,
+    rii_end_date DATE NULL,
+    rii_type VARCHAR(30) NULL,
+    rii_currency VARCHAR(8) NULL,
+    rii_rate DECIMAL(12,2) NULL,
+    rii_quantity DECIMAL(12,2) NULL,
+    rii_amount DECIMAL(12,2) NULL,
+    rii_usr_id_create INT DEFAULT NULL,
+    rii_timestamp_create TIMESTAMP NULL DEFAULT NULL,
+    rii_usr_id_change INT DEFAULT NULL,
+    rii_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    riih_action VARCHAR(20) NOT NULL,
+    riih_usr_id INT DEFAULT NULL,
+    riih_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (riih_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_INVOICE_ITEMS = '
-    bii_id SERIAL PRIMARY KEY,
-    bii_inv_id INTEGER NOT NULL,
-    bii_chg_id INTEGER NOT NULL DEFAULT 0,
-    bii_name VARCHAR(255) NOT NULL,
-    bii_start_date DATE NULL,
-    bii_end_date DATE NULL,
-    bii_type VARCHAR(30) NULL,
-    bii_currency VARCHAR(8) NULL,
-    bii_rate NUMERIC(12,2) NULL,
-    bii_quantity NUMERIC(12,2) NULL,
-    bii_amount NUMERIC(12,2) NULL,
-    bii_usr_id_create INTEGER DEFAULT NULL,
-    bii_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    bii_usr_id_change INTEGER DEFAULT NULL,
-    bii_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_INVOICE_ITEMS = '
+    rii_id SERIAL PRIMARY KEY,
+    rii_org_id INTEGER NULL,
+    rii_inv_id INTEGER NOT NULL,
+    rii_chg_id INTEGER NOT NULL DEFAULT 0,
+    rii_name VARCHAR(255) NOT NULL,
+    rii_start_date DATE NULL,
+    rii_end_date DATE NULL,
+    rii_type VARCHAR(30) NULL,
+    rii_currency VARCHAR(8) NULL,
+    rii_rate NUMERIC(12,2) NULL,
+    rii_quantity NUMERIC(12,2) NULL,
+    rii_amount NUMERIC(12,2) NULL,
+    rii_usr_id_create INTEGER DEFAULT NULL,
+    rii_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rii_usr_id_change INTEGER DEFAULT NULL,
+    rii_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_INVOICE_ITEMS_HIST = '
-    iih_id SERIAL PRIMARY KEY,
-    bii_id INTEGER NOT NULL,
-    bii_inv_id INTEGER NOT NULL,
-    bii_chg_id INTEGER NOT NULL DEFAULT 0,
-    bii_name VARCHAR(255) NOT NULL,
-    bii_start_date DATE NULL,
-    bii_end_date DATE NULL,
-    bii_type VARCHAR(30) NULL,
-    bii_currency VARCHAR(8) NULL,
-    bii_rate NUMERIC(12,2) NULL,
-    bii_quantity NUMERIC(12,2) NULL,
-    bii_amount NUMERIC(12,2) NULL,
-    bii_usr_id_create INTEGER DEFAULT NULL,
-    bii_timestamp_create TIMESTAMP DEFAULT NULL,
-    bii_usr_id_change INTEGER DEFAULT NULL,
-    bii_timestamp_change TIMESTAMP DEFAULT NULL,
-    iih_action VARCHAR(20) NOT NULL,
-    iih_usr_id INTEGER DEFAULT NULL,
-    iih_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    private const TABLE_DEFINITION_PGSQL_RE_INVOICE_ITEMS_HIST = '
+    riih_id SERIAL PRIMARY KEY,
+    rii_id INTEGER NOT NULL,
+    rii_org_id INTEGER NULL,
+    rii_inv_id INTEGER NOT NULL,
+    rii_chg_id INTEGER NOT NULL DEFAULT 0,
+    rii_name VARCHAR(255) NOT NULL,
+    rii_start_date DATE NULL,
+    rii_end_date DATE NULL,
+    rii_type VARCHAR(30) NULL,
+    rii_currency VARCHAR(8) NULL,
+    rii_rate NUMERIC(12,2) NULL,
+    rii_quantity NUMERIC(12,2) NULL,
+    rii_amount NUMERIC(12,2) NULL,
+    rii_usr_id_create INTEGER DEFAULT NULL,
+    rii_timestamp_create TIMESTAMP DEFAULT NULL,
+    rii_usr_id_change INTEGER DEFAULT NULL,
+    rii_timestamp_change TIMESTAMP DEFAULT NULL,
+    riih_action VARCHAR(20) NOT NULL,
+    riih_usr_id INTEGER DEFAULT NULL,
+    riih_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_PAYMENTS = '
-    bpa_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bpa_status VARCHAR(30) NOT NULL,
-    bpa_date TIMESTAMP NULL,
-    bpa_pay_type VARCHAR(30) NULL,
-    bpa_pg_pay_method VARCHAR(30) NULL,
-    bpa_trans_id VARCHAR(30) NULL,
-    bpa_bank_ref_no VARCHAR(255) NULL,
-    bpa_usr_id INT UNSIGNED NULL,
-    bpa_org_id INT UNSIGNED NULL,
-    bpa_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bpa_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    bpa_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bpa_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (bpa_id)
+    private const TABLE_DEFINITION_MYSQL_RE_PAYMENTS = '
+    rpa_id INT NOT NULL AUTO_INCREMENT,
+    rpa_status VARCHAR(30) NOT NULL,
+    rpa_date TIMESTAMP NULL,
+    rpa_pay_type VARCHAR(30) NULL,
+    rpa_pg_pay_method VARCHAR(30) NULL,
+    rpa_trans_id VARCHAR(30) NULL,
+    rpa_bank_ref_no VARCHAR(255) NULL,
+    rpa_usr_id INT NULL,
+    rpa_org_id INT NULL,
+    rpa_usr_id_create INT DEFAULT NULL,
+    rpa_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    rpa_usr_id_change INT DEFAULT NULL,
+    rpa_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (rpa_id)
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_PAYMENTS_HIST = '
-    pah_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bpa_id INT UNSIGNED NOT NULL,
-    bpa_status VARCHAR(30) NOT NULL,
-    bpa_date TIMESTAMP NULL,
-    bpa_pay_type VARCHAR(30) NULL,
-    bpa_pg_pay_method VARCHAR(30) NULL,
-    bpa_trans_id VARCHAR(30) NULL,
-    bpa_bank_ref_no VARCHAR(255) NULL,
-    bpa_usr_id INT UNSIGNED NULL,
-    bpa_org_id INT UNSIGNED NULL,
-    bpa_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bpa_timestamp_create TIMESTAMP NULL DEFAULT NULL,
-    bpa_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bpa_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    pah_action VARCHAR(20) NOT NULL,
-    pah_usr_id INT UNSIGNED DEFAULT NULL,
-    pah_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (pah_id)
+    private const TABLE_DEFINITION_MYSQL_RE_PAYMENTS_HIST = '
+    rpah_id INT NOT NULL AUTO_INCREMENT,
+    rpa_id INT NOT NULL,
+    rpa_status VARCHAR(30) NOT NULL,
+    rpa_date TIMESTAMP NULL,
+    rpa_pay_type VARCHAR(30) NULL,
+    rpa_pg_pay_method VARCHAR(30) NULL,
+    rpa_trans_id VARCHAR(30) NULL,
+    rpa_bank_ref_no VARCHAR(255) NULL,
+    rpa_usr_id INT NULL,
+    rpa_org_id INT NULL,
+    rpa_usr_id_create INT DEFAULT NULL,
+    rpa_timestamp_create TIMESTAMP NULL DEFAULT NULL,
+    rpa_usr_id_change INT DEFAULT NULL,
+    rpa_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    rpah_action VARCHAR(20) NOT NULL,
+    rpah_usr_id INT DEFAULT NULL,
+    rpah_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (rpah_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_PAYMENTS = '
-    bpa_id SERIAL PRIMARY KEY,
-    bpa_status VARCHAR(30) NOT NULL,
-    bpa_date TIMESTAMP NULL,
-    bpa_pay_type VARCHAR(30) NULL,
-    bpa_pg_pay_method VARCHAR(30) NULL,
-    bpa_trans_id VARCHAR(30) NULL,
-    bpa_bank_ref_no VARCHAR(255) NULL,
-    bpa_usr_id INTEGER NULL,
-    bpa_org_id INTEGER NULL,
-    bpa_usr_id_create INTEGER DEFAULT NULL,
-    bpa_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    bpa_usr_id_change INTEGER DEFAULT NULL,
-    bpa_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_PAYMENTS = '
+    rpa_id SERIAL PRIMARY KEY,
+    rpa_status VARCHAR(30) NOT NULL,
+    rpa_date TIMESTAMP NULL,
+    rpa_pay_type VARCHAR(30) NULL,
+    rpa_pg_pay_method VARCHAR(30) NULL,
+    rpa_trans_id VARCHAR(30) NULL,
+    rpa_bank_ref_no VARCHAR(255) NULL,
+    rpa_usr_id INTEGER NULL,
+    rpa_org_id INTEGER NULL,
+    rpa_usr_id_create INTEGER DEFAULT NULL,
+    rpa_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rpa_usr_id_change INTEGER DEFAULT NULL,
+    rpa_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_PAYMENTS_HIST = '
-    pah_id SERIAL PRIMARY KEY,
-    bpa_id INTEGER NOT NULL,
-    bpa_status VARCHAR(30) NOT NULL,
-    bpa_date TIMESTAMP NULL,
-    bpa_pay_type VARCHAR(30) NULL,
-    bpa_pg_pay_method VARCHAR(30) NULL,
-    bpa_trans_id VARCHAR(30) NULL,
-    bpa_bank_ref_no VARCHAR(255) NULL,
-    bpa_usr_id INTEGER NULL,
-    bpa_org_id INTEGER NULL,
-    bpa_usr_id_create INTEGER DEFAULT NULL,
-    bpa_timestamp_create TIMESTAMP DEFAULT NULL,
-    bpa_usr_id_change INTEGER DEFAULT NULL,
-    bpa_timestamp_change TIMESTAMP DEFAULT NULL,
-    pah_action VARCHAR(20) NOT NULL,
-    pah_usr_id INTEGER DEFAULT NULL,
-    pah_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    private const TABLE_DEFINITION_PGSQL_RE_PAYMENTS_HIST = '
+    rpah_id SERIAL PRIMARY KEY,
+    rpa_id INTEGER NOT NULL,
+    rpa_status VARCHAR(30) NOT NULL,
+    rpa_date TIMESTAMP NULL,
+    rpa_pay_type VARCHAR(30) NULL,
+    rpa_pg_pay_method VARCHAR(30) NULL,
+    rpa_trans_id VARCHAR(30) NULL,
+    rpa_bank_ref_no VARCHAR(255) NULL,
+    rpa_usr_id INTEGER NULL,
+    rpa_org_id INTEGER NULL,
+    rpa_usr_id_create INTEGER DEFAULT NULL,
+    rpa_timestamp_create TIMESTAMP DEFAULT NULL,
+    rpa_usr_id_change INTEGER DEFAULT NULL,
+    rpa_timestamp_change TIMESTAMP DEFAULT NULL,
+    rpah_action VARCHAR(20) NOT NULL,
+    rpah_usr_id INTEGER DEFAULT NULL,
+    rpah_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_PAYMENT_ITEMS = '
-    bpi_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bpi_payment_id INT UNSIGNED NULL,
-    bpi_inv_id INT UNSIGNED NULL,
-    bpi_amount DECIMAL(16,2) NULL,
-    bpi_currency VARCHAR(5) NULL,
-    bpi_usr_id INT UNSIGNED NULL,
-    bpi_org_id INT UNSIGNED NULL,
-    bpi_usr_id_create INT UNSIGNED NULL,
-    bpi_usr_id_change INT UNSIGNED NULL,
-    bpi_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    bpi_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (bpi_id)
+    private const TABLE_DEFINITION_MYSQL_RE_PAYMENT_ITEMS = '
+    rpi_id INT NOT NULL AUTO_INCREMENT,
+    rpi_payment_id INT NULL,
+    rpi_inv_id INT NULL,
+    rpi_amount DECIMAL(16,2) NULL,
+    rpi_currency VARCHAR(5) NULL,
+    rpi_usr_id INT NULL,
+    rpi_org_id INT NULL,
+    rpi_usr_id_create INT NULL,
+    rpi_usr_id_change INT NULL,
+    rpi_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    rpi_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (rpi_id)
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_PAYMENT_ITEMS_HIST = '
-    pih_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bpi_id INT UNSIGNED NOT NULL,
-    bpi_payment_id INT UNSIGNED NULL,
-    bpi_inv_id INT UNSIGNED NULL,
-    bpi_amount DECIMAL(16,2) NULL,
-    bpi_currency VARCHAR(5) NULL,
-    bpi_usr_id INT UNSIGNED NULL,
-    bpi_org_id INT UNSIGNED NULL,
-    bpi_usr_id_create INT UNSIGNED NULL,
-    bpi_usr_id_change INT UNSIGNED NULL,
-    bpi_timestamp_create TIMESTAMP NULL DEFAULT NULL,
-    bpi_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    pih_action VARCHAR(20) NOT NULL,
-    pih_usr_id INT UNSIGNED DEFAULT NULL,
-    pih_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (pih_id)
+    private const TABLE_DEFINITION_MYSQL_RE_PAYMENT_ITEMS_HIST = '
+    rpih_id INT NOT NULL AUTO_INCREMENT,
+    rpi_id INT NOT NULL,
+    rpi_payment_id INT NULL,
+    rpi_inv_id INT NULL,
+    rpi_amount DECIMAL(16,2) NULL,
+    rpi_currency VARCHAR(5) NULL,
+    rpi_usr_id INT NULL,
+    rpi_org_id INT NULL,
+    rpi_usr_id_create INT NULL,
+    rpi_usr_id_change INT NULL,
+    rpi_timestamp_create TIMESTAMP NULL DEFAULT NULL,
+    rpi_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    rpih_action VARCHAR(20) NOT NULL,
+    rpih_usr_id INT DEFAULT NULL,
+    rpih_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (rpih_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_PAYMENT_ITEMS = '
-    bpi_id SERIAL PRIMARY KEY,
-    bpi_payment_id INTEGER NULL,
-    bpi_inv_id INTEGER NULL,
-    bpi_amount NUMERIC(16,2) NULL,
-    bpi_currency VARCHAR(5) NULL,
-    bpi_usr_id INTEGER NULL,
-    bpi_org_id INTEGER NULL,
-    bpi_usr_id_create INTEGER NULL,
-    bpi_usr_id_change INTEGER NULL,
-    bpi_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    bpi_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_PAYMENT_ITEMS = '
+    rpi_id SERIAL PRIMARY KEY,
+    rpi_payment_id INTEGER NULL,
+    rpi_inv_id INTEGER NULL,
+    rpi_amount NUMERIC(16,2) NULL,
+    rpi_currency VARCHAR(5) NULL,
+    rpi_usr_id INTEGER NULL,
+    rpi_org_id INTEGER NULL,
+    rpi_usr_id_create INTEGER NULL,
+    rpi_usr_id_change INTEGER NULL,
+    rpi_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rpi_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_PAYMENT_ITEMS_HIST = '
-    pih_id SERIAL PRIMARY KEY,
-    bpi_id INTEGER NOT NULL,
-    bpi_payment_id INTEGER NULL,
-    bpi_inv_id INTEGER NULL,
-    bpi_amount NUMERIC(16,2) NULL,
-    bpi_currency VARCHAR(5) NULL,
-    bpi_usr_id INTEGER NULL,
-    bpi_org_id INTEGER NULL,
-    bpi_usr_id_create INTEGER DEFAULT NULL,
-    bpi_usr_id_change INTEGER DEFAULT NULL,
-    bpi_timestamp_create TIMESTAMP DEFAULT NULL,
-    bpi_timestamp_change TIMESTAMP DEFAULT NULL,
-    pih_action VARCHAR(20) NOT NULL,
-    pih_usr_id INTEGER DEFAULT NULL,
-    pih_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    private const TABLE_DEFINITION_PGSQL_RE_PAYMENT_ITEMS_HIST = '
+    rpih_id SERIAL PRIMARY KEY,
+    rpi_id INTEGER NOT NULL,
+    rpi_payment_id INTEGER NULL,
+    rpi_inv_id INTEGER NULL,
+    rpi_amount NUMERIC(16,2) NULL,
+    rpi_currency VARCHAR(5) NULL,
+    rpi_usr_id INTEGER NULL,
+    rpi_org_id INTEGER NULL,
+    rpi_usr_id_create INTEGER DEFAULT NULL,
+    rpi_usr_id_change INTEGER DEFAULT NULL,
+    rpi_timestamp_create TIMESTAMP DEFAULT NULL,
+    rpi_timestamp_change TIMESTAMP DEFAULT NULL,
+    rpih_action VARCHAR(20) NOT NULL,
+    rpih_usr_id INTEGER DEFAULT NULL,
+    rpih_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_TRANS = '
-    btr_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    btr_pg_id VARCHAR(30) NULL,
-    btr_bank_ref_no VARCHAR(255) NULL,
-    btr_status VARCHAR(5) NULL,
-    btr_amount DECIMAL(16,2) NULL,
-    btr_currency VARCHAR(5) NULL,
-    btr_payment_id INT UNSIGNED NULL,
-    btr_usr_id INT UNSIGNED NULL,
-    btr_org_id INT UNSIGNED NULL,
-    btr_pg_pay_method VARCHAR(255) NULL,
-    btr_pg_msg VARCHAR(255) NULL,
-    btr_pg_trans_date TIMESTAMP NULL,
-    btr_pg_request TEXT NULL,
-    btr_pg_response TEXT NULL,
-    btr_usr_id_create INT UNSIGNED NULL,
-    btr_usr_id_change INT UNSIGNED NULL,
-    btr_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    btr_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (btr_id)
+    private const TABLE_DEFINITION_MYSQL_RE_TRANS = '
+    rtr_id INT NOT NULL AUTO_INCREMENT,
+    rtr_pg_id VARCHAR(30) NULL,
+    rtr_bank_ref_no VARCHAR(255) NULL,
+    rtr_status VARCHAR(5) NULL,
+    rtr_amount DECIMAL(16,2) NULL,
+    rtr_currency VARCHAR(5) NULL,
+    rtr_payment_id INT NULL,
+    rtr_usr_id INT NULL,
+    rtr_org_id INT NULL,
+    rtr_pg_pay_method VARCHAR(255) NULL,
+    rtr_pg_msg VARCHAR(255) NULL,
+    rtr_pg_trans_date TIMESTAMP NULL,
+    rtr_pg_request TEXT NULL,
+    rtr_pg_response TEXT NULL,
+    rtr_usr_id_create INT NULL,
+    rtr_usr_id_change INT NULL,
+    rtr_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    rtr_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (rtr_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_TRANS = '
-    btr_id SERIAL PRIMARY KEY,
-    btr_pg_id VARCHAR(30) NULL,
-    btr_bank_ref_no VARCHAR(255) NULL,
-    btr_status VARCHAR(5) NULL,
-    btr_amount NUMERIC(16,2) NULL,
-    btr_currency VARCHAR(5) NULL,
-    btr_payment_id INTEGER NULL,
-    btr_usr_id INTEGER NULL,
-    btr_org_id INTEGER NULL,
-    btr_pg_pay_method VARCHAR(255) NULL,
-    btr_pg_msg VARCHAR(255) NULL,
-    btr_pg_trans_date TIMESTAMP NULL,
-    btr_pg_request TEXT NULL,
-    btr_pg_response TEXT NULL,
-    btr_usr_id_create INTEGER NULL,
-    btr_usr_id_change INTEGER NULL,
-    btr_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    btr_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_TRANS = '
+    rtr_id SERIAL PRIMARY KEY,
+    rtr_pg_id VARCHAR(30) NULL,
+    rtr_bank_ref_no VARCHAR(255) NULL,
+    rtr_status VARCHAR(5) NULL,
+    rtr_amount NUMERIC(16,2) NULL,
+    rtr_currency VARCHAR(5) NULL,
+    rtr_payment_id INTEGER NULL,
+    rtr_usr_id INTEGER NULL,
+    rtr_org_id INTEGER NULL,
+    rtr_pg_pay_method VARCHAR(255) NULL,
+    rtr_pg_msg VARCHAR(255) NULL,
+    rtr_pg_trans_date TIMESTAMP NULL,
+    rtr_pg_request TEXT NULL,
+    rtr_pg_response TEXT NULL,
+    rtr_usr_id_create INTEGER NULL,
+    rtr_usr_id_change INTEGER NULL,
+    rtr_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rtr_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_TRANS_ITEMS = '
-    bti_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bti_pg_payment_id INT UNSIGNED NULL,
-    bti_inv_id INT UNSIGNED NULL,
-    bti_amount DECIMAL(16,2) NULL,
-    bti_currency VARCHAR(5) NULL,
-    bti_usr_id INT UNSIGNED NULL,
-    bti_org_id INT UNSIGNED NULL,
-    bti_usr_id_create INT UNSIGNED NULL,
-    bti_usr_id_change INT UNSIGNED NULL,
-    bti_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    bti_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (bti_id)
+    private const TABLE_DEFINITION_MYSQL_RE_TRANS_ITEMS = '
+    rti_id INT NOT NULL AUTO_INCREMENT,
+    rti_pg_payment_id INT NULL,
+    rti_inv_id INT NULL,
+    rti_amount DECIMAL(16,2) NULL,
+    rti_currency VARCHAR(5) NULL,
+    rti_usr_id INT NULL,
+    rti_org_id INT NULL,
+    rti_usr_id_create INT NULL,
+    rti_usr_id_change INT NULL,
+    rti_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    rti_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (rti_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_TRANS_ITEMS = '
-    bti_id SERIAL PRIMARY KEY,
-    bti_pg_payment_id INTEGER NULL,
-    bti_inv_id INTEGER NULL,
-    bti_amount NUMERIC(16,2) NULL,
-    bti_currency VARCHAR(5) NULL,
-    bti_usr_id INTEGER NULL,
-    bti_org_id INTEGER NULL,
-    bti_usr_id_create INTEGER NULL,
-    bti_usr_id_change INTEGER NULL,
-    bti_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    bti_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_TRANS_ITEMS = '
+    rti_id SERIAL PRIMARY KEY,
+    rti_pg_payment_id INTEGER NULL,
+    rti_inv_id INTEGER NULL,
+    rti_amount NUMERIC(16,2) NULL,
+    rti_currency VARCHAR(5) NULL,
+    rti_usr_id INTEGER NULL,
+    rti_org_id INTEGER NULL,
+    rti_usr_id_create INTEGER NULL,
+    rti_usr_id_change INTEGER NULL,
+    rti_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rti_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_CHARGES = '
-    bch_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bch_name VARCHAR(150) NOT NULL,
-    bch_period VARCHAR(50) NOT NULL,
-    bch_amount DECIMAL(12,2) NOT NULL,
-    bch_role_ids TEXT NULL,
-    bch_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bch_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    bch_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bch_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (bch_id)
+    private const TABLE_DEFINITION_MYSQL_RE_CHARGES = '
+    rch_id INT NOT NULL AUTO_INCREMENT,
+    rch_org_id INT NULL,
+    rch_name VARCHAR(150) NOT NULL,
+    rch_period VARCHAR(50) NOT NULL,
+    rch_amount DECIMAL(12,2) NOT NULL,
+    rch_role_ids TEXT NULL,
+    rch_usr_id_create INT DEFAULT NULL,
+    rch_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    rch_usr_id_change INT DEFAULT NULL,
+    rch_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (rch_id)
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_CHARGES_HIST = '
-    chh_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bch_id INT UNSIGNED NOT NULL,
-    bch_name VARCHAR(150) NOT NULL,
-    bch_period VARCHAR(50) NOT NULL,
-    bch_amount DECIMAL(12,2) NOT NULL,
-    bch_role_ids TEXT NULL,
-    bch_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bch_timestamp_create TIMESTAMP NULL DEFAULT NULL,
-    bch_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bch_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    chh_action VARCHAR(20) NOT NULL,
-    chh_usr_id INT UNSIGNED DEFAULT NULL,
-    chh_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (chh_id)
+    private const TABLE_DEFINITION_MYSQL_RE_CHARGES_HIST = '
+    rchh_id INT NOT NULL AUTO_INCREMENT,
+    rch_id INT NOT NULL,
+    rch_org_id INT NULL,
+    rch_name VARCHAR(150) NOT NULL,
+    rch_period VARCHAR(50) NOT NULL,
+    rch_amount DECIMAL(12,2) NOT NULL,
+    rch_role_ids TEXT NULL,
+    rch_usr_id_create INT DEFAULT NULL,
+    rch_timestamp_create TIMESTAMP NULL DEFAULT NULL,
+    rch_usr_id_change INT DEFAULT NULL,
+    rch_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    rchh_action VARCHAR(20) NOT NULL,
+    rchh_usr_id INT DEFAULT NULL,
+    rchh_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (rchh_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_CHARGES = '
-    bch_id SERIAL PRIMARY KEY,
-    bch_name VARCHAR(150) NOT NULL,
-    bch_period VARCHAR(50) NOT NULL,
-    bch_amount NUMERIC(12,2) NOT NULL,
-    bch_role_ids TEXT NULL,
-    bch_usr_id_create INTEGER DEFAULT NULL,
-    bch_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    bch_usr_id_change INTEGER DEFAULT NULL,
-    bch_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_CHARGES = '
+    rch_id SERIAL PRIMARY KEY,
+    rch_org_id INTEGER NULL,
+    rch_name VARCHAR(150) NOT NULL,
+    rch_period VARCHAR(50) NOT NULL,
+    rch_amount NUMERIC(12,2) NOT NULL,
+    rch_role_ids TEXT NULL,
+    rch_usr_id_create INTEGER DEFAULT NULL,
+    rch_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rch_usr_id_change INTEGER DEFAULT NULL,
+    rch_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_CHARGES_HIST = '
-    chh_id SERIAL PRIMARY KEY,
-    bch_id INTEGER NOT NULL,
-    bch_name VARCHAR(150) NOT NULL,
-    bch_period VARCHAR(50) NOT NULL,
-    bch_amount NUMERIC(12,2) NOT NULL,
-    bch_role_ids TEXT NULL,
-    bch_usr_id_create INTEGER DEFAULT NULL,
-    bch_timestamp_create TIMESTAMP DEFAULT NULL,
-    bch_usr_id_change INTEGER DEFAULT NULL,
-    bch_timestamp_change TIMESTAMP DEFAULT NULL,
-    chh_action VARCHAR(20) NOT NULL,
-    chh_usr_id INTEGER DEFAULT NULL,
-    chh_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    private const TABLE_DEFINITION_PGSQL_RE_CHARGES_HIST = '
+    rchh_id SERIAL PRIMARY KEY,
+    rch_id INTEGER NOT NULL,
+    rch_org_id INTEGER NULL,
+    rch_name VARCHAR(150) NOT NULL,
+    rch_period VARCHAR(50) NOT NULL,
+    rch_amount NUMERIC(12,2) NOT NULL,
+    rch_role_ids TEXT NULL,
+    rch_usr_id_create INTEGER DEFAULT NULL,
+    rch_timestamp_create TIMESTAMP DEFAULT NULL,
+    rch_usr_id_change INTEGER DEFAULT NULL,
+    rch_timestamp_change TIMESTAMP DEFAULT NULL,
+    rchh_action VARCHAR(20) NOT NULL,
+    rchh_usr_id INTEGER DEFAULT NULL,
+    rchh_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ';
     
-    private const TABLE_DEFINITION_MYSQL_BILL_DEVICES = '
-    bde_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bde_device_id VARCHAR(100) NOT NULL,
-    bde_usr_id INT UNSIGNED NULL,
-    bde_is_active TINYINT(1) NOT NULL DEFAULT 0,
-    bde_active_date DATETIME NULL,
-    bde_api_key VARCHAR(50) NULL,
-    bde_platform VARCHAR(50) NOT NULL,
-    bde_brand VARCHAR(50) NOT NULL,
-    bde_model VARCHAR(50) NOT NULL,
-    bde_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bde_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    bde_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bde_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (bde_id)
+    private const TABLE_DEFINITION_MYSQL_RE_DEVICES = '
+    rde_id INT NOT NULL AUTO_INCREMENT,
+    rde_org_id INT NULL,
+    rde_device_id VARCHAR(100) NOT NULL,
+    rde_usr_id INT NULL,
+    rde_is_active TINYINT(1) NOT NULL DEFAULT 0,
+    rde_active_date DATETIME NULL,
+    rde_api_key VARCHAR(50) NULL,
+    rde_platform VARCHAR(50) NOT NULL,
+    rde_brand VARCHAR(50) NOT NULL,
+    rde_model VARCHAR(50) NOT NULL,
+    rde_usr_id_create INT DEFAULT NULL,
+    rde_timestamp_create TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    rde_usr_id_change INT DEFAULT NULL,
+    rde_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (rde_id)
     ';
     
-    private const TABLE_DEFINITION_PGSQL_BILL_DEVICES = '
-    bde_id SERIAL PRIMARY KEY,
-    bde_device_id VARCHAR(100) NOT NULL,
-    bde_usr_id INTEGER NULL,
-    bde_is_active INTEGER NOT NULL DEFAULT 0,
-    bde_active_date TIMESTAMP NULL,
-    bde_api_key VARCHAR(50) NULL,
-    bde_platform VARCHAR(50) NOT NULL,
-    bde_brand VARCHAR(50) NOT NULL,
-    bde_model VARCHAR(50) NOT NULL,
-    bde_usr_id_create INTEGER DEFAULT NULL,
-    bde_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    bde_usr_id_change INTEGER DEFAULT NULL,
-    bde_timestamp_change TIMESTAMP DEFAULT NULL
+    private const TABLE_DEFINITION_PGSQL_RE_DEVICES = '
+    rde_id SERIAL PRIMARY KEY,
+    rde_org_id INTEGER NULL,
+    rde_device_id VARCHAR(100) NOT NULL,
+    rde_usr_id INTEGER NULL,
+    rde_is_active INTEGER NOT NULL DEFAULT 0,
+    rde_active_date TIMESTAMP NULL,
+    rde_api_key VARCHAR(50) NULL,
+    rde_platform VARCHAR(50) NOT NULL,
+    rde_brand VARCHAR(50) NOT NULL,
+    rde_model VARCHAR(50) NOT NULL,
+    rde_usr_id_create INTEGER DEFAULT NULL,
+    rde_timestamp_create TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rde_usr_id_change INTEGER DEFAULT NULL,
+    rde_timestamp_change TIMESTAMP DEFAULT NULL
     ';
 
-    private const TABLE_DEFINITION_MYSQL_BILL_DEVICES_HIST = '
-    deh_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    bde_id INT UNSIGNED NOT NULL,
-    bde_device_id VARCHAR(100) NOT NULL,
-    bde_usr_id INT UNSIGNED NULL,
-    bde_is_active TINYINT(1) NOT NULL DEFAULT 0,
-    bde_active_date DATETIME NULL,
-    bde_api_key VARCHAR(50) NULL,
-    bde_platform VARCHAR(50) NOT NULL,
-    bde_brand VARCHAR(50) NOT NULL,
-    bde_model VARCHAR(50) NOT NULL,
-    bde_usr_id_create INT UNSIGNED DEFAULT NULL,
-    bde_timestamp_create TIMESTAMP NULL DEFAULT NULL,
-    bde_usr_id_change INT UNSIGNED DEFAULT NULL,
-    bde_timestamp_change TIMESTAMP NULL DEFAULT NULL,
-    deh_action VARCHAR(20) NOT NULL,
-    deh_usr_id INT UNSIGNED DEFAULT NULL,
-    deh_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (deh_id)
+    private const TABLE_DEFINITION_MYSQL_RE_DEVICES_HIST = '
+    rdeh_id INT NOT NULL AUTO_INCREMENT,
+    rde_id INT NOT NULL,
+    rde_org_id INT NULL,
+    rde_device_id VARCHAR(100) NOT NULL,
+    rde_usr_id INT NULL,
+    rde_is_active TINYINT(1) NOT NULL DEFAULT 0,
+    rde_active_date DATETIME NULL,
+    rde_api_key VARCHAR(50) NULL,
+    rde_platform VARCHAR(50) NOT NULL,
+    rde_brand VARCHAR(50) NOT NULL,
+    rde_model VARCHAR(50) NOT NULL,
+    rde_usr_id_create INT DEFAULT NULL,
+    rde_timestamp_create TIMESTAMP NULL DEFAULT NULL,
+    rde_usr_id_change INT DEFAULT NULL,
+    rde_timestamp_change TIMESTAMP NULL DEFAULT NULL,
+    rdeh_action VARCHAR(20) NOT NULL,
+    rdeh_usr_id INT DEFAULT NULL,
+    rdeh_timestamp TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (rdeh_id)
     ';
 
-    private const TABLE_DEFINITION_PGSQL_BILL_DEVICES_HIST = '
-    deh_id SERIAL PRIMARY KEY,
-    bde_id INTEGER NOT NULL,
-    bde_device_id VARCHAR(100) NOT NULL,
-    bde_usr_id INTEGER NULL,
-    bde_is_active INTEGER NOT NULL DEFAULT 0,
-    bde_active_date TIMESTAMP NULL,
-    bde_api_key VARCHAR(50) NULL,
-    bde_platform VARCHAR(50) NOT NULL,
-    bde_brand VARCHAR(50) NOT NULL,
-    bde_model VARCHAR(50) NOT NULL,
-    bde_usr_id_create INTEGER DEFAULT NULL,
-    bde_timestamp_create TIMESTAMP DEFAULT NULL,
-    bde_usr_id_change INTEGER DEFAULT NULL,
-    bde_timestamp_change TIMESTAMP DEFAULT NULL,
-    deh_action VARCHAR(20) NOT NULL,
-    deh_usr_id INTEGER DEFAULT NULL,
-    deh_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    private const TABLE_DEFINITION_PGSQL_RE_DEVICES_HIST = '
+    rdeh_id SERIAL PRIMARY KEY,
+    rde_id INTEGER NOT NULL,
+    rde_org_id INTEGER NULL,
+    rde_device_id VARCHAR(100) NOT NULL,
+    rde_usr_id INTEGER NULL,
+    rde_is_active INTEGER NOT NULL DEFAULT 0,
+    rde_active_date TIMESTAMP NULL,
+    rde_api_key VARCHAR(50) NULL,
+    rde_platform VARCHAR(50) NOT NULL,
+    rde_brand VARCHAR(50) NOT NULL,
+    rde_model VARCHAR(50) NOT NULL,
+    rde_usr_id_create INTEGER DEFAULT NULL,
+    rde_timestamp_create TIMESTAMP DEFAULT NULL,
+    rde_usr_id_change INTEGER DEFAULT NULL,
+    rde_timestamp_change TIMESTAMP DEFAULT NULL,
+    rdeh_action VARCHAR(20) NOT NULL,
+    rdeh_usr_id INTEGER DEFAULT NULL,
+    rdeh_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ';
 
     private const INVOICES_UNIQUE_INDEX_NUMBER = '
-    CREATE UNIQUE INDEX ' . TABLE_PREFIX . '_idx_biv_number ON ' . TBL_BL_INVOICES . ' (biv_number)
+    CREATE UNIQUE INDEX ' . TABLE_PREFIX . '_idx_riv_number ON ' . TBL_RE_INVOICES . ' (riv_org_id, riv_number)
     ';
 
     private const INVOICES_UNIQUE_INDEX_NUMBER_INDEX = '
-    CREATE UNIQUE INDEX ' . TABLE_PREFIX . '_idx_biv_number_index ON ' . TBL_BL_INVOICES . ' (biv_number_index)
+    CREATE UNIQUE INDEX ' . TABLE_PREFIX . '_idx_riv_number_index ON ' . TBL_RE_INVOICES . ' (riv_org_id, riv_number_index)
     ';
 
     private const INVOICES_CONSTRAINTS = '
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_biv_usr           FOREIGN KEY (biv_usr_id)          REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_biv_usr_create    FOREIGN KEY (biv_usr_id_create)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_biv_usr_change    FOREIGN KEY (biv_usr_id_change)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_riv_usr           FOREIGN KEY (riv_usr_id)          REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_riv_usr_create    FOREIGN KEY (riv_usr_id_create)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_riv_usr_change    FOREIGN KEY (riv_usr_id_change)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT
     ';
 
     private const ITEMS_INDEXES = '
-    CREATE INDEX ' . TABLE_PREFIX . '_idx_bii_inv_id ON ' . TBL_BL_INVOICE_ITEMS . ' (bii_inv_id)
+    CREATE INDEX ' . TABLE_PREFIX . '_idx_rii_inv_id ON ' . TBL_RE_INVOICE_ITEMS . ' (rii_inv_id)
     ';
 
     private const ITEMS_INDEX_CHG_ID = '
-    CREATE INDEX ' . TABLE_PREFIX . '_idx_bii_chg_id ON ' . TBL_BL_INVOICE_ITEMS . ' (bii_chg_id)
+    CREATE INDEX ' . TABLE_PREFIX . '_idx_rii_chg_id ON ' . TBL_RE_INVOICE_ITEMS . ' (rii_chg_id)
     ';
 
     private const ITEMS_CONSTRAINTS = '
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bii_inv          FOREIGN KEY (bii_inv_id)        REFERENCES ' . TBL_BL_INVOICES . ' (biv_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bii_usr_create   FOREIGN KEY (bii_usr_id_create)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bii_usr_change   FOREIGN KEY (bii_usr_id_change)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rii_inv          FOREIGN KEY (rii_inv_id)        REFERENCES ' . TBL_RE_INVOICES . ' (riv_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rii_usr_create   FOREIGN KEY (rii_usr_id_create)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rii_usr_change   FOREIGN KEY (rii_usr_id_change)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT
     ';
 
     private const PAYMENTS_CONSTRAINTS = '
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bpa_usr           FOREIGN KEY (bpa_usr_id)          REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bpa_usr_create    FOREIGN KEY (bpa_usr_id_create)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bpa_usr_change    FOREIGN KEY (bpa_usr_id_change)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rpa_usr           FOREIGN KEY (rpa_usr_id)          REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rpa_usr_create    FOREIGN KEY (rpa_usr_id_create)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rpa_usr_change    FOREIGN KEY (rpa_usr_id_change)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT
     ';
 
     private const PAYMENT_ITEMS_CONSTRAINTS = '
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bpi_payment          FOREIGN KEY (bpi_payment_id)        REFERENCES ' . TBL_BL_PAYMENTS . ' (bpa_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bpi_usr_create   FOREIGN KEY (bpi_usr_id_create)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bpi_usr_change   FOREIGN KEY (bpi_usr_id_change)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rpi_payment          FOREIGN KEY (rpi_payment_id)        REFERENCES ' . TBL_RE_PAYMENTS . ' (rpa_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rpi_usr_create   FOREIGN KEY (rpi_usr_id_create)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rpi_usr_change   FOREIGN KEY (rpi_usr_id_change)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT
     ';
 
     private const PG_PAYMENTS_CONSTRAINTS = '
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_btr_usr           FOREIGN KEY (btr_usr_id)          REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_btr_usr_create    FOREIGN KEY (btr_usr_id_create)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_btr_usr_change    FOREIGN KEY (btr_usr_id_change)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rtr_usr           FOREIGN KEY (rtr_usr_id)          REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rtr_usr_create    FOREIGN KEY (rtr_usr_id_create)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rtr_usr_change    FOREIGN KEY (rtr_usr_id_change)   REFERENCES ' . TBL_USERS . ' (usr_id) ON DELETE SET NULL ON UPDATE RESTRICT
     ';
 
     private const TRANS_ITEMS_CONSTRAINTS = '
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bti_pg_payment          FOREIGN KEY (bti_pg_payment_id)        REFERENCES ' . TBL_BL_TRANS . ' (btr_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bti_usr_create   FOREIGN KEY (bti_usr_id_create)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT,
-    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_bti_usr_change   FOREIGN KEY (bti_usr_id_change)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rti_pg_payment          FOREIGN KEY (rti_pg_payment_id)        REFERENCES ' . TBL_RE_TRANS . ' (rtr_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rti_usr_create   FOREIGN KEY (rti_usr_id_create)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT,
+    ADD CONSTRAINT ' . TABLE_PREFIX . '_fk_rti_usr_change   FOREIGN KEY (rti_usr_id_change)  REFERENCES ' . TBL_USERS . ' (usr_id)   ON DELETE SET NULL ON UPDATE RESTRICT
     ';
 
     private const PAYMENT_ITEMS_INDEXES = '
-    CREATE INDEX ' . TABLE_PREFIX . '_idx_bpi_payment_id ON ' . TBL_BL_PAYMENT_ITEMS . ' (bpi_payment_id)
+    CREATE INDEX ' . TABLE_PREFIX . '_idx_rpi_payment_id ON ' . TBL_RE_PAYMENT_ITEMS . ' (rpi_payment_id)
     ';
 
     private const TRANS_ITEMS_INDEXES = '
-    CREATE INDEX ' . TABLE_PREFIX . '_idx_bti_pg_payment_id ON ' . TBL_BL_TRANS_ITEMS . ' (bti_pg_payment_id)
+    CREATE INDEX ' . TABLE_PREFIX . '_idx_rti_pg_payment_id ON ' . TBL_RE_TRANS_ITEMS . ' (rti_pg_payment_id)
     ';
 
     public function init(): void
@@ -595,83 +611,95 @@ class ConfigTables
     {
         global $gDb, $gDbType;
 
-        if (!tableExistsBILL(TBL_BL_INVOICE_ITEMS)) {
-            return;
-    }
+        // vNext: Make invoice numbering unique per organization.
+        // Older installations created unique indexes only on riv_number and riv_number_index,
+        // which prevents generating invoices in a second organization (numbers collide).
+        $idxNumber = TABLE_PREFIX . '_idx_riv_number';
+        $idxNumberIndex = TABLE_PREFIX . '_idx_riv_number_index';
 
-        // Add charge-id column to invoice items and history tables (dev schema upgrades; no backwards-compat guarantees).
-        $this->addColumnIfNotExists(
-            TBL_BL_INVOICE_ITEMS,
-            'bii_chg_id',
-            'INT UNSIGNED NOT NULL DEFAULT 0',
-            'INTEGER NOT NULL DEFAULT 0'
-        );
-
-        if (tableExistsBILL(TBL_BL_INVOICE_ITEMS_HIST)) {
-            $this->addColumnIfNotExists(
-        TBL_BL_INVOICE_ITEMS_HIST,
-        'bii_chg_id',
-        'INT UNSIGNED NOT NULL DEFAULT 0',
-        'INTEGER NOT NULL DEFAULT 0'
-            );
-    }
-
-        // Index for faster overlap checks (create if missing).
-        $this->createIndexIfNotExist(TBL_BL_INVOICE_ITEMS, self::ITEMS_INDEX_CHG_ID);
-
-        // Best-effort backfill: map existing item names to charge ids.
-        if (tableExistsBILL(TBL_BL_CHARGES) && columnExistsBILL(TBL_BL_INVOICE_ITEMS, 'bii_name') && columnExistsBILL(TBL_BL_CHARGES, 'bch_name')) {
+        $fetchIndexColumns = static function (string $indexName) use ($gDb, $gDbType): array {
             if ($gDbType === 'pgsql') {
-                $gDb->query(
-                'UPDATE ' . TBL_BL_INVOICE_ITEMS . ' it '
-                . 'SET bii_chg_id = c.bch_id '
-                . 'FROM ' . TBL_BL_CHARGES . ' c '
-                . 'WHERE (it.bii_chg_id IS NULL OR it.bii_chg_id = 0) '
-                . 'AND c.bch_name = it.bii_name'
+                $stmt = $gDb->queryPrepared(
+                    'SELECT indexdef FROM pg_indexes WHERE schemaname = current_schema() AND indexname = ?',
+                    array($indexName),
+                    false
                 );
-            } else {
-                $gDb->query(
-                'UPDATE ' . TBL_BL_INVOICE_ITEMS . ' it '
-                . 'INNER JOIN ' . TBL_BL_CHARGES . ' c ON c.bch_name = it.bii_name '
-                . 'SET it.bii_chg_id = c.bch_id '
-                . 'WHERE it.bii_chg_id IS NULL OR it.bii_chg_id = 0'
-                );
+                if ($stmt === false) {
+                    return array();
+                }
+                $indexDef = (string)($stmt->fetchColumn() ?? '');
+                if ($indexDef === '') {
+                    return array();
+                }
+                // Extract columns between parentheses at end of CREATE INDEX ... (..)
+                if (preg_match('/\(([^)]+)\)\s*$/', $indexDef, $m) !== 1) {
+                    return array();
+                }
+                $cols = array_map('trim', explode(',', (string)$m[1]));
+                return array_values(array_filter($cols, static fn($c) => $c !== ''));
             }
-    }
-    }
 
-    private function addColumnIfNotExists(string $tableName, string $columnName, string $mysqlDefinition, string $pgsqlDefinition): void
-    {
-        global $gDb, $gDbType;
+            // MySQL
+            $stmt = $gDb->queryPrepared(
+                'SELECT column_name FROM information_schema.statistics
+                 WHERE table_schema = ? AND table_name = ? AND index_name = ?
+                 ORDER BY seq_in_index',
+                array(DB_NAME, TBL_RE_INVOICES, $indexName),
+                false
+            );
+            if ($stmt === false) {
+                return array();
+            }
+            $cols = array();
+            while ($row = $stmt->fetch()) {
+                $cols[] = (string)$row['column_name'];
+            }
+            return $cols;
+        };
 
-        if (!tableExistsBILL($tableName)) {
-            return;
-    }
-        if (columnExistsBILL($tableName, $columnName)) {
-            return;
-    }
+        $dropIndex = static function (string $indexName) use ($gDb, $gDbType): void {
+            if (!indexExistsRE(TBL_RE_INVOICES, $indexName)) {
+                return;
+            }
+            if ($gDbType === 'pgsql') {
+                $gDb->queryPrepared('DROP INDEX IF EXISTS ' . $indexName, array(), false);
+            } else {
+                $gDb->queryPrepared('DROP INDEX ' . $indexName . ' ON ' . TBL_RE_INVOICES, array(), false);
+            }
+        };
 
-        $definition = ($gDbType === 'pgsql') ? $pgsqlDefinition : $mysqlDefinition;
-        $gDb->query('ALTER TABLE ' . $tableName . ' ADD COLUMN ' . $columnName . ' ' . $definition);
+        // Upgrade riv_number unique index
+        $colsNumber = $fetchIndexColumns($idxNumber);
+        if (!empty($colsNumber) && !in_array('riv_org_id', $colsNumber, true)) {
+            $dropIndex($idxNumber);
+            $this->createUniqueIndexIfNotExist(TBL_RE_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER);
+        }
+
+        // Upgrade riv_number_index unique index
+        $colsNumberIndex = $fetchIndexColumns($idxNumberIndex);
+        if (!empty($colsNumberIndex) && !in_array('riv_org_id', $colsNumberIndex, true)) {
+            $dropIndex($idxNumberIndex);
+            $this->createUniqueIndexIfNotExist(TBL_RE_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER_INDEX);
+        }
     }
 
     public function uninstall(): void
     {
         $tables = array(
-            TBL_BL_CHARGES,
-            TBL_BL_CHARGES_HIST,
-            TBL_BL_PAYMENT_ITEMS,
-            TBL_BL_PAYMENT_ITEMS_HIST,
-            TBL_BL_PAYMENTS,
-            TBL_BL_PAYMENTS_HIST,
-            TBL_BL_INVOICE_ITEMS,
-            TBL_BL_INVOICE_ITEMS_HIST,
-            TBL_BL_INVOICES,
-            TBL_BL_INVOICES_HIST,
-            TBL_BL_TRANS,
-            TBL_BL_TRANS_ITEMS,
-            TBL_BL_DEVICES,
-            TBL_BL_DEVICES_HIST
+            TBL_RE_CHARGES,
+            TBL_RE_CHARGES_HIST,
+            TBL_RE_PAYMENT_ITEMS,
+            TBL_RE_PAYMENT_ITEMS_HIST,
+            TBL_RE_PAYMENTS,
+            TBL_RE_PAYMENTS_HIST,
+            TBL_RE_INVOICE_ITEMS,
+            TBL_RE_INVOICE_ITEMS_HIST,
+            TBL_RE_INVOICES,
+            TBL_RE_INVOICES_HIST,
+            TBL_RE_TRANS,
+            TBL_RE_TRANS_ITEMS,
+            TBL_RE_DEVICES,
+            TBL_RE_DEVICES_HIST
         );
 
         foreach ($tables as $table) {
@@ -685,82 +713,86 @@ class ConfigTables
 
         switch ($gDbType) {
             case 'pgsql':
-        $this->createTableIfNotExist(TBL_BL_INVOICES, self::TABLE_DEFINITION_PGSQL_BILL_INVOICES);
-        $this->createUniqueIndexIfNotExist(TBL_BL_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER);
-        $this->createUniqueIndexIfNotExist(TBL_BL_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER_INDEX);
-        $this->createConstraintsIfNotExist(TBL_BL_INVOICES, self::INVOICES_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_INVOICES, self::TABLE_DEFINITION_PGSQL_RE_INVOICES);
+        $this->createUniqueIndexIfNotExist(TBL_RE_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER);
+        $this->createUniqueIndexIfNotExist(TBL_RE_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER_INDEX);
+        $this->createConstraintsIfNotExist(TBL_RE_INVOICES, self::INVOICES_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_INVOICES_HIST, self::TABLE_DEFINITION_PGSQL_BILL_INVOICES_HIST);
+        $this->createTableIfNotExist(TBL_RE_INVOICES_HIST, self::TABLE_DEFINITION_PGSQL_RE_INVOICES_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_INVOICE_ITEMS, self::TABLE_DEFINITION_PGSQL_BILL_INVOICE_ITEMS);
-        $this->createIndexIfNotExist(TBL_BL_INVOICE_ITEMS, self::ITEMS_INDEXES);
-        $this->createConstraintsIfNotExist(TBL_BL_INVOICE_ITEMS, self::ITEMS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_INVOICE_ITEMS, self::TABLE_DEFINITION_PGSQL_RE_INVOICE_ITEMS);
+        $this->createIndexIfNotExist(TBL_RE_INVOICE_ITEMS, self::ITEMS_INDEXES);
+        $this->createIndexIfNotExist(TBL_RE_INVOICE_ITEMS, self::ITEMS_INDEX_CHG_ID);
+        $this->createConstraintsIfNotExist(TBL_RE_INVOICE_ITEMS, self::ITEMS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_INVOICE_ITEMS_HIST, self::TABLE_DEFINITION_PGSQL_BILL_INVOICE_ITEMS_HIST);
+        $this->createTableIfNotExist(TBL_RE_INVOICE_ITEMS_HIST, self::TABLE_DEFINITION_PGSQL_RE_INVOICE_ITEMS_HIST);
+        $this->createIndexIfNotExist(TBL_RE_INVOICE_ITEMS_HIST, self::ITEMS_INDEX_CHG_ID);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENTS, self::TABLE_DEFINITION_PGSQL_BILL_PAYMENTS);
-        $this->createConstraintsIfNotExist(TBL_BL_PAYMENTS, self::PAYMENTS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_PAYMENTS, self::TABLE_DEFINITION_PGSQL_RE_PAYMENTS);
+        $this->createConstraintsIfNotExist(TBL_RE_PAYMENTS, self::PAYMENTS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENTS_HIST, self::TABLE_DEFINITION_PGSQL_BILL_PAYMENTS_HIST);
+        $this->createTableIfNotExist(TBL_RE_PAYMENTS_HIST, self::TABLE_DEFINITION_PGSQL_RE_PAYMENTS_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENT_ITEMS, self::TABLE_DEFINITION_PGSQL_BILL_PAYMENT_ITEMS);
-        $this->createIndexIfNotExist(TBL_BL_PAYMENT_ITEMS, self::PAYMENT_ITEMS_INDEXES);
-        $this->createConstraintsIfNotExist(TBL_BL_PAYMENT_ITEMS, self::PAYMENT_ITEMS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_PAYMENT_ITEMS, self::TABLE_DEFINITION_PGSQL_RE_PAYMENT_ITEMS);
+        $this->createIndexIfNotExist(TBL_RE_PAYMENT_ITEMS, self::PAYMENT_ITEMS_INDEXES);
+        $this->createConstraintsIfNotExist(TBL_RE_PAYMENT_ITEMS, self::PAYMENT_ITEMS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENT_ITEMS_HIST, self::TABLE_DEFINITION_PGSQL_BILL_PAYMENT_ITEMS_HIST);
+        $this->createTableIfNotExist(TBL_RE_PAYMENT_ITEMS_HIST, self::TABLE_DEFINITION_PGSQL_RE_PAYMENT_ITEMS_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_TRANS, self::TABLE_DEFINITION_PGSQL_BILL_TRANS);
-        $this->createConstraintsIfNotExist(TBL_BL_TRANS, self::PG_PAYMENTS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_TRANS, self::TABLE_DEFINITION_PGSQL_RE_TRANS);
+        $this->createConstraintsIfNotExist(TBL_RE_TRANS, self::PG_PAYMENTS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_TRANS_ITEMS, self::TABLE_DEFINITION_PGSQL_BILL_TRANS_ITEMS);
-        $this->createIndexIfNotExist(TBL_BL_TRANS_ITEMS, self::TRANS_ITEMS_INDEXES);
-        $this->createConstraintsIfNotExist(TBL_BL_TRANS_ITEMS, self::TRANS_ITEMS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_TRANS_ITEMS, self::TABLE_DEFINITION_PGSQL_RE_TRANS_ITEMS);
+        $this->createIndexIfNotExist(TBL_RE_TRANS_ITEMS, self::TRANS_ITEMS_INDEXES);
+        $this->createConstraintsIfNotExist(TBL_RE_TRANS_ITEMS, self::TRANS_ITEMS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_CHARGES, self::TABLE_DEFINITION_PGSQL_BILL_CHARGES);
-        $this->createTableIfNotExist(TBL_BL_CHARGES_HIST, self::TABLE_DEFINITION_PGSQL_BILL_CHARGES_HIST);
+        $this->createTableIfNotExist(TBL_RE_CHARGES, self::TABLE_DEFINITION_PGSQL_RE_CHARGES);
+        $this->createTableIfNotExist(TBL_RE_CHARGES_HIST, self::TABLE_DEFINITION_PGSQL_RE_CHARGES_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_DEVICES, self::TABLE_DEFINITION_PGSQL_BILL_DEVICES);
-        $this->createTableIfNotExist(TBL_BL_DEVICES_HIST, self::TABLE_DEFINITION_PGSQL_BILL_DEVICES_HIST);
+        $this->createTableIfNotExist(TBL_RE_DEVICES, self::TABLE_DEFINITION_PGSQL_RE_DEVICES);
+        $this->createTableIfNotExist(TBL_RE_DEVICES_HIST, self::TABLE_DEFINITION_PGSQL_RE_DEVICES_HIST);
         break;
 
             case 'mysql':
             default:
-        $this->createTableIfNotExist(TBL_BL_INVOICES, self::TABLE_DEFINITION_MYSQL_BILL_INVOICES);
-        $this->createUniqueIndexIfNotExist(TBL_BL_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER);
-        $this->createUniqueIndexIfNotExist(TBL_BL_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER_INDEX);
-        $this->createConstraintsIfNotExist(TBL_BL_INVOICES, self::INVOICES_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_INVOICES, self::TABLE_DEFINITION_MYSQL_RE_INVOICES);
+        $this->createUniqueIndexIfNotExist(TBL_RE_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER);
+        $this->createUniqueIndexIfNotExist(TBL_RE_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER_INDEX);
+        $this->createConstraintsIfNotExist(TBL_RE_INVOICES, self::INVOICES_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_INVOICES_HIST, self::TABLE_DEFINITION_MYSQL_BILL_INVOICES_HIST);
+        $this->createTableIfNotExist(TBL_RE_INVOICES_HIST, self::TABLE_DEFINITION_MYSQL_RE_INVOICES_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_INVOICE_ITEMS, self::TABLE_DEFINITION_MYSQL_BILL_INVOICE_ITEMS);
-        $this->createIndexIfNotExist(TBL_BL_INVOICE_ITEMS, self::ITEMS_INDEXES);
-        $this->createConstraintsIfNotExist(TBL_BL_INVOICE_ITEMS, self::ITEMS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_INVOICE_ITEMS, self::TABLE_DEFINITION_MYSQL_RE_INVOICE_ITEMS);
+        $this->createIndexIfNotExist(TBL_RE_INVOICE_ITEMS, self::ITEMS_INDEXES);
+        $this->createIndexIfNotExist(TBL_RE_INVOICE_ITEMS, self::ITEMS_INDEX_CHG_ID);
+        $this->createConstraintsIfNotExist(TBL_RE_INVOICE_ITEMS, self::ITEMS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_INVOICE_ITEMS_HIST, self::TABLE_DEFINITION_MYSQL_BILL_INVOICE_ITEMS_HIST);
+        $this->createTableIfNotExist(TBL_RE_INVOICE_ITEMS_HIST, self::TABLE_DEFINITION_MYSQL_RE_INVOICE_ITEMS_HIST);
+        $this->createIndexIfNotExist(TBL_RE_INVOICE_ITEMS_HIST, self::ITEMS_INDEX_CHG_ID);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENTS, self::TABLE_DEFINITION_MYSQL_BILL_PAYMENTS);
-        $this->createConstraintsIfNotExist(TBL_BL_PAYMENTS, self::PAYMENTS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_PAYMENTS, self::TABLE_DEFINITION_MYSQL_RE_PAYMENTS);
+        $this->createConstraintsIfNotExist(TBL_RE_PAYMENTS, self::PAYMENTS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENTS_HIST, self::TABLE_DEFINITION_MYSQL_BILL_PAYMENTS_HIST);
+        $this->createTableIfNotExist(TBL_RE_PAYMENTS_HIST, self::TABLE_DEFINITION_MYSQL_RE_PAYMENTS_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENT_ITEMS, self::TABLE_DEFINITION_MYSQL_BILL_PAYMENT_ITEMS);
-        $this->createIndexIfNotExist(TBL_BL_PAYMENT_ITEMS, self::PAYMENT_ITEMS_INDEXES);
-        $this->createConstraintsIfNotExist(TBL_BL_PAYMENT_ITEMS, self::PAYMENT_ITEMS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_PAYMENT_ITEMS, self::TABLE_DEFINITION_MYSQL_RE_PAYMENT_ITEMS);
+        $this->createIndexIfNotExist(TBL_RE_PAYMENT_ITEMS, self::PAYMENT_ITEMS_INDEXES);
+        $this->createConstraintsIfNotExist(TBL_RE_PAYMENT_ITEMS, self::PAYMENT_ITEMS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_PAYMENT_ITEMS_HIST, self::TABLE_DEFINITION_MYSQL_BILL_PAYMENT_ITEMS_HIST);
+        $this->createTableIfNotExist(TBL_RE_PAYMENT_ITEMS_HIST, self::TABLE_DEFINITION_MYSQL_RE_PAYMENT_ITEMS_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_TRANS, self::TABLE_DEFINITION_MYSQL_BILL_TRANS);
-        $this->createConstraintsIfNotExist(TBL_BL_TRANS, self::PG_PAYMENTS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_TRANS, self::TABLE_DEFINITION_MYSQL_RE_TRANS);
+        $this->createConstraintsIfNotExist(TBL_RE_TRANS, self::PG_PAYMENTS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_TRANS_ITEMS, self::TABLE_DEFINITION_MYSQL_BILL_TRANS_ITEMS);
-        $this->createIndexIfNotExist(TBL_BL_TRANS_ITEMS, self::TRANS_ITEMS_INDEXES);
-        $this->createConstraintsIfNotExist(TBL_BL_TRANS_ITEMS, self::TRANS_ITEMS_CONSTRAINTS);
+        $this->createTableIfNotExist(TBL_RE_TRANS_ITEMS, self::TABLE_DEFINITION_MYSQL_RE_TRANS_ITEMS);
+        $this->createIndexIfNotExist(TBL_RE_TRANS_ITEMS, self::TRANS_ITEMS_INDEXES);
+        $this->createConstraintsIfNotExist(TBL_RE_TRANS_ITEMS, self::TRANS_ITEMS_CONSTRAINTS);
 
-        $this->createTableIfNotExist(TBL_BL_CHARGES, self::TABLE_DEFINITION_MYSQL_BILL_CHARGES);
-        $this->createTableIfNotExist(TBL_BL_CHARGES_HIST, self::TABLE_DEFINITION_MYSQL_BILL_CHARGES_HIST);
+        $this->createTableIfNotExist(TBL_RE_CHARGES, self::TABLE_DEFINITION_MYSQL_RE_CHARGES);
+        $this->createTableIfNotExist(TBL_RE_CHARGES_HIST, self::TABLE_DEFINITION_MYSQL_RE_CHARGES_HIST);
 
-        $this->createTableIfNotExist(TBL_BL_DEVICES, self::TABLE_DEFINITION_MYSQL_BILL_DEVICES);
-        $this->createTableIfNotExist(TBL_BL_DEVICES_HIST, self::TABLE_DEFINITION_MYSQL_BILL_DEVICES_HIST);
+        $this->createTableIfNotExist(TBL_RE_DEVICES, self::TABLE_DEFINITION_MYSQL_RE_DEVICES);
+        $this->createTableIfNotExist(TBL_RE_DEVICES_HIST, self::TABLE_DEFINITION_MYSQL_RE_DEVICES_HIST);
     }
     }
 
@@ -768,7 +800,7 @@ class ConfigTables
     {
         global $gDb, $gDbType;
 
-        if (!tableExistsBILL($tableName)) {
+        if (!tableExistsRE($tableName)) {
             if ($gDbType === 'pgsql') {
                 $sql = 'CREATE TABLE ' . $tableName . ' (' . $tableDefinition . ');';
             } else {
@@ -788,7 +820,7 @@ class ConfigTables
             $indexName = $matches[1];
     }
 
-        if ($indexName !== '' && !indexExistsBILL($tableName, $indexName)) {
+        if ($indexName !== '' && !indexExistsRE($tableName, $indexName)) {
             $gDb->query($indexDefinition);
     }
     }
@@ -802,7 +834,7 @@ class ConfigTables
             $indexName = $matches[1];
     }
 
-        if ($indexName !== '' && !indexExistsBILL($tableName, $indexName)) {
+        if ($indexName !== '' && !indexExistsRE($tableName, $indexName)) {
             $gDb->query($indexDefinition);
     }
     }
@@ -816,7 +848,7 @@ class ConfigTables
             if (preg_match('/ADD CONSTRAINT (\S+) FOREIGN KEY/', $constraint, $matches)) {
                 $name = $matches[1];
 
-                if (!constraintExistsBILL($tableName, $name)) {
+                if (!constraintExistsRE($tableName, $name)) {
                     $gDb->query('ALTER TABLE ' . $tableName . ' ' . $constraint);
     }
             }
@@ -827,7 +859,7 @@ class ConfigTables
     {
         global $gDb;
 
-        if (tableExistsBILL($tableName)) {
+        if (tableExistsRE($tableName)) {
             $gDb->query('DROP TABLE ' . $tableName);
     }
     }

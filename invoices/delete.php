@@ -12,7 +12,7 @@
 require_once(__DIR__ . '/../common_function.php');
 require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
-if (!isBillingAdminBySettings()) {
+if (!isResidentsAdminBySettings()) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
@@ -36,9 +36,9 @@ if ($invoice->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
-$isPaid = (int)$invoice->getValue('biv_is_paid') === 1;
+$isPaid = (int)$invoice->getValue('riv_is_paid') === 1;
 if ($isPaid) {
-    $gMessage->show($gL10n->get('BL_DELETE_PAID_DENIED'));
+    $gMessage->show($gL10n->get('RE_DELETE_PAID_DENIED'));
 }
 
 $deleted = $invoice->deleteWithRelations();
@@ -52,6 +52,6 @@ if ($deleted) {
 }
 
 admRedirect(SecurityUtils::encodeUrl(
-    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php',
+    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php',
     $params
 ));

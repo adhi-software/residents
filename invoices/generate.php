@@ -11,10 +11,10 @@
 
 require_once(__DIR__ . '/../common_function.php');
 
-global $gDb, $gL10n, $gCurrentUser;
+global $gDb, $gL10n, $gCurrentUser, $gCurrentOrgId;
 
-if (!function_exists('billingRedirectToInvoiceList')) {
-    function billingRedirectToInvoiceList(array $queryParams = array()): void
+if (!function_exists('residentsRedirectToInvoiceList')) {
+    function residentsRedirectToInvoiceList(array $queryParams = array()): void
     {
         $params = array('tab' => 'invoices');
         foreach ($queryParams as $key => $value) {
@@ -26,7 +26,7 @@ if (!function_exists('billingRedirectToInvoiceList')) {
             }
             $params[$key] = $value;
     }
-        $url = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', $params);
+        $url = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', $params);
         header('Location: ' . $url);
         exit;
     }
@@ -37,8 +37,8 @@ $filterUserId = admFuncVariableIsValid($_GET, 'filter_user', 'int');
 $startDateParam = admFuncVariableIsValid($_GET, 'start_date', 'date');
 $invoiceDateParam = admFuncVariableIsValid($_GET, 'invoice_date', 'date');
 $noteParam = admFuncVariableIsValid($_GET, 'note', 'string');
-$cfg = billingReadConfig();
-$defaultNoteSetting = billingGetDefaultInvoiceNote($cfg);
+$cfg = residentsReadConfig();
+$defaultNoteSetting = residentsGetDefaultInvoiceNote($cfg);
 if ($startDateParam === '') {
     $startDateParam = date('Y-m-01');
 }
@@ -50,16 +50,16 @@ if ($noteParam === '') {
 }
 
 // Ensure date values are stored as ISO dates (Y-m-d) for DB DATE columns and correct filtering.
-$startDateParam = billingFormatDateForInput($startDateParam);
-$invoiceDateParam = billingFormatDateForInput($invoiceDateParam);
+$startDateParam = residentsFormatDateForInput($startDateParam);
+$invoiceDateParam = residentsFormatDateForInput($invoiceDateParam);
 
-$isAdmin = isBillingAdminBySettings();
+$isAdmin = isResidentsAdminBySettings();
 if (!$isAdmin) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 // Build generation data (user selection + charge info) for the requested group and month
-$generationData = billingBuildInvoicePreviewData($groupId, array(
+$generationData = residentsBuildInvoicePreviewData($groupId, array(
     'start_date' => $startDateParam,
     'invoice_date' => $invoiceDateParam,
     'note' => $noteParam,
@@ -70,7 +70,7 @@ $previewRows = $generationData['rows'];
 if (count($previewRows) === 0) {
     $redirectParams = array(
     'generate_status' => 'failed',
-    'generate_message' => $gL10n->get('BL_GENERATE_NO_USERS')
+    'generate_message' => $gL10n->get('RE_GENERATE_NO_USERS')
     );
     // Keep list period consistent with the requested generation range.
     $redirectParams['date_from'] = $startDateParam;
@@ -81,7 +81,7 @@ if (count($previewRows) === 0) {
     if ($filterUserId > 0) {
         $redirectParams['filter_user'] = (string)$filterUserId;
     }
-    billingRedirectToInvoiceList($redirectParams);
+    residentsRedirectToInvoiceList($redirectParams);
 }
 
 // Prepare config & last number tracking
@@ -111,20 +111,23 @@ try {
 
     // Do not delete existing invoices; skip generation per *charge item* if overlapping invoice item exists.
     // Overlap condition: existing_item_start <= new_item_end AND existing_item_end >= new_item_start
+    // Filter by org_id to only check invoices in current organization
     $existingItemCheckSql = 'SELECT COUNT(*)
-    FROM ' . TBL_BL_INVOICES . ' i
-    INNER JOIN ' . TBL_BL_INVOICE_ITEMS . ' it ON it.bii_inv_id = i.biv_id
-    WHERE i.biv_usr_id = ?
-        AND it.bii_chg_id = ?
-        AND it.bii_start_date <= ?
-        AND it.bii_end_date >= ?';
+    FROM ' . TBL_RE_INVOICES . ' i
+    INNER JOIN ' . TBL_RE_INVOICE_ITEMS . ' it ON it.rii_inv_id = i.riv_id
+    WHERE i.riv_org_id = ?
+        AND i.riv_usr_id = ?
+        AND it.rii_chg_id = ?
+        AND it.rii_start_date <= ?
+        AND it.rii_end_date >= ?';
 
     $createdInvoices = 0;
     // Get the starting invoice number index ONCE before the loop, then increment for each invoice in the batch
-    $nextIndex = billingNextInvoiceNumberIndex();
+    $nextIndex = residentsNextInvoiceNumberIndex();
 
     // Pre-check for invoice number uniqueness so we don't hit Database->showError() on duplicate key.
-    $invoiceNumberExistsSql = 'SELECT 1 FROM ' . TBL_BL_INVOICES . ' WHERE biv_number = ? OR biv_number_index = ? LIMIT 1';
+    // Filter by org_id since invoice numbers are unique per organization
+    $invoiceNumberExistsSql = 'SELECT 1 FROM ' . TBL_RE_INVOICES . ' WHERE riv_org_id = ? AND (riv_number = ? OR riv_number_index = ?) LIMIT 1';
 
     foreach ($previewRows as $row) {
         $uid = (int)($row['user_id'] ?? 0);
@@ -135,18 +138,18 @@ try {
         if ($invoiceDate === '') {
             $invoiceDate = $invoiceDateParam;
     }
-        $invoiceDate = billingFormatDateForInput($invoiceDate);
+        $invoiceDate = residentsFormatDateForInput($invoiceDate);
 
         $periodStart = (string)($row['start_date'] ?? $startDateParam);
         if ($periodStart === '') {
             $periodStart = $startDateParam;
     }
-        $periodStart = billingFormatDateForInput($periodStart);
+        $periodStart = residentsFormatDateForInput($periodStart);
 
         $periodEnd = (string)($row['end_date'] ?? $periodStart);
-        $periodEnd = ($periodEnd === '') ? $periodStart : billingFormatDateForInput($periodEnd);
+        $periodEnd = ($periodEnd === '') ? $periodStart : residentsFormatDateForInput($periodEnd);
 
-        $cfg = billingReadConfig();
+        $cfg = residentsReadConfig();
         $dueDays = (int)($cfg['defaults']['due_days'] ?? 15);
         if ($dueDays <= 0) { $dueDays = 15; }
         $dueDate = date('Y-m-d', strtotime($invoiceDate . ' +' . $dueDays . ' days'));
@@ -154,8 +157,8 @@ try {
         // This avoids duplicate-key errors that would otherwise trigger a separate SQL error page.
         $index = $nextIndex;
         while (true) {
-            $number = billingFormatInvoiceNumber($index);
-            $st = $gDb->queryPrepared($invoiceNumberExistsSql, array((string)$number, (int)$index), false);
+            $number = residentsFormatInvoiceNumber($index);
+            $st = $gDb->queryPrepared($invoiceNumberExistsSql, array($gCurrentOrgId, (string)$number, (int)$index), false);
             if ($st === false) {
                 throw new RuntimeException('Could not verify invoice number uniqueness.');
             }
@@ -195,11 +198,11 @@ try {
                 $itemEnd = $itemStart;
             }
 
-            $itemStart = billingFormatDateForInput($itemStart);
-            $itemEnd = billingFormatDateForInput($itemEnd);
+            $itemStart = residentsFormatDateForInput($itemStart);
+            $itemEnd = residentsFormatDateForInput($itemEnd);
 
-            // Skip this charge if it was already invoiced for an overlapping period.
-            $existsItem = (int)$gDb->queryPrepared($existingItemCheckSql, array($uid, $chargeId, $itemEnd, $itemStart))->fetchColumn();
+            // Skip this charge if it was already invoiced for an overlapping period (in current org).
+            $existsItem = (int)$gDb->queryPrepared($existingItemCheckSql, array($gCurrentOrgId, $uid, $chargeId, $itemEnd, $itemStart))->fetchColumn();
             if ($existsItem > 0) {
                 continue;
             }
@@ -229,52 +232,27 @@ try {
 
         $finalStart = $invoiceStart ?? $periodStart;
         $finalEnd = $invoiceEnd ?? $periodEnd;
-        $finalStart = billingFormatDateForInput($finalStart);
-        $finalEnd = billingFormatDateForInput($finalEnd);
+        $finalStart = residentsFormatDateForInput($finalStart);
+        $finalEnd = residentsFormatDateForInput($finalEnd);
         $newInvoice = new TableResidentsInvoice($gDb);
-        $newInvoice->setValue('biv_number_index', (int)$index);
-        $newInvoice->setValue('biv_number', $number);
-        $newInvoice->setValue('biv_date', $invoiceDate);
-        $newInvoice->setValue('biv_usr_id', $uid);
-        $newInvoice->setValue('biv_start_date', $finalStart);
-        $newInvoice->setValue('biv_end_date', $finalEnd);
-        $newInvoice->setValue('biv_due_date', $dueDate);
-        $newInvoice->setValue('biv_notes', $noteValue);
+        $newInvoice->setValue('riv_number_index', (int)$index);
+        $newInvoice->setValue('riv_number', $number);
+        $newInvoice->setValue('riv_date', $invoiceDate);
+        $newInvoice->setValue('riv_usr_id', $uid);
+        $newInvoice->setValue('riv_start_date', $finalStart);
+        $newInvoice->setValue('riv_end_date', $finalEnd);
+        $newInvoice->setValue('riv_due_date', $dueDate);
+        $newInvoice->setValue('riv_notes', $noteValue);
+        $newInvoice->setValue('riv_org_id', (int)$gCurrentOrgId);
+        
         $saved = $newInvoice->save();
-        $newInvoiceId = (int)$newInvoice->getValue('biv_id');
-
-        // TableAccess::save() can fail silently (PDO execute returns false) depending on PDO error mode.
-        // Ensure we have a persisted invoice ID before adding items.
-        if (!$saved || $newInvoiceId <= 0) {
-            // Fallback: attempt to find the inserted invoice by unique fields.
-            $lookupStmt = $gDb->queryPrepared(
-                    'SELECT biv_id
-                FROM ' . TBL_BL_INVOICES . '
-            WHERE biv_number_index = ?
-                            AND biv_number = ?
-                            AND biv_usr_id = ?
-            ORDER BY biv_id DESC
-            LIMIT 1',
-                    array((int)$index, (string)$number, (int)$uid),
-                    false
-            );
-            $foundId = $lookupStmt ? (int)$lookupStmt->fetchColumn() : 0;
-            if ($foundId > 0) {
-                    $newInvoice = new TableResidentsInvoice($gDb, $foundId);
-                    $newInvoiceId = $foundId;
-            }
-    }
+        if (!$saved) {
+            throw new RuntimeException('Could not save invoice record.');
+        }
+        $newInvoiceId = (int)$newInvoice->getValue('riv_id');
 
         if ($newInvoiceId <= 0) {
-            $dbError = '';
-            if (method_exists($gDb, 'getLastErrorMessage')) {
-                $dbError = trim((string)$gDb->getLastErrorMessage());
-            }
-            $msg = 'Could not save invoice record before adding items.';
-            if ($dbError !== '') {
-                $msg .= ' DB: ' . $dbError;
-            }
-            throw new RuntimeException($msg);
+            throw new RuntimeException('Could not save invoice record. riv_id is ' . $newInvoiceId);
     }
 
         // After save, add items (replaceItems validates that invoice id exists)
@@ -282,12 +260,12 @@ try {
         ++$createdInvoices;
     }
     $cfg['numbering']['last_number'] = $lastNumber;
-    billingWriteConfig($cfg);
+    residentsWriteConfig($cfg);
 
     if ($createdInvoices === 0) {
         $emptyParams = array(
             'generate_status' => 'empty',
-            'generate_message' => $gL10n->get('BL_PREVIEW_NOTHING_TO_GENERATE')
+            'generate_message' => $gL10n->get('RE_PREVIEW_NOTHING_TO_GENERATE')
         );
         // Keep list period consistent with the requested generation range.
         $emptyParams['date_from'] = $startDateParam;
@@ -298,7 +276,7 @@ try {
         if ($filterUserId > 0) {
             $emptyParams['filter_user'] = (string)$filterUserId;
     }
-        billingRedirectToInvoiceList($emptyParams);
+        residentsRedirectToInvoiceList($emptyParams);
     }
 
     $periodStart = (string)($generationData['parameters']['start_date'] ?? $startDateParam);
@@ -322,31 +300,21 @@ try {
     if ($filterUserId > 0) {
         $successParams['filter_user'] = (string)$filterUserId;
     }
-    billingRedirectToInvoiceList($successParams);
+    residentsRedirectToInvoiceList($successParams);
 } catch (\Throwable $e) {
-    $fallbackPeriodStart = $startDateParam !== '' ? $startDateParam : date('Y-m-01');
-    $fallbackPeriodEnd = $fallbackPeriodStart;
-    if (isset($generationData) && is_array($generationData)) {
-        $fallbackPeriodStart = (string)($generationData['parameters']['start_date'] ?? $fallbackPeriodStart);
-        $fallbackPeriodEnd = (string)($generationData['summary_end_date'] ?? $fallbackPeriodEnd);
-        if ($fallbackPeriodEnd === '') {
-            $fallbackPeriodEnd = $fallbackPeriodStart;
-    }
-    }
     $errorParams = array(
     'generate_status' => 'failed',
     'generate_message' => $e->getMessage()
     );
-    // Keep list period consistent even on failure.
-    $errorParams['date_from'] = $fallbackPeriodStart;
-    $errorParams['date_to'] = $fallbackPeriodEnd;
+    $errorParams['date_from'] = $startDateParam;
+    $errorParams['date_to'] = $startDateParam;
     if ($groupId > 0) {
         $errorParams['filter_group'] = (string)$groupId;
     }
     if ($filterUserId > 0) {
         $errorParams['filter_user'] = (string)$filterUserId;
     }
-    billingRedirectToInvoiceList($errorParams);
+    residentsRedirectToInvoiceList($errorParams);
 }
 
 exit;

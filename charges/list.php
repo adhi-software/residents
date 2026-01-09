@@ -5,31 +5,31 @@
 
 global $gDb, $gL10n, $gSettingsManager, $page;
 
-$isAdmin = isBillingAdminBySettings();
+$isAdmin = isResidentsAdminBySettings();
 if (!$isAdmin) {
-    $page->addHtml('<div class="alert alert-warning">' . $gL10n->get('BL_ONLY_ADMIN') . '</div>');
+    $page->addHtml('<div class="alert alert-warning">' . $gL10n->get('RE_ONLY_ADMIN') . '</div>');
     return;
 }
 
 $chargeStatus = admFuncVariableIsValid($_GET, 'charge_status', 'string');
 $chargeMessage = admFuncVariableIsValid($_GET, 'charge_message', 'string');
 if ($chargeStatus === 'saved') {
-    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_CHARGERS_SAVED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_CHARGERS_SAVED') . '</div>');
 } elseif ($chargeStatus === 'deleted') {
-    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('BL_CHARGERS_DELETED') . '</div>');
+    $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_CHARGERS_DELETED') . '</div>');
 } elseif ($chargeStatus === 'error') {
     $msg = $chargeMessage !== '' ? htmlspecialchars($chargeMessage) : 'Action failed.';
     $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
 }
 
-$newUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/edit.php');
-$page->addHtml('<a class="btn btn-primary" href="' . $newUrl . '"><i class="fas fa-plus"></i> ' . $gL10n->get('BL_CHARGERS_ADD') . '</a><br /><br />');
+$newUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/edit.php');
+$page->addHtml('<a class="btn btn-primary" href="' . $newUrl . '"><i class="fas fa-plus"></i> ' . $gL10n->get('RE_CHARGERS_ADD') . '</a><br /><br />');
 
-if (!tableExistsBILL(TBL_BL_CHARGES)) {
-    return;
+if ($gCurrentOrgId > 0) {
+    $countStmt = $gDb->queryPrepared('SELECT COUNT(*) FROM ' . TBL_RE_CHARGES . ' WHERE rch_org_id = ?', array($gCurrentOrgId));
+} else {
+    $countStmt = $gDb->queryPrepared('SELECT COUNT(*) FROM ' . TBL_RE_CHARGES, array());
 }
-
-$countStmt = $gDb->queryPrepared('SELECT COUNT(*) FROM ' . TBL_BL_CHARGES, array());
 $totalCharges = $countStmt ? (int)$countStmt->fetchColumn() : 0;
 
 // Keep rendering table even when there are no charges; suppress empty-state banner.
@@ -42,7 +42,7 @@ if (isset($gSettingsManager)) {
     }
 }
 
-$serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/list_data.php');
+$serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/list_data.php');
 
 $table = new HtmlTable('residents_chargers', $page, true, true, 'table table-condensed');
 $table->setServerSideProcessing($serverUrl);
@@ -51,21 +51,21 @@ $table->setDatatablesOrderColumns(array(array(2, 'asc')));
 $table->disableDatatablesColumnsSort(array(1, 7));
 $table->setColumnAlignByArray(array('center', 'left', 'left', 'right', 'left', 'left', 'center'));
 $table->addRowHeadingByArray(array(
-'<input type="checkbox" id="billing-select-all-charges" />',
+'<input type="checkbox" id="re-select-all-charges" />',
 'ID',
-$gL10n->get('BL_CHARGERS_NAME'),
-$gL10n->get('BL_CHARGERS_PERIOD'),
-$gL10n->get('BL_CHARGERS_AMOUNT'),
-$gL10n->get('BL_CHARGERS_ROLES'),
-$gL10n->get('BL_ACTIONS')
+$gL10n->get('RE_CHARGERS_NAME'),
+$gL10n->get('RE_CHARGERS_PERIOD'),
+$gL10n->get('RE_CHARGERS_AMOUNT'),
+$gL10n->get('RE_CHARGERS_ROLES'),
+$gL10n->get('RE_ACTIONS')
 ));
 
 if ($isAdmin) {
-    $bulkDeleteUrlCh = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/charges/delete_all.php');
+    $bulkDeleteUrlCh = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/delete_all.php');
     $bulkDeleteUrlChJs = json_encode($bulkDeleteUrlCh);
-    $chargesDeleteConfirm = json_encode($gL10n->get('BL_CHARGERS_DELETE_CONFIRM'));
+    $chargesDeleteConfirm = json_encode($gL10n->get('RE_CHARGERS_DELETE_CONFIRM'));
     $chargesDeleteError = json_encode('Error deleting selected charges');
-    $deleteAllLabel = json_encode($gL10n->get('BL_DELETE_ALL'));
+    $deleteAllLabel = json_encode($gL10n->get('RE_DELETE_ALL'));
 
     $jsCharges = <<<'JS'
   $(function(){
@@ -93,22 +93,22 @@ if ($isAdmin) {
       if (!lengthEl.length) {
         return $();
       }
-      var buttonEl = $('#billing-delete-selected-charges');
+      var buttonEl = $('#re-delete-selected-charges');
       if (buttonEl.length) {
         return buttonEl;
       }
-      var newButtonEl = $('<button type="button" id="billing-delete-selected-charges" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
+      var newButtonEl = $('<button type="button" id="re-delete-selected-charges" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
       lengthEl.append(newButtonEl);
       return newButtonEl;
     }
     function bindDeleteButton(buttonEl){
-      if (!buttonEl.length || buttonEl.data('billingDeleteBound')) {
+      if (!buttonEl.length || buttonEl.data('residentsDeleteBound')) {
         return;
       }
-      buttonEl.data('billingDeleteBound', true).on('click', function(e){
+      buttonEl.data('residentsDeleteBound', true).on('click', function(e){
         e.preventDefault();
         var ids = [];
-        tableEl.find('tbody input.billing-row-select:checked').each(function(){ ids.push($(this).val()); });
+        tableEl.find('tbody input.re-row-select:checked').each(function(){ ids.push($(this).val()); });
         if (ids.length === 0) {
           return;
         }
@@ -132,7 +132,7 @@ if ($isAdmin) {
       if (!buttonEl.length) {
         return;
       }
-      var hasSelection = tableEl.find('tbody input.billing-row-select:checked').length > 0;
+      var hasSelection = tableEl.find('tbody input.re-row-select:checked').length > 0;
       buttonEl.prop('disabled', !hasSelection);
     }
     var deleteButtonEl = getDeleteButton();
@@ -141,26 +141,26 @@ if ($isAdmin) {
       updateDeleteButtonState();
     });
     function syncHeaderCheckboxCharges(){
-      var total = tableEl.find('tbody input.billing-row-select').length;
-      var selected = tableEl.find('tbody input.billing-row-select:checked').length;
-      var hdr = $('#billing-select-all-charges').get(0);
+      var total = tableEl.find('tbody input.re-row-select').length;
+      var selected = tableEl.find('tbody input.re-row-select:checked').length;
+      var hdr = $('#re-select-all-charges').get(0);
       if (!hdr) { return; }
       hdr.indeterminate = selected > 0 && selected < total;
       hdr.checked = total > 0 && selected === total;
     }
     tableEl.find('thead')
-      .on('click', '#billing-select-all-charges', function(e){ e.stopPropagation(); })
-      .on('change', '#billing-select-all-charges', function(e){
+      .on('click', '#re-select-all-charges', function(e){ e.stopPropagation(); })
+      .on('change', '#re-select-all-charges', function(e){
         e.stopPropagation();
         var checked = this.checked;
-        tableEl.find('tbody input.billing-row-select')
+        tableEl.find('tbody input.re-row-select')
           .prop('checked', checked)
           .trigger('change');
         syncHeaderCheckboxCharges();
       });
     function updateInfo(){
       var pageInfo = dataTable.page.info();
-      var selected = tableEl.find('tbody input.billing-row-select:checked').length;
+      var selected = tableEl.find('tbody input.re-row-select:checked').length;
       var infoEl = wrapperEl.find('.dataTables_info');
       if (selected > 0){
         infoEl.text(selected + ' selected');
@@ -174,7 +174,7 @@ if ($isAdmin) {
       deleteButtonEl = getDeleteButton();
       updateDeleteButtonState();
     });
-    tableEl.on('change', 'input.billing-row-select', function(){
+    tableEl.on('change', 'input.re-row-select', function(){
       updateInfo();
       syncHeaderCheckboxCharges();
       updateDeleteButtonState();

@@ -66,9 +66,27 @@ try{
             'user_id' => $currentUserId
         ));
     }
+
+    // Enforce org ownership (avoid cross-org access by ID)
+    if ((int) $invoiceData->getValue('riv_org_id') !== (int) $gCurrentOrgId) {
+        admidioApiError('Invoice not found', 404, array(
+            'endpoint' => $endpointName,
+            'user_id' => $currentUserId
+        ));
+    }
+
+    // Permission check: admins can view all, regular users can only view their own
+    $canViewAll = isResidentsAdmin() || isPaymentAdmin();
     
-    $ownerId = (int)$invoiceData->getValue('biv_usr_id');
-    $isPaid = ((int)$invoiceData->getValue('biv_is_paid') === 1);
+    $ownerId = (int)$invoiceData->getValue('riv_usr_id');
+    if (!$canViewAll && $ownerId !== $currentUserId) {
+        admidioApiError('You do not have permission to view this invoice', 403, array(
+            'endpoint' => $endpointName,
+            'user_id' => $currentUserId,
+            'invoice_id' => (int) $invoiceData->getValue('riv_id')
+        ));
+    }
+    $isPaid = ((int)$invoiceData->getValue('riv_is_paid') === 1);
     $canPay = (!$isPaid && $ownerId === $currentUserId);
     $total = 0.0;
     $currencyFallback = $gSettingsManager->getString('system_currency');
@@ -76,16 +94,16 @@ try{
     $itemRows = $invoiceData->getItems();
     $inv_items = [];
     foreach ($itemRows as $item) {
-        if ($currency === '' && !empty($item['bii_currency'])) {
-            $currency = (string)$item['bii_currency'];
+        if ($currency === '' && !empty($item['rii_currency'])) {
+            $currency = (string)$item['rii_currency'];
             }
-        $amount = (float)$item['bii_amount'];
+        $amount = (float)$item['rii_amount'];
         $total += $amount;
 
         $inv_items[] = [
-            'name' => $item['bii_name'],
-            'start_date' => billingFormatDateForApi((string)($item['bii_start_date'] ?? '')),
-            'end_date' => billingFormatDateForApi((string)($item['bii_end_date'] ?? '')),
+            'name' => $item['rii_name'],
+            'start_date' => residentsFormatDateForApi((string)($item['rii_start_date'] ?? '')),
+            'end_date' => residentsFormatDateForApi((string)($item['rii_end_date'] ?? '')),
             'currency' => $currency,
             'amount' => $amount
         ];
@@ -95,18 +113,18 @@ try{
     }
 
     $invoice = [
-    'id' => (int)$invoiceData->getValue('biv_id'),
-    'user_name' => $ownerId > 0 ? billingFetchUserNameById($ownerId) : '',
-    'biv_usr_id' => (int)$invoiceData->getValue('biv_usr_id'),
-    'number' => (string)$invoiceData->getValue('biv_number'),
-    'bpa_date' => billingFormatDateForApi((string)$invoiceData->getValue('bpa_date')),
-    'biv_is_paid' => (int)$invoiceData->getValue('biv_is_paid'),
+    'id' => (int)$invoiceData->getValue('riv_id'),
+    'user_name' => $ownerId > 0 ? residentsFetchUserNameById($ownerId) : '',
+    'riv_usr_id' => (int)$invoiceData->getValue('riv_usr_id'),
+    'number' => (string)$invoiceData->getValue('riv_number'),
+    'rpa_date' => residentsFormatDateForApi((string)$invoiceData->getValue('rpa_date')),
+    'riv_is_paid' => (int)$invoiceData->getValue('riv_is_paid'),
     'can_pay' => $canPay,
-    'biv_date' => billingFormatDateForApi((string)$invoiceData->getValue('biv_date')),
-    'biv_due_date' => billingFormatDateForApi((string)$invoiceData->getValue('biv_due_date')),
-    'biv_start_date' => billingFormatDateForApi((string)$invoiceData->getValue('biv_start_date')),
-    'biv_end_date' => billingFormatDateForApi((string)$invoiceData->getValue('biv_end_date')),
-    'biv_notes' => (string)$invoiceData->getValue('biv_notes'),
+    'riv_date' => residentsFormatDateForApi((string)$invoiceData->getValue('riv_date')),
+    'riv_due_date' => residentsFormatDateForApi((string)$invoiceData->getValue('riv_due_date')),
+    'riv_start_date' => residentsFormatDateForApi((string)$invoiceData->getValue('riv_start_date')),
+    'riv_end_date' => residentsFormatDateForApi((string)$invoiceData->getValue('riv_end_date')),
+    'riv_notes' => (string)$invoiceData->getValue('riv_notes'),
     'currency_symbol' => $currency,
     'inv_items' => $inv_items,
     'inv_total' => $total
@@ -117,7 +135,6 @@ try{
     admidioApiError($exception->getMessage(), 500, array(
     'endpoint' => $endpointName,
     'user_id' => $currentUserId,
-    'msg_uuid' => $getMsgUuid,
     'exception' => get_class($exception)
     ));
 }

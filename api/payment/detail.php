@@ -27,9 +27,18 @@ try {
         ]);
     }
 
+    // Enforce org ownership (avoid cross-org access by ID)
+    if ((int) $paymentData->getValue('rpa_org_id') !== (int) $gCurrentOrgId) {
+        admidioApiError('Payment not found', 404, [
+            'endpoint' => $endpointName,
+            'user_id' => $currentUserId,
+            'payment_id' => $payId
+        ]);
+    }
+
     // Permission check: admins can view all, regular users can only view their own
-    $canViewAll = isBillingAdmin() || isPaymentAdmin();
-    $ownerId = (int)$paymentData->getValue('bpa_usr_id');
+    $canViewAll = isResidentsAdmin() || isPaymentAdmin();
+    $ownerId = (int)$paymentData->getValue('rpa_usr_id');
     
     if (!$canViewAll && $ownerId !== $currentUserId) {
         admidioApiError('You do not have permission to view this payment', 403, [
@@ -45,25 +54,25 @@ try {
     $pay_items = [];
     
     foreach ($itemRows as $item) {
-        $currency = $item['bpi_currency'] ?: $currency;
-        $amount = (float)$item['bpi_amount'];
+        $currency = $item['rpi_currency'] ?: $currency;
+        $amount = (float)$item['rpi_amount'];
         $total += $amount;
 
         $pay_items[] = [
-            'inv_no' => $item['biv_number'] ?? ('#' . (int)$item['bpi_inv_id']),
+            'inv_no' => $item['riv_number'] ?? ('#' . (int)$item['rpi_inv_id']),
             'currency' => $currency,
             'amount' => $amount
         ];
     }
 
     $payment = [
-    'id' => (int)$paymentData->getValue('bpa_id'),
-    'user_name' => $ownerId > 0 ? billingFetchUserNameById($ownerId) : '',
-    'bpa_date' => (string)$paymentData->getValue('bpa_date', 'd.m.Y H:i'),
-    'bpa_pay_type' => (string)$paymentData->getValue('bpa_pay_type'),
-    'bpa_pg_pay_method' => (string)$paymentData->getValue('bpa_pg_pay_method'),
-    'bpa_trans_id' => (string)$paymentData->getValue('bpa_trans_id'),
-    'bpa_bank_ref_no' => (string)$paymentData->getValue('bpa_bank_ref_no'),
+    'id' => (int)$paymentData->getValue('rpa_id'),
+    'user_name' => $ownerId > 0 ? residentsFetchUserNameById($ownerId) : '',
+    'rpa_date' => (string)$paymentData->getValue('rpa_date', 'd.m.Y H:i'),
+    'rpa_pay_type' => (string)$paymentData->getValue('rpa_pay_type'),
+    'rpa_pg_pay_method' => (string)$paymentData->getValue('rpa_pg_pay_method'),
+    'rpa_trans_id' => (string)$paymentData->getValue('rpa_trans_id'),
+    'rpa_bank_ref_no' => (string)$paymentData->getValue('rpa_bank_ref_no'),
     'pay_items' => $pay_items,
     'pay_total' => $total
     ];

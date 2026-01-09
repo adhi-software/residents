@@ -43,20 +43,28 @@ function encodeProfileImage(string $binary): array
     ];
 }
 
-$sqlUsers = 'SELECT usr_id, usr_login_name, usr_photo FROM ' . TBL_USERS . ' WHERE usr_valid = true';
+$today = date('Y-m-d');
 
-$users = $gDb->queryPrepared($sqlUsers, array(), false);
+$sqlUsers = 'SELECT DISTINCT u.usr_id, u.usr_login_name
+    FROM ' . TBL_USERS . ' u
+    INNER JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id
+        AND m.mem_begin <= ?
+        AND m.mem_end > ?
+    INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id
+    INNER JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id
+    WHERE u.usr_valid = true
+        AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)';
+
+$users = $gDb->queryPrepared($sqlUsers, array($today, $today, (int) $gCurrentOrgId), false);
 if ($users === false) {
     admidioApiError('Database error', 500);
 }
 $contacts = [];
-$isAdmin = $gCurrentUser->isAdministrator();
-$showAll = $gSettingsManager->getBool('contacts_show_all');
 
 while ($row = $users->fetch()) {
     $user = new User($gDb, $gProfileFields);
     $user->readDataById($row['usr_id']);
-    if (!isMemberOfOrganization($user) && (!$isAdmin || !$showAll)) {
+    if (!isMemberOfOrganization($user)) {
         continue;
     }
     $profileBinary = '';

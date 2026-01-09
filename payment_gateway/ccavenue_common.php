@@ -45,8 +45,8 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
         $invId = (int)$invId;
 
         $stmt = $gDb->queryPrepared(
-            'SELECT * FROM ' . TBL_BL_INVOICES . ' WHERE biv_id = ?',
-            [$invId],
+            'SELECT * FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ? AND riv_org_id = ?',
+            [$invId, $gCurrentOrgId],
             false
         );
         if ($stmt === false) {
@@ -58,13 +58,13 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
             return ['error' => 'Invalid invoice'];
         }
 
-        if ((int)$invoice['biv_is_paid'] === 1) {
+        if ((int)$invoice['riv_is_paid'] === 1) {
             return ['error' => 'Invoice already paid'];
         }
 
         if ($ownerId === 0) {
-            $ownerId = (int)$invoice['biv_usr_id'];
-        } elseif ($ownerId !== (int)$invoice['biv_usr_id']) {
+            $ownerId = (int)$invoice['riv_usr_id'];
+        } elseif ($ownerId !== (int)$invoice['riv_usr_id']) {
             return ['error' => 'Invoices must belong to same user'];
         }
 
@@ -72,7 +72,7 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
             return ['error' => 'Unauthorized invoice access'];
         }
 
-        $totals = billingGetInvoiceTotals($invId);
+        $totals = residentsGetInvoiceTotals($invId);
         $totalAmount += (float)$totals['amount'];
         $currency = $totals['currency'];
     }
@@ -82,8 +82,8 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
     }
 
     // Determine redirect URLs based on source
-    $baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payment_gateway/';
-    $apiBaseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/api/payment/';
+    $baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/';
+    $apiBaseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/api/payment/';
     
     if ($source === 'mobile') {
         // Mobile uses dedicated response handler with clean HTML output (in api folder)
@@ -97,16 +97,16 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
 
     // Insert payment record (status = IT for initiated)
     if ($gDb->queryPrepared(
-        'INSERT INTO ' . TBL_BL_TRANS . ' (
-            btr_pg_id,
-            btr_status,
-            btr_amount,
-            btr_currency,
-            btr_usr_id,
-            btr_org_id,
-            btr_pg_pay_method,
-            btr_usr_id_create,
-            btr_usr_id_change
+        'INSERT INTO ' . TBL_RE_TRANS . ' (
+            rtr_pg_id,
+            rtr_status,
+            rtr_amount,
+            rtr_currency,
+            rtr_usr_id,
+            rtr_org_id,
+            rtr_pg_pay_method,
+            rtr_usr_id_create,
+            rtr_usr_id_change
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
             null,
@@ -128,18 +128,18 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
 
     // Insert payment items
     foreach ($invoiceIds as $invId) {
-        $invTotals = billingGetInvoiceTotals($invId);
+        $invTotals = residentsGetInvoiceTotals($invId);
 
         if ($gDb->queryPrepared(
-            'INSERT INTO ' . TBL_BL_TRANS_ITEMS . ' (
-                bti_pg_payment_id,
-                bti_inv_id,
-                bti_amount,
-                bti_currency,
-                bti_usr_id,
-                bti_org_id,
-                bti_usr_id_create,
-                bti_usr_id_change
+            'INSERT INTO ' . TBL_RE_TRANS_ITEMS . ' (
+                rti_pg_payment_id,
+                rti_inv_id,
+                rti_amount,
+                rti_currency,
+                rti_usr_id,
+                rti_org_id,
+                rti_usr_id_create,
+                rti_usr_id_change
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $paymentId,

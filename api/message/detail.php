@@ -99,7 +99,7 @@ try {
     while ($entry = $conversationStatement->fetch(PDO::FETCH_ASSOC)) {
         $authorId = (int) $entry['msc_usr_id'];
         if ($authorId > 0 && !array_key_exists($authorId, $userCache)) {
-            $userCache[$authorId] = billingFetchUserNameById($authorId);
+            $userCache[$authorId] = residentsFetchUserNameById($authorId);
     }
 
         $authorDisplayName = $authorId > 0 ? $userCache[$authorId] : 'System';

@@ -1,7 +1,7 @@
 <?php
 /**
  ***********************************************************************************************
- * Lightweight history logger for Residents billing entities.
+ * Lightweight history logger for Residents plugin entities.
  *
  * @copyright The Admidio Team
  * @see https://www.admidio.org/
@@ -9,7 +9,7 @@
  ***********************************************************************************************
  */
 
-class BillingHistory
+class ResidentsHistory
 {
     /**
         * Map history table names to their column prefixes for audit columns.
@@ -18,12 +18,12 @@ class BillingHistory
     {
         // Extract table name without the adm_ prefix for matching
         $prefixMap = array(
-            '_bl_invoices_hist' => 'ivh',
-            '_bl_invoice_items_hist' => 'iih',
-            '_bl_payments_hist' => 'pah',
-            '_bl_payment_items_hist' => 'pih',
-            '_bl_charges_hist' => 'chh',
-            '_bl_devices_hist' => 'deh',
+            '_re_invoices_hist' => 'ivh',
+            '_re_invoice_items_hist' => 'iih',
+            '_re_payments_hist' => 'pah',
+            '_re_payment_items_hist' => 'pih',
+            '_re_charges_hist' => 'chh',
+            '_re_devices_hist' => 'deh',
         );
 
         foreach ($prefixMap as $tableSuffix => $prefix) {
@@ -32,7 +32,6 @@ class BillingHistory
             }
     }
 
-        // Fallback to generic prefix if no match found
         return 'blh';
     }
 
@@ -52,7 +51,7 @@ class BillingHistory
             return;
     }
 
-        if (!tableExistsBILL($historyTable) || empty($row)) {
+        if (empty($row)) {
             return;
     }
 

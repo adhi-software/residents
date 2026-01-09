@@ -24,6 +24,14 @@ if (!isMember($currentUserId)) {
     ));
 }
 
+// Only Residents Admin / Payment Admin may delete invoices
+if (!(isResidentsAdmin() || isPaymentAdmin())) {
+    admidioApiError('You do not have permission to delete invoices', 403, array(
+        'endpoint' => $endpointName,
+        'user_id' => $currentUserId
+    ));
+}
+
 $invID = admFuncVariableIsValid($_GET, 'id', 'string', array('defaultValue' => ''));
 
 if ($invID === '') {
@@ -40,7 +48,16 @@ try {
         admidioApiError('invoice not found', 404, array(
             'endpoint' => $endpointName,
             'user_id' => $currentUserId,
-            'bpa_id' => $invID
+            'rpa_id' => $invID
+        ));
+    }
+
+    // Enforce org ownership
+    if ((int) $invoice->getValue('riv_org_id') !== (int) $gCurrentOrgId) {
+        admidioApiError('invoice not found', 404, array(
+            'endpoint' => $endpointName,
+            'user_id' => $currentUserId,
+            'inv_id' => $invID
         ));
     }
 
@@ -49,19 +66,19 @@ try {
         admidioApiError('Unable to delete this invoice', 500, array(
             'endpoint' => $endpointName,
             'user_id' => $currentUserId,
-            'bpa_id' => $invID
+            'rpa_id' => $invID
         ));
     }
 
     echo json_encode(array(
     'status' => 'deleted',
-    'bpa_id' => $payId
+    'inv_id' => (int) $invoice->getValue('riv_id')
     ));
 } catch (Exception $exception) {
-    admidioApiError($exception->getpayment(), 500, array(
+    admidioApiError($exception->getMessage(), 500, array(
     'endpoint' => $endpointName,
     'user_id' => $currentUserId,
-    'bpa_id' => $msgUuid,
+    'inv_id' => $invID,
     'exception' => get_class($exception)
     ));
 }

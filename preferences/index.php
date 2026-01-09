@@ -14,7 +14,7 @@
 global $gDb, $gCurrentOrganization, $gL10n, $gCurrentUser;
 
 if (!$isAdmin) {
-    $page->addHtml('<div class="alert alert-warning">'.$gL10n->get('BL_ONLY_ADMIN').'</div>');
+    $page->addHtml('<div class="alert alert-warning">'.$gL10n->get('RE_ONLY_ADMIN').'</div>');
     return;
 }
 
@@ -100,16 +100,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     }
 
-    billingWriteConfig($config);
+    residentsWriteConfig($config);
     // Decide where to redirect based on updated permissions
-    $stillCanSeePreferences = isBillingAdmin();
+    $stillCanSeePreferences = isResidentsAdmin();
     $redirectTab = $stillCanSeePreferences ? 'preferences' : 'invoices';
     // Redirect after POST (PRG) to refresh permissions/tabs with appropriate target tab
-    admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', array('tab' => $redirectTab, 'pref_status' => 'saved')));
+    admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => $redirectTab, 'pref_status' => 'saved')));
     return;
 }
 
-$roles = billingGetRoleOptions();
+$roles = residentsGetRoleOptions();
 $selected = $config['access']['admin_roles'] ?? array();
 $selectedPayment = $config['access']['payment_admin_roles'] ?? array();
 
@@ -119,13 +119,13 @@ if ($orgId > 0) {
     $orgLogoPath = ADMIDIO_PATH . FOLDER_DATA . '/residents/org_logo_' . $orgId . '.png';
     if (file_exists($orgLogoPath)) {
         // Use PHP endpoint to serve logo (direct file access is blocked by .htaccess)
-        $orgLogoUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/preferences/get_logo.php?v=' . rawurlencode((string)filemtime($orgLogoPath));
+        $orgLogoUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/preferences/get_logo.php?v=' . rawurlencode((string)filemtime($orgLogoPath));
     }
 }
 
-$form = new HtmlForm('billing_preferences', SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', array('tab' => 'preferences')), $page, array('enableFileUpload' => true));
-$form->addSelectBox('admin_roles', $gL10n->get('BL_PREF_ADMIN_ROLES'), $roles, array('defaultValue' => $selected, 'multiselect' => true));
-$form->addSelectBox('payment_admin_roles', $gL10n->get('BL_PREF_PAYMENT_ADMIN'), $roles, array('defaultValue' => $selectedPayment, 'multiselect' => true));
+$form = new HtmlForm('re_preferences', SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'preferences')), $page, array('enableFileUpload' => true));
+$form->addSelectBox('admin_roles', $gL10n->get('RE_PREF_ADMIN_ROLES'), $roles, array('defaultValue' => $selected, 'multiselect' => true));
+$form->addSelectBox('payment_admin_roles', $gL10n->get('RE_PREF_PAYMENT_ADMIN'), $roles, array('defaultValue' => $selectedPayment, 'multiselect' => true));
 
 // Organization Logo (used in invoice PDFs)
 // Render as a single grouped box (preview + upload + remove button) to avoid duplicate labels.
@@ -134,17 +134,17 @@ $logoBoxHtml = '<div class="border rounded bg-light p-3">'
 
 if ($orgLogoUrl !== '') {
     $logoBoxHtml .= '<div class="border rounded bg-white p-2" style="max-width:260px;">'
-    . '<img class="img-fluid" src="' . htmlspecialchars($orgLogoUrl) . '" alt="' . htmlspecialchars($gL10n->get('BL_ORG_LOGO')) . '" style="max-height:70px; width:auto; display:block;" />'
+    . '<img class="img-fluid" src="' . htmlspecialchars($orgLogoUrl) . '" alt="' . htmlspecialchars($gL10n->get('RE_ORG_LOGO')) . '" style="max-height:70px; width:auto; display:block;" />'
     . '</div>';
 }
 
 $logoBoxHtml .= '<div style="min-width:260px;">'
     . '<input type="file" class="form-control" name="userfile[]" accept="image/png,image/jpeg" />'
-    . '<div class="form-text">' . htmlspecialchars($gL10n->get('BL_ORG_LOGO_HELP')) . '</div>';
+    . '<div class="form-text">' . htmlspecialchars($gL10n->get('RE_ORG_LOGO_HELP')) . '</div>';
 
 if ($orgLogoUrl !== '') {
     $logoBoxHtml .= '<button type="submit" name="org_logo_remove" value="1" class="btn btn-sm btn-outline-danger mt-2">'
-    . '<i class="fas fa-trash"></i> ' . htmlspecialchars($gL10n->get('BL_REMOVE_ORG_LOGO'))
+    . '<i class="fas fa-trash"></i> ' . htmlspecialchars($gL10n->get('RE_REMOVE_ORG_LOGO'))
     . '</button>';
 }
 
@@ -152,12 +152,12 @@ $logoBoxHtml .= '</div>'
     . '</div>'
     . '</div>';
 
-$form->addCustomContent($gL10n->get('BL_ORG_LOGO'), $logoBoxHtml);
+$form->addCustomContent($gL10n->get('RE_ORG_LOGO'), $logoBoxHtml);
 
 // choose single group whose members fill owner dropdown
 // Default due date configuration
-$form->addInput('due_days', $gL10n->get('BL_PREF_DUE_DAYS'), (string)((int)($config['defaults']['due_days'] ?? 15)), array('maxLength' => 3));
-$form->addMultilineTextInput('default_note', $gL10n->get('BL_PREF_DEFAULT_NOTE'), (string)($config['defaults']['invoice_note'] ?? ''), 3);
+$form->addInput('due_days', $gL10n->get('RE_PREF_DUE_DAYS'), (string)((int)($config['defaults']['due_days'] ?? 15)), array('maxLength' => 3));
+$form->addMultilineTextInput('default_note', $gL10n->get('RE_PREF_DEFAULT_NOTE'), (string)($config['defaults']['invoice_note'] ?? ''), 3);
 
 // Payment Gateway Configuration Section
 $pgConf = $config['payment_gateway'];
@@ -178,52 +178,52 @@ $modalHtml = '
                     <div id="pg_modal_error" class="alert alert-danger d-none mb-3" role="alert"></div>
                     <div class="row gx-3" style="--bs-gutter-y: 2rem;">
             <div class="col-md-6">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_NAME').' <span class="text-danger">*</span></label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_NAME').' <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="pg_name" id="pg_name" value="'.htmlspecialchars((string)$pgConf['name']).'" placeholder="e.g. CCAvenue">
             </div>
             <div class="col-md-6">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_CURRENCY').'</label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_CURRENCY').'</label>
         <input type="text" class="form-control" name="pg_currency" id="pg_currency" value="'.htmlspecialchars((string)$pgConf['currency']).'" placeholder="e.g. INR">
             </div>
             
             <div class="col-md-6">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_MERCHANT_ID').' <span class="text-danger">*</span></label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_MERCHANT_ID').' <span class="text-danger">*</span></label>
         <input type="text" class="form-control font-monospace" name="pg_merchant_id" id="pg_merchant_id" value="'.htmlspecialchars((string)$pgConf['merchant_id']).'">
             </div>
             <div class="col-md-6">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_ACCESS_CODE').' <span class="text-danger">*</span></label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_ACCESS_CODE').' <span class="text-danger">*</span></label>
         <input type="text" class="form-control font-monospace" name="pg_access_code" id="pg_access_code" value="'.htmlspecialchars((string)$pgConf['access_code']).'">
             </div>
             
             <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_WORKING_KEY').' <span class="text-danger">*</span></label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_WORKING_KEY').' <span class="text-danger">*</span></label>
         <input type="text" class="form-control font-monospace" name="pg_working_key" id="pg_working_key" value="'.htmlspecialchars((string)$pgConf['working_key']).'">
             </div>
              
             <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_REDIRECT_URL').'</label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_REDIRECT_URL').'</label>
         <input type="text" class="form-control" name="pg_redirect_url" id="pg_redirect_url" value="'.htmlspecialchars((string)$pgConf['redirect_url']).'">
             </div>
             
             <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_CANCEL_URL').'</label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_CANCEL_URL').'</label>
         <input type="text" class="form-control" name="pg_cancel_url" id="pg_cancel_url" value="'.htmlspecialchars((string)$pgConf['cancel_url']).'">
             </div>
             
             <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_GATEWAY_URL').' <span class="text-danger">*</span></label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_GATEWAY_URL').' <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="pg_gateway_url" id="pg_gateway_url" value="'.htmlspecialchars((string)$pgConf['gateway_url']).'">
             </div>
             
             <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('BL_PG_TIMEOUT').'</label>
+        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_TIMEOUT').'</label>
         <input type="number" class="form-control" name="pg_timeout" id="pg_timeout" min="1" value="'.htmlspecialchars((string)($pgConf['timeout'] ?? 15)).'">
             </div>
                     </div>
             </div>
             <div class="modal-footer bg-light">
-    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-dismiss="modal">'.$gL10n->get('BL_CANCEL').'</button>
-    <button type="button" class="btn btn-primary px-4" id="pg_btn_modal_save"><i class="fas fa-check me-1"></i> '.$gL10n->get('BL_OK').'</button>
+    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-dismiss="modal">'.$gL10n->get('RE_CANCEL').'</button>
+    <button type="button" class="btn btn-primary px-4" id="pg_btn_modal_save"><i class="fas fa-check me-1"></i> '.$gL10n->get('RE_OK').'</button>
             </div>
     </div>
     </div>
@@ -235,7 +235,7 @@ $hasGateway = $gatewayName !== '';
 
 $uiHtml = '
 <div class="mb-3 row">
-    <label class="col-sm-3 col-form-label">'.$gL10n->get('BL_PAYMENT_GATEWAY_LABEL').'</label>
+    <label class="col-sm-3 col-form-label">'.$gL10n->get('RE_PAYMENT_GATEWAY_LABEL').'</label>
     <div class="col-sm-9">
     <!-- Configured Gateway Card -->
     <div id="pg_card" class="card shadow-sm border-0 bg-light" style="'.($hasGateway ? '' : 'display:none;').'">
@@ -249,8 +249,8 @@ $uiHtml = '
                     </div>
         </div>
         <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-light text-primary" id="pg_btn_edit" title="'.$gL10n->get('BL_EDIT').'"><i class="fas fa-pen"></i></button>
-                    <button type="button" class="btn btn-sm btn-light text-danger" id="pg_btn_delete" title="'.$gL10n->get('BL_DELETE').'"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="btn btn-sm btn-light text-primary" id="pg_btn_edit" title="'.$gL10n->get('RE_EDIT').'"><i class="fas fa-pen"></i></button>
+                    <button type="button" class="btn btn-sm btn-light text-danger" id="pg_btn_delete" title="'.$gL10n->get('RE_DELETE').'"><i class="fas fa-trash"></i></button>
         </div>
             </div>
     </div>
@@ -259,7 +259,7 @@ $uiHtml = '
     <div id="pg_add_container" class="text-start" style="'.($hasGateway ? 'display:none;' : '').'">
             <button type="button" id="pg_btn_add" class="btn btn-outline-primary border-dashed w-100 p-3 text-center">
         <i class="fas fa-plus-circle fa-2x mb-2 d-block"></i>
-        <span class="fw-bold">'.$gL10n->get('BL_PG_ADD_BTN').'</span>
+        <span class="fw-bold">'.$gL10n->get('RE_PG_ADD_BTN').'</span>
             </button>
     </div>
     </div>
@@ -267,7 +267,7 @@ $uiHtml = '
 $form->addHtml($uiHtml);
 $form->addHtml($modalHtml);
 
-$form->addSubmitButton('btnSave', $gL10n->get('BL_SAVE'));
+$form->addSubmitButton('btnSave', $gL10n->get('RE_SAVE'));
 $page->addHtml($form->show(false));
 
 // Modal for Delete Confirmation
@@ -277,11 +277,11 @@ $page->addHtml('
     <div class="modal-content border-0 shadow">
             <div class="modal-body p-4 text-center">
     <div class="mb-3 text-danger"><i class="fas fa-exclamation-circle fa-3x"></i></div>
-    <h5 class="fw-bold mb-2">'.$gL10n->get('BL_PG_DELETE_TITLE').'</h5>
-    <p class="text-muted mb-4">'.$gL10n->get('BL_PG_DELETE_CONFIRM').'</p>
+    <h5 class="fw-bold mb-2">'.$gL10n->get('RE_PG_DELETE_TITLE').'</h5>
+    <p class="text-muted mb-4">'.$gL10n->get('RE_PG_DELETE_CONFIRM').'</p>
     <div class="d-grid gap-2">
-            <button type="button" class="btn btn-danger" id="pg_btn_modal_delete_confirm">'.$gL10n->get('BL_DELETE').'</button>
-            <button type="button" class="btn btn-light text-muted" data-bs-dismiss="modal" data-dismiss="modal">'.$gL10n->get('BL_CANCEL').'</button>
+            <button type="button" class="btn btn-danger" id="pg_btn_modal_delete_confirm">'.$gL10n->get('RE_DELETE').'</button>
+            <button type="button" class="btn btn-light text-muted" data-bs-dismiss="modal" data-dismiss="modal">'.$gL10n->get('RE_CANCEL').'</button>
     </div>
             </div>
     </div>
@@ -331,12 +331,12 @@ $(function(){
         // If clicking add, usage is new.
         // But if deleting then adding, we want clear.
         if($("#pg_name").val() === "") {
-                $("#pgModalTitle").text("'.$gL10n->get('BL_ADD_PAYMENT').' ".split(" ")[0] + " Gateway");
+                $("#pgModalTitle").text("'.$gL10n->get('RE_ADD_PAYMENT').' ".split(" ")[0] + " Gateway");
     } else {
                 // If fields are populated but card is hidden (not yet saved), we might want to keep them?
                 // Or clear them to be safe.
                 clearData();
-                $("#pgModalTitle").text("'.$gL10n->get('BL_ADD_PAYMENT').' ".split(" ")[0] + " Gateway");
+                $("#pgModalTitle").text("'.$gL10n->get('RE_ADD_PAYMENT').' ".split(" ")[0] + " Gateway");
     }
         pgModal.show();
     });
@@ -394,5 +394,5 @@ $(function(){
 </script>
 ');
 
-$uninstallUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/installation.php', array('mode' => 'uninstall'));
-$page->addHtml('<div class="mt-3"><a class="btn btn-danger text-white" href="' . $uninstallUrl . '" onclick="return confirm(\'' . htmlspecialchars($gL10n->get('BL_UNINSTALL_CONFIRM'), ENT_QUOTES, 'UTF-8') . '\');"font-size: i class="fas fa-trash"></i> ' . $gL10n->get('BL_UNINSTALL_RESIDENTS') . '</a></div>');
+$uninstallUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'uninstall'));
+$page->addHtml('<div class="mt-3"><a class="btn btn-danger text-white" href="' . $uninstallUrl . '" onclick="return confirm(\'' . htmlspecialchars($gL10n->get('RE_UNINSTALL_CONFIRM'), ENT_QUOTES, 'UTF-8') . '\');"font-size: i class="fas fa-trash"></i> ' . $gL10n->get('RE_UNINSTALL_RESIDENTS') . '</a></div>');

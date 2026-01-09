@@ -79,7 +79,7 @@ function getFolderContents(string $startFolderUuid): array
             'canDownload' => true,
             'download' => array(
         'url' => SecurityUtils::encodeUrl(
-                    FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/api/files/files_download_api.php',
+                    FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/api/files/files_download_api.php',
                     array('file_uuid' => $fileUuid)
         ),
             ),

@@ -8,21 +8,21 @@
     *   $defaultPageLength
     */
 
-$previewData = billingBuildInvoicePreviewData($getGroup, array(
+$previewData = residentsBuildInvoicePreviewData($getGroup, array(
     'start_date' => $previewStartParam,
     'invoice_date' => $previewInvoiceParam,
     'note' => $previewNoteParam,
     'user_id' => $getUser
 ));
 
-$previewTableStyle = '#table_billing_invoices_preview thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}'
-    . '#table_billing_invoices_preview thead th{font-weight:700;color:#495057;padding:12px 15px;white-space:nowrap;border:none;}'
-    . '#table_billing_invoices_preview_wrapper .dataTables_length,#table_billing_invoices_preview_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}'
-    . '#table_billing_invoices_preview_wrapper .dataTables_length label,#table_billing_invoices_preview_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}'
-    . '#table_billing_invoices_preview_wrapper .dataTables_length select,#table_billing_invoices_preview_length select{width:auto;min-width:70px;display:inline-block;}'
-    . '#table_billing_invoices_preview thead th:nth-last-child(2){padding-right:34px;}'
-    . '#table_billing_invoices_preview thead th:last-child{padding-left:22px;padding-right:22px;}'
-    . '#table_billing_invoices_preview_filter{display:none!important;}'
+$previewTableStyle = '#table_re_invoices_preview thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}'
+    . '#table_re_invoices_preview thead th{font-weight:700;color:#495057;padding:12px 15px;white-space:nowrap;border:none;}'
+    . '#table_re_invoices_preview_wrapper .dataTables_length,#table_re_invoices_preview_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}'
+    . '#table_re_invoices_preview_wrapper .dataTables_length label,#table_re_invoices_preview_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}'
+    . '#table_re_invoices_preview_wrapper .dataTables_length select,#table_re_invoices_preview_length select{width:auto;min-width:70px;display:inline-block;}'
+    . '#table_re_invoices_preview thead th:nth-last-child(2){padding-right:34px;}'
+    . '#table_re_invoices_preview thead th:last-child{padding-left:22px;padding-right:22px;}'
+    . '#table_re_invoices_preview_filter{display:none!important;}'
     . '.preview-placeholder-row{display:none!important;}';
 $page->addHtml('<style>' . $previewTableStyle . '</style>');
 
@@ -30,13 +30,15 @@ $filteredRows = array();
 $skippedAllItemsUsers = 0;
 $skippedAnyItemsUsers = 0;
 
+// Filter by org_id since we only check invoices in current organization
 $itemOverlapSql = 'SELECT COUNT(*)
-    FROM ' . TBL_BL_INVOICES . ' i
-    INNER JOIN ' . TBL_BL_INVOICE_ITEMS . ' it ON it.bii_inv_id = i.biv_id
-    WHERE i.biv_usr_id = ?
-    AND it.bii_chg_id = ?
-    AND it.bii_start_date <= ?
-    AND it.bii_end_date >= ?';
+    FROM ' . TBL_RE_INVOICES . ' i
+    INNER JOIN ' . TBL_RE_INVOICE_ITEMS . ' it ON it.rii_inv_id = i.riv_id
+    WHERE i.riv_org_id = ?
+    AND i.riv_usr_id = ?
+    AND it.rii_chg_id = ?
+    AND it.rii_start_date <= ?
+    AND it.rii_end_date >= ?';
 
 foreach ((array)$previewData['rows'] as $row) {
     $uid = (int)($row['user_id'] ?? 0);
@@ -66,7 +68,7 @@ foreach ((array)$previewData['rows'] as $row) {
             continue;
     }
 
-        $existsCount = (int)$gDb->queryPrepared($itemOverlapSql, array($uid, $chargeId, $itemEnd, $itemStart))->fetchColumn();
+        $existsCount = (int)$gDb->queryPrepared($itemOverlapSql, array($gCurrentOrgId, $uid, $chargeId, $itemEnd, $itemStart))->fetchColumn();
         if ($existsCount > 0) {
             $skippedAny = true;
             continue;
@@ -110,40 +112,40 @@ foreach ($filteredRows as $r) {
 }
 $previewData['total_amount'] = number_format($totalAmount, 2, '.', '');
 $previewData['summary_end_date'] = $summaryEnd;
-$statusText = $gL10n->get('BL_PREVIEW_STATUS');
+$statusText = $gL10n->get('RE_PREVIEW_STATUS');
 $currencyLabel = $previewData['currency'] ?? (isset($gSettingsManager) ? trim((string)$gSettingsManager->getString('system_currency')) : '');
 
 $existingInvoicesUsers = $skippedAllItemsUsers + $skippedAnyItemsUsers;
 if ($existingInvoicesUsers > 0) {
     $page->addHtml(
     '<div class="alert alert-warning">'
-    . htmlspecialchars(sprintf($gL10n->get('BL_PREVIEW_EXISTING_WARNING'), (string)$existingInvoicesUsers))
+    . htmlspecialchars(sprintf($gL10n->get('RE_PREVIEW_EXISTING_WARNING'), (string)$existingInvoicesUsers))
     . '</div>'
     );
 }
 
-$previewTable = new HtmlTable('table_billing_invoices_preview', $page, true, true, 'table table-hover align-middle');
+$previewTable = new HtmlTable('table_re_invoices_preview', $page, true, true, 'table table-hover align-middle');
 $previewTable->setDatatablesRowsPerPage($defaultPageLength);
 $previewTable->addRowHeadingByArray(array(
-    $gL10n->get('BL_NUMBER'),
-    $gL10n->get('BL_START_DATE'),
-    $gL10n->get('BL_END_DATE'),
-    $gL10n->get('BL_STATUS'),
-    $gL10n->get('BL_USER'),
-    $gL10n->get('BL_DUE_DATE'),
-    $gL10n->get('BL_AMOUNT'),
-    $gL10n->get('BL_ACTIONS')
+    $gL10n->get('RE_NUMBER'),
+    $gL10n->get('RE_START_DATE'),
+    $gL10n->get('RE_END_DATE'),
+    $gL10n->get('RE_STATUS'),
+    $gL10n->get('RE_USER'),
+    $gL10n->get('RE_DUE_DATE'),
+    $gL10n->get('RE_AMOUNT'),
+    $gL10n->get('RE_ACTIONS')
 ));
 
 if (!empty($previewData['rows'])) {
     $paramStart = $previewData['parameters']['start_date'] ?? $previewStartParam;
     $paramEnd = $previewData['summary_end_date'] ?? $paramStart;
     $coverageLabel = $paramStart === $paramEnd
-    ? billingFormatDateForUi($paramStart)
-    : billingFormatDateForUi($paramStart) . ' → ' . billingFormatDateForUi($paramEnd);
+    ? residentsFormatDateForUi($paramStart)
+    : residentsFormatDateForUi($paramStart) . ' → ' . residentsFormatDateForUi($paramEnd);
     $totalFormatted = ($currencyLabel !== '' ? $currencyLabel . ' ' : '') . number_format((float)($previewData['total_amount'] ?? 0), 2, '.', ',');
 
-    $cfg = billingReadConfig();
+    $cfg = residentsReadConfig();
     $dueDays = (int)($cfg['defaults']['due_days'] ?? 15);
     if ($dueDays <= 0) {
         $dueDays = 15;
@@ -159,7 +161,7 @@ if (!empty($previewData['rows'])) {
         $amountValue = number_format((float)($row['total'] ?? 0), 2, '.', ',');
         $amountCell = ($currencyLabel !== '' ? $currencyLabel . ' ' : '') . $amountValue;
         $detailUrl = SecurityUtils::encodeUrl(
-            ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/invoices/detail.php',
+            ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/detail.php',
             array(
         'preview' => 1,
         'preview_user' => (int)$row['user_id'],
@@ -170,18 +172,18 @@ if (!empty($previewData['rows'])) {
         'preview_note' => $previewData['parameters']['note'] ?? $previewNoteParam
             )
         );
-        $actionsCell = '<a class="admidio-icon-link" title="' . $gL10n->get('BL_VIEW') . '" href="' . $detailUrl . '"><i class="fas fa-eye"></i></a>';
+        $actionsCell = '<a class="admidio-icon-link" title="' . $gL10n->get('RE_VIEW') . '" href="' . $detailUrl . '"><i class="fas fa-eye"></i></a>';
         $previewTable->addRowByArray(array(
             '&mdash;',
-            htmlspecialchars(billingFormatDateForUi((string)$row['start_date'])),
-            htmlspecialchars(billingFormatDateForUi((string)$row['end_date'])),
+            htmlspecialchars(residentsFormatDateForUi((string)$row['start_date'])),
+            htmlspecialchars(residentsFormatDateForUi((string)$row['end_date'])),
             array(
         'value' => '<span class="badge bg-info text-dark">' . htmlspecialchars($statusText) . '</span>',
         'order' => $statusText,
         'search' => $statusText
             ),
             htmlspecialchars((string)$row['display_name']),
-            htmlspecialchars(billingFormatDateForUi($dueDate)),
+            htmlspecialchars(residentsFormatDateForUi($dueDate)),
             htmlspecialchars($amountCell),
             $actionsCell
         ));
@@ -200,8 +202,8 @@ $page->addHtml($previewTable->show(false));
 
 $previewPlaceholderCleanup = <<<'JS'
   $(function(){
-      if (typeof admidioTable_table_billing_invoices_preview !== 'undefined') {
-        admidioTable_table_billing_invoices_preview.rows('.preview-placeholder-row').remove().draw();
+      if (typeof admidioTable_table_re_invoices_preview !== 'undefined') {
+        admidioTable_table_re_invoices_preview.rows('.preview-placeholder-row').remove().draw();
     }
   });
 JS;

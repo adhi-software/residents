@@ -12,7 +12,7 @@
  */
 
 require_once(__DIR__ . '/TableResidentsCharge.php');
-require_once(__DIR__ . '/BillingHistory.php');
+require_once(__DIR__ . '/ResidentsHistory.php');
 require_once(__DIR__ . '/TableResidentsInvoice.php');
 require_once(__DIR__ . '/TableResidentsInvoiceItem.php');
 require_once(__DIR__ . '/TableResidentsPayment.php');

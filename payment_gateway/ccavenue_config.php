@@ -7,8 +7,8 @@
     */
 
 // Fetch configuration from database
-$billingConfig = billingReadConfig();
-$pgConf = $billingConfig['payment_gateway'] ?? array();
+$residentsConfig = residentsReadConfig();
+$pgConf = $residentsConfig['payment_gateway'] ?? array();
 
 // CCAvenue Credentials
 if (!defined('CCAVENUE_ACCESS_CODE')) {

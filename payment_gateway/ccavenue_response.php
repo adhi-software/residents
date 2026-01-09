@@ -33,11 +33,11 @@ ob_clean();
 // Ensure $gDb is available as global
 global $gDb;
 
-function billingPgRedirect(array $params): void
+function residentsPgRedirect(array $params): void
 {
     $params['tab'] = $params['tab'] ?? 'invoices';
     $url = SecurityUtils::encodeUrl(
-    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php',
+    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php',
     $params
     );
     header('Location: ' . $url);
@@ -48,7 +48,7 @@ function billingPgRedirect(array $params): void
 if (!isset($_POST['encResp'])) {
     // Redirect to payment page with error
     ob_end_clean();
-    billingPgRedirect(array(
+    residentsPgRedirect(array(
     'payment_status' => 'failed',
     'payment_message' => 'invalid_response'
     ));
@@ -74,7 +74,6 @@ if (!empty($received['merchant_param5']) && is_string($received['merchant_param5
     }
 }
 
-// Extract common fields with fallbacks
 $orderId       = $received['order_id']        ?? ($received['orderid'] ?? ($received['merchant_param4'] ?? ''));
 $amount        = $received['amount']          ?? ($received['order_amount'] ?? '');
 $currency      = $received['currency']         ?? ($received['order_currency'] ?? '');
@@ -92,7 +91,7 @@ $bankRefNo     = $received['bank_ref_no']     ?? '';
 try {
     if ($orderId === '') {
         error_log('Invalid payment response: missing order reference.');
-        billingPgRedirect(array(
+        residentsPgRedirect(array(
             'payment_status' => 'failed',
             'payment_message' => 'missing_order'
         ));
@@ -108,7 +107,7 @@ try {
     $paymentId = (int)$orderId;
     $pgPaymentData = null;
     try {
-        $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_BL_TRANS . ' WHERE btr_id = ?', array($paymentId), false);
+        $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_TRANS . ' WHERE rtr_id = ?', array($paymentId), false);
         if ($stmt === false) {
             throw new RuntimeException('Failed to retrieve initiated payment record.');
     }
@@ -120,14 +119,14 @@ try {
     if (!$pgPaymentData) {
         error_log('Payment record not found for id: ' . $paymentId);
         ob_end_clean();
-        billingPgRedirect(array(
+        residentsPgRedirect(array(
             'payment_status' => 'failed',
             'payment_message' => 'payment_not_found'
         ));
     }
     
     // Get organization ID from payment data (don't rely on session)
-    $orgId = isset($pgPaymentData['btr_org_id']) ? (int)$pgPaymentData['btr_org_id'] : null;
+    $orgId = isset($pgPaymentData['rtr_org_id']) ? (int)$pgPaymentData['rtr_org_id'] : null;
 
     // Extract and format transaction date
     $transDate = $received['trans_date'] ?? '';
@@ -137,7 +136,6 @@ try {
         if ($dt !== false) {
             $formattedTransDate = $dt->format('Y-m-d H:i:s');
     } else {
-            // Fallback if format doesn't match
         $formattedTransDate = date('Y-m-d H:i:s');
     }
     } else {
@@ -145,24 +143,24 @@ try {
     }
 
     // Update existing INIT row in bil_pg_payments by pg_id (order_id) and set final details
-    $updateSql = 'UPDATE ' . TBL_BL_TRANS . ' SET
-            btr_pg_id = ?,
-            btr_bank_ref_no = ?,
-            btr_status = ?,
-            btr_amount = ?,
-            btr_currency = ?,
-            btr_pg_pay_method = ?,
-            btr_pg_msg = ?,
-            btr_pg_response = ?,
-            btr_usr_id_change = ?,
-            btr_pg_trans_date = ?,
-            btr_timestamp_change = NOW()
-    WHERE btr_id = ?';
+    $updateSql = 'UPDATE ' . TBL_RE_TRANS . ' SET
+            rtr_pg_id = ?,
+            rtr_bank_ref_no = ?,
+            rtr_status = ?,
+            rtr_amount = ?,
+            rtr_currency = ?,
+            rtr_pg_pay_method = ?,
+            rtr_pg_msg = ?,
+            rtr_pg_response = ?,
+            rtr_usr_id_change = ?,
+            rtr_pg_trans_date = ?,
+            rtr_timestamp_change = NOW()
+    WHERE rtr_id = ?';
 
     if ($gDb->queryPrepared($updateSql, array(
-    (!empty($trackingId) ? substr((string)$trackingId, 0, 30) : $pgPaymentData['btr_pg_id']),
+    (!empty($trackingId) ? substr((string)$trackingId, 0, 30) : $pgPaymentData['rtr_pg_id']),
     (!empty($bankRefNo) ? substr((string)$bankRefNo, 0, 255) : null),
-    billingGetPaymentStatus($status),
+    residentsGetPaymentStatus($status),
     (!empty($amount) ? $amount : null),
     (!empty($currency) ? $currency : null),
     $received['payment_mode']   ?? null,
@@ -173,7 +171,7 @@ try {
     $paymentId
     ), false) === false) {
         ob_end_clean();
-        billingPgRedirect(array(
+        residentsPgRedirect(array(
             'payment_status' => 'failed',
             'payment_message' => 'db_update_failed'
         ));
@@ -194,10 +192,9 @@ try {
     $pgPaymentItemData = null;
 
     if ($isSuccess) {
-        $hasInvoicePaidColumn = columnExistsBILL(TBL_BL_INVOICES, 'biv_is_paid');
         try {
             // Retrieve the bil_pg_payment_items records
-            $itemStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_BL_TRANS_ITEMS . ' WHERE bti_pg_payment_id = ?', array($paymentId), false);
+            $itemStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_TRANS_ITEMS . ' WHERE rti_pg_payment_id = ?', array($paymentId), false);
             if ($itemStmt === false) {
                 throw new RuntimeException('Failed to load payment items.');
             }
@@ -205,16 +202,16 @@ try {
 
             if ($pgPaymentItems) {
                 // Insert into bil_payments
-                $insertPaymentSql = 'INSERT INTO ' . TBL_BL_PAYMENTS . ' (
-                bpa_status, bpa_date, bpa_pg_pay_method, bpa_pay_type, bpa_trans_id, bpa_bank_ref_no, bpa_usr_id, bpa_org_id, bpa_usr_id_create, bpa_usr_id_change
+                $insertPaymentSql = 'INSERT INTO ' . TBL_RE_PAYMENTS . ' (
+                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_bank_ref_no, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
-                $paymentStatus = billingGetPaymentStatus($status);
+                $paymentStatus = residentsGetPaymentStatus($status);
                 $merchantUser = (is_numeric($merchantParam) ? (int)$merchantParam : null);
                 if ($gDb->queryPrepared($insertPaymentSql, array(
                     $paymentStatus,
                     $formattedTransDate,
-                    $received['payment_mode'] ?? $pgPaymentData['btr_pg_pay_method'] ?? null,
+                    $received['payment_mode'] ?? $pgPaymentData['rtr_pg_pay_method'] ?? null,
                     'Online',
                     $trackingId,
                     $bankRefNo,
@@ -232,11 +229,11 @@ try {
                 // Update bil_pg_payments table with the bil_payment reference
                 if ($bilPaymentId > 0) {
                     try {
-                        $updatePgPaymentSql = 'UPDATE ' . TBL_BL_TRANS . ' SET
-                        btr_payment_id = ?,
-                        btr_usr_id_change = ?,
-                        btr_timestamp_change = NOW()
-                            WHERE btr_id = ?';
+                        $updatePgPaymentSql = 'UPDATE ' . TBL_RE_TRANS . ' SET
+                        rtr_payment_id = ?,
+                        rtr_usr_id_change = ?,
+                        rtr_timestamp_change = NOW()
+                            WHERE rtr_id = ?';
                         $gDb->queryPrepared($updatePgPaymentSql, array($bilPaymentId, $merchantUser, $paymentId), false);
                     } catch (Exception $e) {
                         error_log('Failed to update bil_pg_payments.bil_payment: ' . $e->getMessage());
@@ -245,16 +242,16 @@ try {
 
                 // Insert into bil_payment_items and update invoices
                 if ($bilPaymentId > 0) {
-                    $insertPaymentItemSql = 'INSERT INTO ' . TBL_BL_PAYMENT_ITEMS . ' (
-                            bpi_payment_id, bpi_inv_id, bpi_amount, bpi_currency, bpi_usr_id, bpi_org_id, bpi_usr_id_create, bpi_usr_id_change
+                    $insertPaymentItemSql = 'INSERT INTO ' . TBL_RE_PAYMENT_ITEMS . ' (
+                            rpi_payment_id, rpi_inv_id, rpi_amount, rpi_currency, rpi_usr_id, rpi_org_id, rpi_usr_id_create, rpi_usr_id_change
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
                     foreach ($pgPaymentItems as $item) {
                             if ($gDb->queryPrepared($insertPaymentItemSql, array(
                             $bilPaymentId,
-                            $item['bti_inv_id'] ?? null,
-                            $item['bti_amount'] ?? null,
-                            $item['bti_currency'] ?? null,
+                            $item['rti_inv_id'] ?? null,
+                            $item['rti_amount'] ?? null,
+                            $item['rti_currency'] ?? null,
                             $merchantUser,
                             $orgId,
                             $merchantUser,
@@ -263,14 +260,14 @@ try {
                                 throw new RuntimeException('Failed to insert payment item.');
                             }
 
-                        // Mark invoice paid flag on success when column exists
-                        if ($paymentStatus === 'SU' && $hasInvoicePaidColumn) {
-                            if (!empty($item['bti_inv_id'])) {
+                        // Mark invoice paid flag on success
+                        if ($paymentStatus === 'SU') {
+                            if (!empty($item['rti_inv_id'])) {
                                 try {
-                                    $updateInvoiceSql = 'UPDATE ' . TBL_BL_INVOICES . ' SET biv_is_paid = ? WHERE biv_id = ?';
-                    $gDb->queryPrepared($updateInvoiceSql, array(1, (int)$item['bti_inv_id']), false);
+                                    $updateInvoiceSql = 'UPDATE ' . TBL_RE_INVOICES . ' SET riv_is_paid = ? WHERE riv_id = ?';
+                    $gDb->queryPrepared($updateInvoiceSql, array(1, (int)$item['rti_inv_id']), false);
         } catch (Exception $e) {
-                                    error_log('Failed to update invoice paid flag for invoice ' . $item['bti_inv_id'] . ': ' . $e->getMessage());
+                                    error_log('Failed to update invoice paid flag for invoice ' . $item['rti_inv_id'] . ': ' . $e->getMessage());
         }
                             }
             }
@@ -288,24 +285,24 @@ try {
 
     // Redirect user based on payment status (don't use $gMessage which requires session)
     if ($isSuccess) {
-        billingPgRedirect(array(
+        residentsPgRedirect(array(
             'payment_status' => 'success',
             'order_id' => $orderId,
             'tracking_id' => $trackingId,
             'amount' => $amount,
-            'invoice_id' => $invoiceId ?: ($pgPaymentItems[0]['bti_inv_id'] ?? null)
+            'invoice_id' => $invoiceId ?: ($pgPaymentItems[0]['rti_inv_id'] ?? null)
         ));
     } else {
-        billingPgRedirect(array(
+        residentsPgRedirect(array(
             'payment_status' => 'failed',
             'order_id' => $orderId,
-            'invoice_id' => $invoiceId ?: ($pgPaymentItems[0]['bti_inv_id'] ?? null),
+            'invoice_id' => $invoiceId ?: ($pgPaymentItems[0]['rti_inv_id'] ?? null),
             'payment_message' => $received['status_message'] ?? 'Unknown error'
         ));
     }
 } catch (Exception $e) {
     error_log('Error processing payment response: ' . $e->getMessage());
-    billingPgRedirect(array(
+    residentsPgRedirect(array(
     'payment_status' => 'failed',
     'payment_message' => 'processing_error'
     ));

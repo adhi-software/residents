@@ -10,15 +10,10 @@ global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gSettingsManager, $gCurren
 
 header('Content-Type: application/json');
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     http_response_code(403);
     echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array(), 'error' => $gL10n->get('SYS_NO_RIGHTS')));
-    exit;
-}
-
-if (!tableExistsBILL(TBL_BL_PAYMENTS)) {
-    echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array()));
     exit;
 }
 
@@ -47,7 +42,7 @@ $orderColumn = 'date';
 $orderDirection = 'DESC';
 $orderDirection = 'DESC';
 $canManage = isPaymentAdmin();
-$canCreatePayments = isBillingAdminBySettings();
+$canCreatePayments = isResidentsAdminBySettings();
 $canViewAll = $canCreatePayments || $canManage;
 
 if ($canViewAll) {
@@ -137,17 +132,17 @@ $data = array();
 foreach ($rows as $row) {
     $currency = $row['total_currency'] ?: $currencyFallback;
     $amountDisplay = htmlspecialchars($currency . ' ' . number_format((float)$row['total_amount'], 2, '.', ''), ENT_QUOTES, 'UTF-8');
-    $actions = '<a class="admidio-icon-link" title="'.$gL10n->get('BL_VIEW').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payments/view.php', array('id'=>$row['bpa_id'])).'"><i class="fas fa-eye"></i></a>';
+    $actions = '<a class="admidio-icon-link" title="'.$gL10n->get('RE_VIEW').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/view.php', array('id'=>$row['rpa_id'])).'"><i class="fas fa-eye"></i></a>';
     $deleteAction = '';
     if ($canManage) {
-        if ((string)($row['bpa_pay_type'] ?? '') === 'Offline') {
-            $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('SYS_EDIT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payments/edit.php', array('id'=>$row['bpa_id'])).'"><i class="fas fa-edit"></i></a>';
+        if ((string)($row['rpa_pay_type'] ?? '') === 'Offline') {
+            $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('SYS_EDIT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php', array('id'=>$row['rpa_id'])).'"><i class="fas fa-edit"></i></a>';
     }
-        if ((string)($row['bpa_pay_type'] ?? '') !== 'Online') {
-            $confirmText = htmlspecialchars($gL10n->get('BL_DELETE_PAYMENT_CONFIRM'), ENT_QUOTES, 'UTF-8');
-            $deleteActionUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payments/delete.php';
+        if ((string)($row['rpa_pay_type'] ?? '') !== 'Online') {
+            $confirmText = htmlspecialchars($gL10n->get('RE_DELETE_PAYMENT_CONFIRM'), ENT_QUOTES, 'UTF-8');
+            $deleteActionUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/delete.php';
             $deleteAction = ' <form method="post" action="' . $deleteActionUrl . '" class="d-inline" onsubmit="return confirm(\'' . $confirmText . '\');">'
-        . '<input type="hidden" name="id" value="' . (int)$row['bpa_id'] . '" />'
+        . '<input type="hidden" name="id" value="' . (int)$row['rpa_id'] . '" />'
         . '<input type="hidden" name="admidio-csrf-token" value="' . $csrfToken . '" />'
         . '<button type="submit" class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" style="border:0;background:none;padding:0;">'
         . '<i class="fas fa-trash"></i>'
@@ -155,20 +150,20 @@ foreach ($rows as $row) {
         . '</form>';
     }
     }
-    $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('BL_DOWNLOAD_RECEIPT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payments/pdf.php', array('id'=>$row['bpa_id'])).'"><i class="fas fa-file-pdf"></i></a>';
+    $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('RE_DOWNLOAD_RECEIPT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/pdf.php', array('id'=>$row['rpa_id'])).'"><i class="fas fa-file-pdf"></i></a>';
     $actions .= $deleteAction;
 
     $rowArray = array();
     if ($canViewAll) {
-        $selectHtml = ($canManage && (string)($row['bpa_pay_type'] ?? '') !== 'Online') ? '<input type="checkbox" class="billing-row-select" value="'.(int)$row['bpa_id'].'" />' : '';
+        $selectHtml = ($canManage && (string)($row['rpa_pay_type'] ?? '') !== 'Online') ? '<input type="checkbox" class="re-row-select" value="'.(int)$row['rpa_id'].'" />' : '';
         $rowArray[] = $selectHtml;
     }
-    $rowArray[] = (int)$row['bpa_id'];
-    $rowArray[] = htmlspecialchars(billingFormatDateForUi((string)($row['bpa_date'] ?? '')), ENT_QUOTES, 'UTF-8');
-    $rowArray[] = htmlspecialchars((string)$row['bpa_pg_pay_method'], ENT_QUOTES, 'UTF-8');
+    $rowArray[] = (int)$row['rpa_id'];
+    $rowArray[] = htmlspecialchars(residentsFormatDateForUi((string)($row['rpa_date'] ?? '')), ENT_QUOTES, 'UTF-8');
+    $rowArray[] = htmlspecialchars((string)$row['rpa_pg_pay_method'], ENT_QUOTES, 'UTF-8');
     
-    $payTypeVal = (string)($row['bpa_pay_type'] ?? '');
-    $payType = ($payTypeVal === 'Offline') ? $gL10n->get('BL_PAYMENT_TYPE_OFFLINE') : $gL10n->get('BL_PAYMENT_TYPE_ONLINE');
+    $payTypeVal = (string)($row['rpa_pay_type'] ?? '');
+    $payType = ($payTypeVal === 'Offline') ? $gL10n->get('RE_PAYMENT_TYPE_OFFLINE') : $gL10n->get('RE_PAYMENT_TYPE_ONLINE');
     $rowArray[] = htmlspecialchars($payType, ENT_QUOTES, 'UTF-8');
 
     $rowArray[] = htmlspecialchars((string)($row['user_name'] ?? ''), ENT_QUOTES, 'UTF-8');

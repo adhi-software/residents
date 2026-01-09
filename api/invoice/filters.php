@@ -10,15 +10,15 @@ $currentUser = validateApiKey();
 $currentUserId = (int) $currentUser->getValue('usr_id');
 
 try {
-    // Permission check: only billing admin or payment admin
-    $canViewAll = isBillingAdmin() || isPaymentAdmin();
+    // Permission check: only residents admin or payment admin
+    $canViewAll = isResidentsAdmin() || isPaymentAdmin();
 
     $groups = [];
     $users  = [];
 
     if ($canViewAll) {
         // 1. Groups 
-        $allRoles = billingGetRoleOptions();
+        $allRoles = residentsGetRoleOptions();
         foreach ($allRoles as $id => $name) {
             $groups[] = [
         'id'   => (int)$id,

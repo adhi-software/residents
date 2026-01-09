@@ -14,12 +14,12 @@ require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
 global $gDb, $gL10n, $gCurrentUserId;
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
-if (!isBillingAdminBySettings()) {
+if (!isResidentsAdminBySettings()) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
@@ -33,18 +33,18 @@ if ($device->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
-$isActive = (int)$device->getValue('bde_is_active');
+$isActive = (int)$device->getValue('rde_is_active');
 if ($isActive !== 1) {
     admRedirect(SecurityUtils::encodeUrl(
-    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php',
+    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php',
     array('tab' => 'devices')
     ));
 }
 
-$device->setValue('bde_is_active', 0);
-$device->setValue('bde_api_key', '');
-$device->setValue('bde_usr_id_change', $gCurrentUserId);
-$device->setValue('bde_timestamp_change', date('Y-m-d H:i:s'));
+$device->setValue('rde_is_active', 0);
+$device->setValue('rde_api_key', '');
+$device->setValue('rde_usr_id_change', $gCurrentUserId);
+$device->setValue('rde_timestamp_change', date('Y-m-d H:i:s'));
 $saved = $device->save();
 
 $params = array('tab' => 'devices');
@@ -56,6 +56,6 @@ if ($saved) {
 }
 
 admRedirect(SecurityUtils::encodeUrl(
-    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php',
+    ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php',
     $params
 ));

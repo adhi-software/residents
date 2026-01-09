@@ -18,7 +18,7 @@ if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
 
 global $gDb, $gCurrentUser, $gL10n, $gProfileFields, $gSettingsManager;
 
-$page = new HtmlPage('plg-billing-confirm', $gL10n->get('BL_PAYMENT_DETAILS'));
+$page = new HtmlPage('plg-re-confirm', $gL10n->get('RE_PAYMENT_DETAILS'));
 
 // Collect any invoice ids passed from the list (single via GET or multiple via POST)
 $currentInvoiceId = admFuncVariableIsValid($_GET, 'invoice_id', 'int', array('defaultValue' => 0));
@@ -36,10 +36,10 @@ $selectAll = ((int)admFuncVariableIsValid($_GET, 'select_all', 'int', array('def
 
 // Fetch all unpaid invoices for the current user
 $userId = (int)$gCurrentUser->getValue('usr_id');
-$sql = 'SELECT biv_id, biv_number, biv_date, COALESCE(biv_is_paid, 0) AS biv_is_paid 
-    FROM ' . TBL_BL_INVOICES . ' 
-    WHERE biv_usr_id = ? AND COALESCE(biv_is_paid, 0) = 0 
-    ORDER BY biv_date ASC';
+$sql = 'SELECT riv_id, riv_number, riv_date, COALESCE(riv_is_paid, 0) AS riv_is_paid 
+    FROM ' . TBL_RE_INVOICES . ' 
+    WHERE riv_usr_id = ? AND COALESCE(riv_is_paid, 0) = 0 
+    ORDER BY riv_date ASC';
 $stmt = $gDb->queryPrepared($sql, array($userId), false);
 
 if ($stmt === false) {
@@ -50,25 +50,25 @@ if ($stmt === false) {
 
 // If requested, preselect all unpaid invoices.
 if ($selectAll && count($selectedInvoiceIds) === 0 && is_array($invoices)) {
-    $selectedInvoiceIds = array_values(array_filter(array_map('intval', array_column($invoices, 'biv_id')), function ($id) {
+    $selectedInvoiceIds = array_values(array_filter(array_map('intval', array_column($invoices, 'riv_id')), function ($id) {
         return $id > 0;
     }));
 }
 
 $page->addHtml('<div class="card">
     <div class="card-header">
-    <h3 class="card-title">' . $gL10n->get('BL_PAYMENT_DETAILS') . '</h3>
+    <h3 class="card-title">' . $gL10n->get('RE_PAYMENT_DETAILS') . '</h3>
     </div>
     <div class="card-body">
-    <form action="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/payment_gateway/ccavenue_pay.php') . '" method="post" id="confirm_pay_form">
+    <form action="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/ccavenue_pay.php') . '" method="post" id="confirm_pay_form">
             <p>Please select the invoices you wish to pay:</p>
             <table class="table table-striped table-hover">
     <thead>
                     <tr>
             <th style="width: 40px;"><input type="checkbox" id="select_all"></th>
-            <th>' . $gL10n->get('BL_NUMBER') . '</th>
-            <th>' . $gL10n->get('BL_DATE') . '</th>
-            <th>' . $gL10n->get('BL_AMOUNT') . '</th>
+            <th>' . $gL10n->get('RE_NUMBER') . '</th>
+            <th>' . $gL10n->get('RE_DATE') . '</th>
+            <th>' . $gL10n->get('RE_AMOUNT') . '</th>
                     </tr>
     </thead>
     <tbody>');
@@ -79,8 +79,8 @@ $currencySymbol = $gSettingsManager->getString('system_currency');
 
 foreach ($invoices as $inv) {
     $hasInvoices = true;
-    $invId = (int)$inv['biv_id'];
-    $totals = billingGetInvoiceTotals($invId);
+    $invId = (int)$inv['riv_id'];
+    $totals = residentsGetInvoiceTotals($invId);
     $amount = (float)$totals['amount'];
     $currency = $totals['currency'];
     
@@ -96,14 +96,14 @@ foreach ($invoices as $inv) {
     <td>
             <input type="checkbox" name="invoice_ids[]" value="' . $invId . '" class="inv-checkbox" data-amount="' . $amount . '" ' . $checked . '>
     </td>
-    <td>' . htmlspecialchars($inv['biv_number']) . '</td>
-    <td>' . htmlspecialchars(billingFormatDateForUi((string)($inv['biv_date'] ?? ''))) . '</td>
+    <td>' . htmlspecialchars($inv['riv_number']) . '</td>
+    <td>' . htmlspecialchars(residentsFormatDateForUi((string)($inv['riv_date'] ?? ''))) . '</td>
     <td>' . $currency . ' ' . number_format($amount, 2) . '</td>
     </tr>');
 }
 
 if (!$hasInvoices) {
-    $page->addHtml('<tr><td colspan="4" class="text-center">' . $gL10n->get('BL_NO_DATA') . '</td></tr>');
+    $page->addHtml('<tr><td colspan="4" class="text-center">' . $gL10n->get('RE_NO_DATA') . '</td></tr>');
 }
 
 $page->addHtml('</tbody>
@@ -116,7 +116,7 @@ $page->addHtml('</tbody>
             </table>
             
             <div class="d-flex justify-content-end mt-3" style="gap:0.5rem;">
-    <a href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', array('tab' => 'invoices')) . '" class="btn btn-secondary me-2">' . $gL10n->get('SYS_CANCEL') . '</a>
+    <a href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'invoices')) . '" class="btn btn-secondary me-2">' . $gL10n->get('SYS_CANCEL') . '</a>
     <button type="submit" class="btn btn-primary" id="btn_pay" disabled>Confirm Pay</button>
             </div>
     </form>

@@ -10,8 +10,8 @@ $currentUser = validateApiKey();
 $currentUserId = (int) $currentUser->getValue('usr_id');
 
 try {
-    // Permission check: only billing admin or payment admin can see group/user filters
-    $canViewAll = isBillingAdmin() || isPaymentAdmin();
+    // Permission check: only residents admin or payment admin can see group/user filters
+    $canViewAll = isResidentsAdmin() || isPaymentAdmin();
     
     $groups = [];
     $users = [];
@@ -19,7 +19,7 @@ try {
     // Groups and Users filters only available for admins
     if ($canViewAll) {
         // 1. Fetch Groups (Roles)
-        $allRoles = billingGetRoleOptions();
+        $allRoles = residentsGetRoleOptions();
         foreach ($allRoles as $id => $name) {
             $groups[] = ['id' => $id, 'name' => $name];
     }

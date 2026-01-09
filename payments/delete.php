@@ -14,8 +14,8 @@ require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
 global $gDb, $gL10n, $gCurrentUser;
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
@@ -43,7 +43,7 @@ if ($payment->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
-if ($payment->getValue('bpa_pay_type') === 'Online') {
+if ($payment->getValue('rpa_pay_type') === 'Online') {
     $gMessage->show('Online payments cannot be deleted.');
 }
 
@@ -58,5 +58,5 @@ if ($deleted) {
     $params['payment_message'] = 'Failed to delete payment.';
 }
 
-$redirectUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', $params);
+$redirectUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', $params);
 admRedirect($redirectUrl);

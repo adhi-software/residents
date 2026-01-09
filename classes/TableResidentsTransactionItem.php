@@ -15,16 +15,16 @@ class TableResidentsTransactionItem extends TableResidentsBase
 {
     public function __construct(Database $database, int $itemId = 0)
     {
-        parent::__construct($database, TBL_BL_TRANS_ITEMS, 'bti', $itemId);
+        parent::__construct($database, TBL_RE_TRANS_ITEMS, 'rti', $itemId);
     }
 
     public function assignTransaction(int $transactionId): void
     {
-        $this->setValue('bti_pg_payment_id', $transactionId);
+        $this->setValue('rti_pg_payment_id', $transactionId);
     }
 
     public function assignInvoice(int $invoiceId): void
     {
-        $this->setValue('bti_inv_id', $invoiceId);
+        $this->setValue('rti_inv_id', $invoiceId);
     }
 }

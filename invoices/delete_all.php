@@ -8,7 +8,7 @@ require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
 global $gDb, $gL10n, $gMessage;
 
-if (!isBillingAdminBySettings()) {
+if (!isResidentsAdminBySettings()) {
     http_response_code(403);
     echo 'NO_RIGHTS';
     exit;
@@ -36,7 +36,7 @@ try {
         if ($inv->isNewRecord()) {
             continue;
     }
-        $isPaid = (int)$inv->getValue('biv_is_paid') === 1;
+        $isPaid = (int)$inv->getValue('riv_is_paid') === 1;
         if ($isPaid) {
             http_response_code(409);
             echo 'PAID';

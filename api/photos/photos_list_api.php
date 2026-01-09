@@ -15,6 +15,10 @@ header('Content-Type: application/json; charset=utf-8');
 
 validateApiKey();
 
+$currentOrgId = isset($gCurrentOrgId)
+    ? (int) $gCurrentOrgId
+    : (isset($gCurrentOrganization) ? (int) $gCurrentOrganization->getValue('org_id') : 0);
+
 $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 20;
 $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
 
@@ -29,8 +33,8 @@ if ($offset < 0) {
 }
 
 $countStmt = $gDb->queryPrepared(
-    'SELECT COUNT(*) AS total FROM adm_photos WHERE pho_locked = 0 AND pho_pho_id_parent is NULL',
-    array(),
+    'SELECT COUNT(*) AS total FROM adm_photos WHERE pho_locked = 0 AND pho_org_id = ? AND pho_pho_id_parent is NULL',
+    array($currentOrgId),
     false
 );
 $totalRow = $countStmt ? $countStmt->fetch() : false;
@@ -42,10 +46,10 @@ $total = $totalRow ? (int) $totalRow['total'] : 0;
 $sql = $gDb->queryPrepared(
     'SELECT pho_id, pho_name, pho_quantity, pho_begin, pho_end, pho_description, pho_pho_id_parent
         FROM adm_photos
-        WHERE pho_locked = 0 AND pho_pho_id_parent is NULL
+        WHERE pho_locked = 0 AND pho_org_id = ? AND pho_pho_id_parent is NULL
         ORDER BY pho_begin DESC, pho_id DESC
         LIMIT ? OFFSET ?',
-    array($limit, $offset),
+    array($currentOrgId, $limit, $offset),
     false
 );
 

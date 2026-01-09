@@ -14,10 +14,14 @@ require_once(__DIR__ . '/../common_function.php');
 $useApiAuth = false;
 if (isset($_SERVER['HTTP_API_KEY']) && !empty($_SERVER['HTTP_API_KEY'])) {
     $useApiAuth = true;
+} elseif (isset($_GET['api_key']) && !empty($_GET['api_key'])) {
+    $useApiAuth = true;
+} elseif (isset($_POST['api_key']) && !empty($_POST['api_key'])) {
+    $useApiAuth = true;
 } else {
     $headers = function_exists('getallheaders') ? getallheaders() : array();
     foreach ($headers as $headerName => $headerValue) {
-        if (strcasecmp((string)$headerName, 'api_key') === 0 || strcasecmp((string)$headerName, 'apikey') === 0 || strcasecmp((string)$headerName, 'api-key') === 0) {
+        if (strcasecmp((string)$headerName, 'api_key') === 0) {
             if (!empty($headerValue)) {
                 $useApiAuth = true;
             }
@@ -47,13 +51,13 @@ if (file_exists(__DIR__ . '/../../../adm_program/libs/server/tecnickcom/tcpdf/tc
 
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gCurrentOrganization, $gSettingsManager;
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 $id = admFuncVariableIsValid($_GET, 'id', 'int');
-$isAdmin = isBillingAdmin();
+$isAdmin = isResidentsAdmin();
 
 // Fetch payment via TableAccess model
 $paymentRecord = new TableResidentsPayment($gDb, $id);
@@ -61,27 +65,27 @@ if ($paymentRecord->isNewRecord()) {
     die($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
-$ownerId = (int)$paymentRecord->getValue('bpa_usr_id');
+$ownerId = (int)$paymentRecord->getValue('rpa_usr_id');
 if (!$isAdmin && $ownerId !== (int)$gCurrentUser->getValue('usr_id')) {
     die($gL10n->get('SYS_NO_RIGHTS'));
 }
 
 $paymentData = array(
-    'bpa_id' => (int)$paymentRecord->getValue('bpa_id'),
-    'bpa_date' => date('d.m.Y H:i', strtotime((string)$paymentRecord->getValue('bpa_date'))),
-    'bpa_status' => (string)$paymentRecord->getValue('bpa_status'),
-    'bpa_trans_id' => (string)$paymentRecord->getValue('bpa_trans_id'),
-    'bpa_bank_ref_no' => (string)$paymentRecord->getValue('bpa_bank_ref_no'),
-    'bpa_pg_pay_method' => (string)$paymentRecord->getValue('bpa_pg_pay_method'),
-    'bpa_usr_id' => $ownerId,
-    'user_name' => $ownerId > 0 ? billingFetchUserNameById($ownerId) : '',
-    'user_email' => $ownerId > 0 ? billingFetchUserEmailById($ownerId) : '',
+    'rpa_id' => (int)$paymentRecord->getValue('rpa_id'),
+    'rpa_date' => date('d.m.Y H:i', strtotime((string)$paymentRecord->getValue('rpa_date'))),
+    'rpa_status' => (string)$paymentRecord->getValue('rpa_status'),
+    'rpa_trans_id' => (string)$paymentRecord->getValue('rpa_trans_id'),
+    'rpa_bank_ref_no' => (string)$paymentRecord->getValue('rpa_bank_ref_no'),
+    'rpa_pg_pay_method' => (string)$paymentRecord->getValue('rpa_pg_pay_method'),
+    'rpa_usr_id' => $ownerId,
+    'user_name' => $ownerId > 0 ? residentsFetchUserNameById($ownerId) : '',
+    'user_email' => $ownerId > 0 ? residentsFetchUserEmailById($ownerId) : '',
     'user_address' => ''
 );
 
 // Fetch customer address
 if ($ownerId > 0) {
-    $customer = billingGetUserAddress($ownerId);
+    $customer = residentsGetUserAddress($ownerId);
     $addressParts = array();
     if (!empty($customer['address'])) {
         $addressParts[] = $customer['address'];
@@ -99,12 +103,12 @@ if ($ownerId > 0) {
 }
 
 $transactionRecord = new TableResidentsTransaction($gDb);
-if ($transactionRecord->readDataByColumns(array('btr_payment_id' => $paymentData['bpa_id']))) {
-    if ($paymentData['bpa_trans_id'] === '') {
-        $paymentData['bpa_trans_id'] = (string)$transactionRecord->getValue('btr_pg_id');
+if ($transactionRecord->readDataByColumns(array('rtr_payment_id' => $paymentData['rpa_id']))) {
+    if ($paymentData['rpa_trans_id'] === '') {
+        $paymentData['rpa_trans_id'] = (string)$transactionRecord->getValue('rtr_pg_id');
     }
-    if ($paymentData['bpa_bank_ref_no'] === '') {
-        $paymentData['bpa_bank_ref_no'] = (string)$transactionRecord->getValue('btr_bank_ref_no');
+    if ($paymentData['rpa_bank_ref_no'] === '') {
+        $paymentData['rpa_bank_ref_no'] = (string)$transactionRecord->getValue('rtr_bank_ref_no');
     }
 }
 
@@ -114,12 +118,12 @@ $total = 0.0;
 $currency = '';
 
 foreach ($itemRows as $item) {
-    $total += (float)$item['bpi_amount'];
-    if ($currency === '' && !empty($item['bpi_currency'])) {
-        $currency = $item['bpi_currency'];
+    $total += (float)$item['rpi_amount'];
+    if ($currency === '' && !empty($item['rpi_currency'])) {
+        $currency = $item['rpi_currency'];
     }
-    if (!empty($item['biv_number'])) {
-        $invoiceNumbers[] = $item['biv_number'];
+    if (!empty($item['riv_number'])) {
+        $invoiceNumbers[] = $item['riv_number'];
     }
 }
 
@@ -128,14 +132,14 @@ $invoiceNoStr = implode(', ', array_unique($invoiceNumbers));
 // Build invoice item descriptions with month/year
 $itemDescriptions = array();
 foreach ($itemRows as $item) {
-    if (!empty($item['bpi_inv_id'])) {
-        $invoiceObj = new TableResidentsInvoice($gDb, (int)$item['bpi_inv_id']);
+    if (!empty($item['rpi_inv_id'])) {
+        $invoiceObj = new TableResidentsInvoice($gDb, (int)$item['rpi_inv_id']);
         $invoiceItems = $invoiceObj->getItems();
         foreach ($invoiceItems as $invItem) {
-            $desc = !empty($invItem['bii_name']) ? $invItem['bii_name'] : '';
-            $sortDate = !empty($invItem['bii_start_date']) ? $invItem['bii_start_date'] : '9999-12-31';
-            if (!empty($invItem['bii_start_date'])) {
-                $desc .= ' (' . date('M Y', strtotime($invItem['bii_start_date'])) . ')';
+            $desc = !empty($invItem['rii_name']) ? $invItem['rii_name'] : '';
+            $sortDate = !empty($invItem['rii_start_date']) ? $invItem['rii_start_date'] : '9999-12-31';
+            if (!empty($invItem['rii_start_date'])) {
+                $desc .= ' (' . date('M Y', strtotime($invItem['rii_start_date'])) . ')';
             }
             if (!empty($desc)) {
                 $itemDescriptions[$sortDate . '_' . $desc] = $desc;
@@ -163,7 +167,7 @@ $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // Set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor($gCurrentOrganization->getValue('org_longname'));
-$pdf->SetTitle('Payment Receipt #' . $paymentData['bpa_id']);
+$pdf->SetTitle('Payment Receipt #' . $paymentData['rpa_id']);
 $pdf->SetSubject('Payment Receipt');
 
 // Remove default header/footer
@@ -188,8 +192,8 @@ $gray = '#555555';
 $lightGray = '#f9f9f9';
 $teal = '#3697a8';
 
-$statusColor = ($paymentData['bpa_status'] === 'SU') ? $green : $red;
-$statusLabel = billingGetPaymentStatusLabel($paymentData['bpa_status']);
+$statusColor = ($paymentData['rpa_status'] === 'SU') ? $green : $red;
+$statusLabel = residentsGetPaymentStatusLabel($paymentData['rpa_status']);
 
 // Logo
 $orgId = isset($gCurrentOrganization) ? (int)$gCurrentOrganization->getValue('org_id') : 0;
@@ -242,7 +246,7 @@ $html = '
                 </div>
                     </td>
                     <td width="50%" align="right" valign="middle" style="border-bottom: none;" colspan="2">
-            <div class="receipt-title">' . $gL10n->get('BL_PAYMENT_RECEIPT_TITLE') . '</div>
+            <div class="receipt-title">' . $gL10n->get('RE_PAYMENT_RECEIPT_TITLE') . '</div>
                     </td>
         </tr>
             </table>
@@ -252,7 +256,7 @@ $html = '
     <td width="100%" class="content-cell">
 
 
-            <div class="section-header">' . $gL10n->get('BL_RECEIPT_DETAILS') . '</div>
+            <div class="section-header">' . $gL10n->get('RE_RECEIPT_DETAILS') . '</div>
             <br/>
 
             <table cellpadding="5" width="100%">
@@ -261,34 +265,34 @@ $html = '
             <table cellpadding="5" width="100%">
                             <tr>
                 <td class="label">Receipt No</td>
-                <td class="value">' . $paymentData['bpa_id'] . '</td>
+                <td class="value">' . $paymentData['rpa_id'] . '</td>
                             </tr>
                             <tr>
                 <td class="label">Invoice No</td>
                 <td class="value">' . ($invoiceNoStr ?: '-') . '</td>
                             </tr>
                             <tr>
-                <td class="label">' . $gL10n->get('BL_AMOUNT') . '</td>
+                <td class="label">' . $gL10n->get('RE_AMOUNT') . '</td>
                 <td class="value">' . $currency . ' ' . number_format($total, 2, '.', '') . '</td>
                             </tr>
                             <tr>
-                <td class="label">' . $gL10n->get('BL_PAYMENT_DATE') . '</td>
-                <td class="value">' . $paymentData['bpa_date'] . '</td>
+                <td class="label">' . $gL10n->get('RE_PAYMENT_DATE') . '</td>
+                <td class="value">' . $paymentData['rpa_date'] . '</td>
                             </tr>
                             <tr>
-                <td class="label">' . $gL10n->get('BL_PAYMENT_METHOD') . '</td>
-                <td class="value">' . $paymentData['bpa_pg_pay_method'] . '</td>
+                <td class="label">' . $gL10n->get('RE_PAYMENT_METHOD') . '</td>
+                <td class="value">' . $paymentData['rpa_pg_pay_method'] . '</td>
                             </tr>
                             <tr>
                 <td class="label">Bank Ref No</td>
-                <td class="value">' . ($paymentData['bpa_bank_ref_no'] ?? '-') . '</td>
+                <td class="value">' . ($paymentData['rpa_bank_ref_no'] ?? '-') . '</td>
                             </tr>
             </table>
                     </td>
                     <td width="50%" valign="top">
             <table cellpadding="5" width="100%">
                             <tr>
-                <td class="label">' . $gL10n->get('BL_CUSTOMER') . '</td>
+                <td class="label">' . $gL10n->get('RE_CUSTOMER') . '</td>
                 <td class="value">' . ($paymentData['user_name'] ?? '') . '</td>
                             </tr>
                             <tr>
@@ -300,8 +304,8 @@ $html = '
                 <td class="value">' . ($paymentData['user_address'] ?? '-') . '</td>
                             </tr>
                             <tr>
-                <td class="label">' . $gL10n->get('BL_TRANSACTION_ID') . '</td>
-                <td class="value">' . ($paymentData['bpa_trans_id'] ?? '-') . '</td>
+                <td class="label">' . $gL10n->get('RE_TRANSACTION_ID') . '</td>
+                <td class="value">' . ($paymentData['rpa_trans_id'] ?? '-') . '</td>
                             </tr>
             </table>
                     </td>
@@ -321,4 +325,4 @@ $html = '
 $pdf->writeHTML($html, true, false, true, false, '');
 
 // Output
-$pdf->Output('payment_receipt_' . $paymentData['bpa_id'] . '.pdf', 'D');
+$pdf->Output('payment_receipt_' . $paymentData['rpa_id'] . '.pdf', 'D');

@@ -2,7 +2,7 @@
     text-align: right;
 }
 
-form.billing-editor, form {
+form.re-editor, form {
     max-width: 90%;
 }
 input[type="date"] {

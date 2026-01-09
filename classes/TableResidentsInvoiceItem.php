@@ -15,29 +15,29 @@ class TableResidentsInvoiceItem extends TableResidentsBase
 {
     public function __construct(Database $database, int $itemId = 0)
     {
-        parent::__construct($database, TBL_BL_INVOICE_ITEMS, 'bii', $itemId);
+        parent::__construct($database, TBL_RE_INVOICE_ITEMS, 'rii', $itemId);
     }
 
     public function assignToInvoice(int $invoiceId): void
     {
-        $this->setValue('bii_inv_id', $invoiceId);
+        $this->setValue('rii_inv_id', $invoiceId);
     }
 
     public function setAmountValues(?string $currency, $rate, $quantity, $amount): void
     {
-        $this->setValue('bii_currency', $currency);
-        $this->setValue('bii_rate', $rate);
-        $this->setValue('bii_quantity', $quantity);
-        $this->setValue('bii_amount', $amount);
+        $this->setValue('rii_currency', $currency);
+        $this->setValue('rii_rate', $rate);
+        $this->setValue('rii_quantity', $quantity);
+        $this->setValue('rii_amount', $amount);
     }
 
     public function save(bool $updateFingerPrint = true): bool
     {
         $isNew   = $this->isNewRecord();
-        $before  = $isNew ? null : BillingHistory::fetchRow($this->db, $this->tableName, $this->keyColumnName, (int)$this->getValue($this->keyColumnName));
+        $before  = $isNew ? null : ResidentsHistory::fetchRow($this->db, $this->tableName, $this->keyColumnName, (int)$this->getValue($this->keyColumnName));
         $result  = parent::save($updateFingerPrint);
         if ($result && !$isNew) {
-            BillingHistory::log($this->db, TBL_BL_INVOICE_ITEMS_HIST, $before ?? array(), 'update', $GLOBALS['gCurrentUserId'] ?? null);
+            ResidentsHistory::log($this->db, TBL_RE_INVOICE_ITEMS_HIST, $before ?? array(), 'update', $GLOBALS['gCurrentUserId'] ?? null);
     }
 
         return $result;
@@ -50,9 +50,9 @@ class TableResidentsInvoiceItem extends TableResidentsBase
     }
 
         $id      = (int)$this->getValue($this->keyColumnName);
-        $before  = BillingHistory::fetchRow($this->db, $this->tableName, $this->keyColumnName, $id);
+        $before  = ResidentsHistory::fetchRow($this->db, $this->tableName, $this->keyColumnName, $id);
         $result  = parent::delete();
-        BillingHistory::log($this->db, TBL_BL_INVOICE_ITEMS_HIST, $before ?? array(), 'delete', $GLOBALS['gCurrentUserId'] ?? null);
+        ResidentsHistory::log($this->db, TBL_RE_INVOICE_ITEMS_HIST, $before ?? array(), 'delete', $GLOBALS['gCurrentUserId'] ?? null);
 
         return $result;
     }

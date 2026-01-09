@@ -12,41 +12,40 @@
 require_once(__DIR__ . '/common_function.php');
 require_once(__DIR__ . '/../../adm_program/system/login_valid.php');
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
-$config = billingReadConfig();
-$isAdmin = isBillingAdmin();
-// Allow Charges only for admins defined in settings (no system admin fallback)
-$canSeeChargers = isBillingAdminBySettings();
-$canSeePreferences = isBillingAdmin();
+$config = residentsReadConfig();
+$isAdmin = isResidentsAdmin();
+$canSeeChargers = isResidentsAdminBySettings();
+$canSeePreferences = isResidentsAdmin();
 
 $tab = admFuncVariableIsValid($_GET, 'tab', 'string', array('defaultValue' => 'invoices', 'validValues' => array('invoices', 'payments', 'chargers', 'preferences', 'devices')));
 $getId = admFuncVariableIsValid($_GET, 'id', 'int');
 
-$gNavigation->addStartUrl(CURRENT_URL, $gL10n->get('BL_TITLE'), 'fa-file-invoice-dollar');
+$gNavigation->addStartUrl(CURRENT_URL, $gL10n->get('RE_TITLE'), 'fa-file-invoice-dollar');
 $page = new HtmlPage('residents');
-$page->setTitle($gL10n->get('BL_TITLE'));
+$page->setTitle($gL10n->get('RE_TITLE'));
 $tabHeadlines = array(
-    'invoices' => $gL10n->get('BL_TAB_INVOICES'),
-    'payments' => $gL10n->get('BL_TAB_PAYMENTS'),
-    'chargers' => $gL10n->get('BL_TAB_CHARGERS'),
-    'preferences' => $gL10n->get('BL_TAB_PREFERENCES'),
-    'devices' => $gL10n->get('BL_TAB_DEVICES')
+    'invoices' => $gL10n->get('RE_TAB_INVOICES'),
+    'payments' => $gL10n->get('RE_TAB_PAYMENTS'),
+    'chargers' => $gL10n->get('RE_TAB_CHARGERS'),
+    'preferences' => $gL10n->get('RE_TAB_PREFERENCES'),
+    'devices' => $gL10n->get('RE_TAB_DEVICES')
 );
-$page->setHeadline($tabHeadlines[$tab] ?? $gL10n->get('BL_TITLE'));
-billingEnqueueStyles($page);
+$page->setHeadline($tabHeadlines[$tab] ?? $gL10n->get('RE_TITLE'));
+residentsEnqueueStyles($page);
 
 // Render tabs
-$baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
+$baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
 $tabs = '<ul class="nav nav-tabs">'
-    . '<li class="nav-item"><a class="nav-link'.($tab==='invoices'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'invoices')).'">'.$gL10n->get('BL_TAB_INVOICES').'</a></li>'
-    . '<li class="nav-item"><a class="nav-link'.($tab==='payments'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'payments')).'">'.$gL10n->get('BL_TAB_PAYMENTS').'</a></li>'
-    . ($canSeeChargers ? '<li class="nav-item"><a class="nav-link'.($tab==='chargers'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'chargers')).'">'.$gL10n->get('BL_TAB_CHARGERS').'</a></li>' : '')
-    . ($canSeeChargers ? '<li class="nav-item"><a class="nav-link'.($tab==='devices'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'devices')).'">'.$gL10n->get('BL_TAB_DEVICES').'</a></li>' : '')
-    . ($canSeePreferences ? '<li class="nav-item"><a class="nav-link'.($tab==='preferences'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'preferences')).'">'.$gL10n->get('BL_TAB_PREFERENCES').'</a></li>' : '')
+    . '<li class="nav-item"><a class="nav-link'.($tab==='invoices'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'invoices')).'">'.$gL10n->get('RE_TAB_INVOICES').'</a></li>'
+    . '<li class="nav-item"><a class="nav-link'.($tab==='payments'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'payments')).'">'.$gL10n->get('RE_TAB_PAYMENTS').'</a></li>'
+    . ($canSeeChargers ? '<li class="nav-item"><a class="nav-link'.($tab==='chargers'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'chargers')).'">'.$gL10n->get('RE_TAB_CHARGERS').'</a></li>' : '')
+    . ($canSeeChargers ? '<li class="nav-item"><a class="nav-link'.($tab==='devices'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'devices')).'">'.$gL10n->get('RE_TAB_DEVICES').'</a></li>' : '')
+    . ($canSeePreferences ? '<li class="nav-item"><a class="nav-link'.($tab==='preferences'?' active':'').'" href="'.SecurityUtils::encodeUrl($baseUrl, array('tab'=>'preferences')).'">'.$gL10n->get('RE_TAB_PREFERENCES').'</a></li>' : '')
     . '</ul><br />';
 $page->addHtml($tabs);
 $page->addHtml('<style>.admidio-content-header {margin-bottom: 0px;}</style>');
@@ -54,7 +53,7 @@ $page->addHtml('<style>.admidio-content-header {margin-bottom: 0px;}</style>');
 // Show success message after preferences save redirect
 $prefStatus = admFuncVariableIsValid($_GET, 'pref_status', 'string');
 if ($prefStatus === 'saved') {
-    $page->addHtml('<div class="alert alert-success">'.$gL10n->get('BL_SAVED').'</div>');
+    $page->addHtml('<div class="alert alert-success">'.$gL10n->get('RE_SAVED').'</div>');
 }
 
 // Delegate to sub files

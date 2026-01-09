@@ -40,7 +40,7 @@ try {
     $actingUserId = (int)$gCurrentUser->getValue('usr_id');
     foreach ($ids as $id) {
         $pay = new TableResidentsPayment($gDb, (int)$id);
-        if (!$pay->isNewRecord() && $pay->getValue('bpa_pay_type') !== 'Online') {
+        if (!$pay->isNewRecord() && $pay->getValue('rpa_pay_type') !== 'Online') {
             $pay->deleteWithRelations($actingUserId);
     }
     }

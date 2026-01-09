@@ -10,7 +10,7 @@ $currentUserId = (int) $currentUser->getValue('usr_id');
 
 try {
     // Permission check: admins can view all, regular users can only view their own payments
-    $canViewAll = isBillingAdmin() || isPaymentAdmin();
+    $canViewAll = isResidentsAdmin() || isPaymentAdmin();
     
     $filters = [];
     // Always filter by organization
@@ -69,14 +69,14 @@ try {
 
     foreach ($rows as $row) {
         $payments[] = [
-            'id' => (int)$row['bpa_id'],
+            'id' => (int)$row['rpa_id'],
             'user' => $row['user_name'],
-            'date' => $row['bpa_date'],
-            'pay_method' => $row['bpa_pg_pay_method'],
-            'pay_type' => $row['bpa_pay_type'],
+            'date' => $row['rpa_date'],
+            'pay_method' => $row['rpa_pg_pay_method'],
+            'pay_type' => $row['rpa_pay_type'],
             'amount' => (float)$row['total_amount'],
             'currency' => $row['total_currency'] ?? $gSettingsManager->getString('system_currency'),
-            'reference_no' => $row['bpa_bank_ref_no'] ?? null
+            'reference_no' => $row['rpa_bank_ref_no'] ?? null
         ];
     }
 

@@ -14,12 +14,12 @@ require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
 
 global $gDb, $gL10n;
 
-$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php';
-if (!isUserAuthorizedForBilling($scriptUrl)) {
+$scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
+if (!isUserAuthorizedForResidents($scriptUrl)) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
-if (!isBillingAdminBySettings()) {
+if (!isResidentsAdminBySettings()) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
 }
 
@@ -43,4 +43,4 @@ if ($deleted) {
     $params['charge_message'] = 'Failed to delete charge.';
 }
 
-admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_BILL . '/residents.php', $params));
+admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', $params));

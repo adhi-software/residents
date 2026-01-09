@@ -13,7 +13,6 @@ global $gCurrentUser;
 $apiKey =
     $_GET['api_key']
     ?? $_SERVER['HTTP_API_KEY']
-    ?? $_SERVER['HTTP_X_API_KEY']
     ?? null;
 
 if (!$apiKey) {
@@ -21,9 +20,6 @@ if (!$apiKey) {
     echo 'Missing API key';
     exit;
 }
-
-$_SERVER['HTTP_API_KEY'] = $apiKey;
-
 
 $gCurrentUser = validateApiKey();
 
