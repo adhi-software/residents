@@ -4,7 +4,7 @@
     */
 
 require_once(__DIR__ . '/../common_function.php');
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 
 global $gDb, $gL10n;
 

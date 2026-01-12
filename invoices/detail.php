@@ -11,7 +11,7 @@
 
 require_once(__DIR__ . '/../common_function.php');
 // Enforce valid login
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 
 global $gDb, $gL10n, $gSettingsManager, $gCurrentUser;
 
@@ -289,21 +289,21 @@ ob_start();
     <div class="d-flex justify-content-md-end flex-wrap" style="gap:0.5rem;">
                     <?php if ($previewMode) : ?>
             <a class="btn btn-outline-secondary" href="<?php echo $previewReturnUrl; ?>">
-                            <i class="fas fa-arrow-left me-2"></i><?php echo $gL10n->get('RE_BACK'); ?>
+                            <i class="bi bi-arrow-left me-2"></i><?php echo $gL10n->get('RE_BACK'); ?>
             </a>
                     <?php else : ?>
             <a class="btn btn-primary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/pdf.php', array('id' => (int)$inv['riv_id'])); ?>">
-                            <i class="fas fa-file-pdf me-2"></i><?php echo $gL10n->get('SYS_PDF'); ?>
+                            <i class="bi bi-file-earmark-pdf me-2"></i><?php echo $gL10n->get('SYS_PDF'); ?>
             </a>
             <?php if ($canPayDetail) : ?>
                             <a class="btn btn-primary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/confirm_pay.php', array('invoice_id' => (int)$inv['riv_id'])); ?>">
-        <i class="fas fa-credit-card me-2"></i><?php echo $gL10n->get('RE_PAY_NOW'); ?>
+        <i class="bi bi-credit-card me-2"></i><?php echo $gL10n->get('RE_PAY_NOW'); ?>
                             </a>
             <?php endif; ?>
             <?php if ($isAdminDetail) : ?>
                     <?php if (!$isPaid) : ?>
         <a class="btn btn-primary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php', array('id' => (int)$inv['riv_id'])); ?>">
-                                    <i class="fas fa-edit me-2"></i><?php echo $gL10n->get('SYS_EDIT'); ?>
+                                    <i class="bi bi-pencil-square me-2"></i><?php echo $gL10n->get('SYS_EDIT'); ?>
         </a>
                             <?php endif; ?>
                             <?php $confirmText = htmlspecialchars($gL10n->get('RE_DELETE_INVOICE_CONFIRM'), ENT_QUOTES, 'UTF-8'); ?>
@@ -311,7 +311,7 @@ ob_start();
                 <input type="hidden" name="id" value="<?php echo (int)$inv['riv_id']; ?>" />
                 <input type="hidden" name="admidio-csrf-token" value="<?php echo htmlspecialchars($gCurrentSession->getCsrfToken(), ENT_QUOTES, 'UTF-8'); ?>" />
                 <button type="submit" class="btn btn-danger text-white">
-                                    <i class="fas fa-trash me-2"></i><?php echo $gL10n->get('SYS_DELETE'); ?>
+                                    <i class="bi bi-trash me-2"></i><?php echo $gL10n->get('SYS_DELETE'); ?>
                 </button>
                             </form>
             <?php endif; ?>
@@ -333,13 +333,13 @@ ob_start();
             <div class="text-muted">#<?php echo (int)$inv['riv_usr_id']; ?></div>
                     </div>
                     <?php if (!empty($customer['email'])) : ?>
-            <div class="mb-2"><i class="fas fa-envelope text-muted" style="margin-right: 12px;"></i><?php echo htmlspecialchars((string)$customer['email']); ?></div>
+            <div class="mb-2"><i class="bi bi-envelope text-muted" style="margin-right: 12px;"></i><?php echo htmlspecialchars((string)$customer['email']); ?></div>
                     <?php endif; ?>
                     <?php if (!empty($customer['tel'])) : ?>
-            <div class="mb-2"><i class="fas fa-phone text-muted" style="margin-right: 12px;"></i><?php echo htmlspecialchars((string)$customer['tel']); ?></div>
+            <div class="mb-2"><i class="bi bi-telephone text-muted" style="margin-right: 12px;"></i><?php echo htmlspecialchars((string)$customer['tel']); ?></div>
                     <?php endif; ?>
                     <?php if (!empty($customer['address'])) : ?>
-            <div class="text-muted"><i class="fas fa-map-marker-alt" style="margin-right: 12px;"></i><?php echo htmlspecialchars((string)$customer['address']); ?><?php if (!empty($customer['city'])) {
+            <div class="text-muted"><i class="bi bi-geo-alt" style="margin-right: 12px;"></i><?php echo htmlspecialchars((string)$customer['address']); ?><?php if (!empty($customer['city'])) {
                                                                                                                                                                                                                                                                                             echo ', ' . htmlspecialchars((string)$customer['city']);
                                                                                                                                             } ?></div>
                     <?php endif; ?>

@@ -59,10 +59,7 @@ if ($getStart === '' && $getEnd === '') {
 }
 
 // Determine default page length for Datatables
-$defaultPageLength = (int)$gSettingsManager->getInt('system_datatables_rows');
-if ($defaultPageLength <= 0) {
-    $defaultPageLength = 25;
-}
+$defaultPageLength = 25;
 
 // filter dropdowns
 $getGroup = admFuncVariableIsValid($_GET, 'filter_group', 'int');
@@ -84,7 +81,7 @@ $userOptions = TableResidentsPayment::fetchUserOptions($gDb, $canViewAll, $first
 $filterAction = SecurityUtils::encodeUrl($baseUrl, array('tab' => 'payments'));
 // Show "New payment" button only to residents admins
 if ($canCreatePayments) {
-    $page->addHtml('<div class="mb-3 text-start"><a href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php').'" class="btn btn-secondary"><i class="fas fa-plus"></i> '.$gL10n->get('RE_ADD_PAYMENT').'</a></div>');
+    $page->addHtml('<div class="mb-3 text-start"><a href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php').'" class="btn btn-secondary"><i class="bi bi-plus-circle"></i> '.$gL10n->get('RE_ADD_PAYMENT').'</a></div>');
 }
 
 if (!$canViewAll) {
@@ -100,7 +97,7 @@ if (!$canViewAll) {
     $basicForm->addButton(
     'payments_filter_apply_basic',
     $gL10n->get('SYS_FILTER'),
-    array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
+    array('type' => 'submit', 'icon' => 'bi-funnel', 'class' => 'btn btn-primary btn-sm ms-2')
     );
 
     $basicNavbar = new HtmlNavbar('navbar_payments_filter_basic', '', $page, 'filter');
@@ -118,9 +115,9 @@ if ($canViewAll) {
     $rolesWithAll = array('0' => $gL10n->get('RE_ALL')) + $roles;
     $userOptionsWithAll = array('0' => $gL10n->get('RE_ALL')) + $userOptions;
 
-    $labelGroup = '<i class="fas fa-users" alt="'.$gL10n->get('RE_GROUP').'" title="'.$gL10n->get('RE_GROUP').'"></i>';
-    $labelUser = '<i class="fas fa-user" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
-    $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
+    $labelGroup = '<i class="bi bi-people" alt="'.$gL10n->get('RE_GROUP').'" title="'.$gL10n->get('RE_GROUP').'"></i>';
+    $labelUser = '<i class="bi bi-person" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
+    $labelSearch = '<i class="bi bi-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
 
     $filterNavbar = new HtmlNavbar('navbar_payments_filter', '', $page, 'filter');
     $filterForm = new HtmlForm(
@@ -162,7 +159,7 @@ if ($canViewAll) {
     $filterForm->addButton(
     'payments_filter_apply',
     $gL10n->get('SYS_FILTER'),
-    array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
+    array('type' => 'submit', 'icon' => 'bi-funnel', 'class' => 'btn btn-primary btn-sm ms-2')
     );
 
     $filterNavbar->addForm($filterForm->show());
@@ -263,7 +260,7 @@ if ($canManage) {
                 if (buttonEl.length) {
                     return buttonEl;
                 }
-                var newButtonEl = $('<button type="button" id="re-delete-selected-payments" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
+                var newButtonEl = $('<button type="button" id="re-delete-selected-payments" class="btn btn-danger btn-sm ms-2"><i class="bi bi-trash"></i> ' + deleteButtonLabel + '</button>');
                 lengthEl.append(newButtonEl);
                 return newButtonEl;
             }

@@ -4,7 +4,7 @@
     * This script streams the logo image with proper headers for browser display.
     */
 
-require_once(__DIR__ . '/../../../adm_program/system/common.php');
+require_once(__DIR__ . '/../../../system/common.php');
 require_once(__DIR__ . '/../common_function.php');
 
 // Only allow admins to view the logo (or you could allow all authenticated users)

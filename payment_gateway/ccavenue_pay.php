@@ -13,7 +13,7 @@ require_once(__DIR__ . '/../common_function.php');
 if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
     require_once(__DIR__ . '/../../../system/login_valid.php');
 } else {
-    require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+    require_once(__DIR__ . '/../../../system/login_valid.php');
 }
 require_once(__DIR__ . '/ccavenue_config.php');
 require_once(__DIR__ . '/ccavenue_crypto.php');

@@ -16,11 +16,10 @@
  ***********************************************************************************************
  */
 
-require_once(__DIR__ . '/../../../adm_program/system/classes/TableAccess.php');
-
+use Admidio\Infrastructure\Entity\Entity;
 use Ramsey\Uuid\Uuid;
 
-class TableResidentsBase extends TableAccess
+class TableResidentsBase extends Entity
 {
     public function save(bool $updateFingerPrint = true): bool
     {

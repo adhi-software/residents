@@ -14,7 +14,7 @@ require_once(__DIR__ . '/../common_function.php');
 if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
     require_once(__DIR__ . '/../../../system/login_valid.php');
 } else {
-    require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+    require_once(__DIR__ . '/../../../system/login_valid.php');
 }
 
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser;
@@ -151,13 +151,13 @@ ob_start();
     <strong><?php echo $gL10n->get('RE_PAYMENT_TOTAL'); ?>: <?php echo htmlspecialchars((string)$currency) . ' ' . number_format($total, 2, '.', ''); ?></strong>
     </div>
     <?php $exportUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/pdf.php', array('id' => $id)); ?>
-    <a href="<?php echo $exportUrl; ?>" class="btn btn-primary"><i class="fas fa-file-pdf"></i> <?php echo $gL10n->get('RE_DOWNLOAD_RECEIPT'); ?></a>
+    <a href="<?php echo $exportUrl; ?>" class="btn btn-primary"><i class="bi bi-file-earmark-pdf"></i> <?php echo $gL10n->get('RE_DOWNLOAD_RECEIPT'); ?></a>
     <?php if ($isAdmin && $paymentData['rpa_pay_type'] !== 'Online') : ?>
             <?php $confirmText = htmlspecialchars($gL10n->get('RE_DELETE_PAYMENT_CONFIRM'), ENT_QUOTES, 'UTF-8'); ?>
             <form method="post" action="<?php echo ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/delete.php'; ?>" class="d-inline" onsubmit="return confirm('<?php echo $confirmText; ?>');">
         <input type="hidden" name="id" value="<?php echo (int)$id; ?>" />
         <input type="hidden" name="admidio-csrf-token" value="<?php echo htmlspecialchars($gCurrentSession->getCsrfToken(), ENT_QUOTES, 'UTF-8'); ?>" />
-        <button type="submit" class="btn btn-danger text-white"><i class="fas fa-trash"></i> <?php echo $gL10n->get('SYS_DELETE'); ?></button>
+        <button type="submit" class="btn btn-danger text-white"><i class="bi bi-trash"></i> <?php echo $gL10n->get('SYS_DELETE'); ?></button>
             </form>
     <?php endif; ?>
 </div>

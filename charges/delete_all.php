@@ -5,7 +5,7 @@
 use Admidio\Exception; // if available
 
 require_once(__DIR__ . '/../common_function.php');
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 
 try {
     if (!isResidentsAdminBySettings()) {

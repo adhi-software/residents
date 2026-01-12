@@ -11,7 +11,7 @@
 
 use Ramsey\Uuid\Uuid;
 
-require_once(__DIR__ . '/../../adm_program/system/common.php');
+require_once(__DIR__ . '/../../system/common.php');
 require_once(__DIR__ . '/common_function.php');
 require_once(__DIR__ . '/classes/ConfigTables.php');
 
@@ -43,8 +43,8 @@ if ($getMode === 'install') {
     }
 
     $page->addHtml('<p>' . $gL10n->get('RE_INSTALL_DONE') . '</p>');
-    $page->addHtml('<a class="btn btn-secondary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php') . '"><i class="fas fa-file-invoice-dollar"></i> ' . $gL10n->get('RE_OPEN_RESIDENTS') . '</a> ');
-    $page->addHtml('<a class="btn btn-danger" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'uninstall')) . '" onclick="return confirm(\'' . $gL10n->get('RE_UNINSTALL_CONFIRM') . '\');"><i class="fas fa-trash"></i> ' . $gL10n->get('RE_UNINSTALL_RESIDENTS') . '</a>');
+    $page->addHtml('<a class="btn btn-secondary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php') . '"><i class="bi bi-receipt"></i> ' . $gL10n->get('RE_OPEN_RESIDENTS') . '</a> ');
+    $page->addHtml('<a class="btn btn-danger" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'uninstall')) . '" onclick="return confirm(\'' . $gL10n->get('RE_UNINSTALL_CONFIRM') . '\');"><i class="bi bi-trash"></i> ' . $gL10n->get('RE_UNINSTALL_RESIDENTS') . '</a>');
 } elseif ($getMode === 'uninstall') {
     $creator = new ConfigTables();
     $creator->uninstall();
@@ -70,7 +70,7 @@ if ($getMode === 'install') {
     }
 
     $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_UNINSTALL_DONE') . '</div>');
-    $page->addHtml('<a class="btn btn-secondary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'install')) . '"><i class="fas fa-arrow-circle-right"></i> ' . $gL10n->get('RE_INSTALL') . '</a>');
+    $page->addHtml('<a class="btn btn-secondary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'install')) . '"><i class="bi bi-arrow-right-circle"></i> ' . $gL10n->get('RE_INSTALL') . '</a>');
 } else {
     $page->addHtml('<p>' . $gL10n->get('RE_INSTALL_DESC', array('<code>' . TBL_RE_INVOICES . '</code>', '<code>' . TBL_RE_INVOICE_ITEMS . '</code>', '<code>' . TBL_RE_CHARGES . '</code>')) . '</p>');
 
@@ -78,14 +78,14 @@ if ($getMode === 'install') {
         $page->addHtml('<div class="alert alert-info">' . $gL10n->get('RE_INSTALL_ALREADY') . '</div>');
     }
 
-    $form = new HtmlForm('installation_start_form', null, $page, array('setFocus' => false));
+    $form = new HtmlForm('installation_start_form', '', $page, array('setFocus' => false));
     if (!$isInstalled) {
         $form->addButton('btnInstall', $gL10n->get('RE_INSTALL'), array('icon' => 'fa-arrow-circle-right', 'link' => SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'install')), 'class' => 'btn-primary'));
         $page->addHtml($form->show(false));
     }
 
     if ($isInstalled) {
-        $page->addHtml('<a class="btn btn-danger text-white" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'uninstall')) . '" onclick="return confirm(\'' . $gL10n->get('RE_UNINSTALL_CONFIRM') . '\');"><i class="fas fa-trash"></i> ' . $gL10n->get('RE_UNINSTALL_RESIDENTS') . '</a>');
+        $page->addHtml('<a class="btn btn-danger text-white" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'uninstall')) . '" onclick="return confirm(\'' . $gL10n->get('RE_UNINSTALL_CONFIRM') . '\');"><i class="bi bi-trash"></i> ' . $gL10n->get('RE_UNINSTALL_RESIDENTS') . '</a>');
     }
 }
 

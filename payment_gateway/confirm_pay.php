@@ -13,7 +13,7 @@ require_once(__DIR__ . '/../common_function.php');
 if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
     require_once(__DIR__ . '/../../../system/login_valid.php');
 } else {
-    require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+    require_once(__DIR__ . '/../../../system/login_valid.php');
 }
 
 global $gDb, $gCurrentUser, $gL10n, $gProfileFields, $gSettingsManager;

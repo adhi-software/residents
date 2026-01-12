@@ -10,7 +10,7 @@
  */
 
 require_once(__DIR__ . '/../common_function.php');
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 
 global $gDb, $gL10n;
 
@@ -25,7 +25,7 @@ if (!isResidentsAdminBySettings()) {
 
 $chargeId = admFuncVariableIsValid($_GET, 'id', 'int');
 $rolesOptions = residentsGetRoleOptions();
-$rawPeriodOptions = TableRoles::getCostPeriods();
+$rawPeriodOptions = \Admidio\Roles\Entity\Role::getCostPeriods();
 $periodOptions = array();
 foreach ($rawPeriodOptions as $key => $label) {
     if ((int)$key === -1) {

@@ -10,7 +10,7 @@
  */
 
 require_once(__DIR__ . '/../common_function.php');
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gSettingsManager, $gCurrentOrgId, $gCurrentOrganization, $gDbType;
 
@@ -137,11 +137,11 @@ foreach ($rows as $row) {
     $badgeClass = $isPaid ? 'badge bg-success' : 'badge bg-warning text-dark';
     $statusHtml = '<span class="' . $badgeClass . '">' . htmlspecialchars($statusText, ENT_QUOTES, 'UTF-8') . '</span>';
 
-    $actionIcons = '<a class="admidio-icon-link" title="' . $gL10n->get('RE_VIEW') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/detail.php', array('id' => $row['riv_id'])) . '"><i class="fas fa-eye"></i></a>';
-    $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_PDF') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/pdf.php', array('id' => $row['riv_id'])) . '"><i class="fas fa-file-pdf"></i></a>';
+    $actionIcons = '<a class="admidio-icon-link" title="' . $gL10n->get('RE_VIEW') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/detail.php', array('id' => $row['riv_id'])) . '"><i class="bi bi-eye"></i></a>';
+    $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_PDF') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/pdf.php', array('id' => $row['riv_id'])) . '"><i class="bi bi-file-earmark-pdf"></i></a>';
     if ($isAdmin) {
         if (!$isPaid) {
-            $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_EDIT') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php', array('id' => $row['riv_id'])) . '"><i class="fas fa-edit"></i></a>';
+            $actionIcons .= ' <a class="admidio-icon-link" title="' . $gL10n->get('SYS_EDIT') . '" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php', array('id' => $row['riv_id'])) . '"><i class="bi bi-pencil-square"></i></a>';
     }
         $confirmText = htmlspecialchars($gL10n->get('RE_DELETE_INVOICE_CONFIRM'), ENT_QUOTES, 'UTF-8');
         if (!$isPaid) {
@@ -150,7 +150,7 @@ foreach ($rows as $row) {
             . '<input type="hidden" name="id" value="' . (int)$row['riv_id'] . '" />'
             . '<input type="hidden" name="admidio-csrf-token" value="' . $csrfToken . '" />'
             . '<button type="submit" class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" style="border:0;background:none;padding:0;">'
-            . '<i class="fas fa-trash"></i>'
+            . '<i class="bi bi-trash"></i>'
             . '</button>'
             . '</form>';
     }
@@ -159,7 +159,7 @@ foreach ($rows as $row) {
     $ownsInvoice = ((int)$row['riv_usr_id'] === $currentUserId);
     $payButtonHtml = '';
     if ($ownsInvoice && !$isPaid) {
-        $payButtonHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/confirm_pay.php', array('invoice_id' => $row['riv_id'])) . '"><i class="fas fa-credit-card"></i> ' . $gL10n->get('RE_PAY_NOW') . '</a>';
+        $payButtonHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/confirm_pay.php', array('invoice_id' => $row['riv_id'])) . '"><i class="bi bi-credit-card"></i> ' . $gL10n->get('RE_PAY_NOW') . '</a>';
     }
     $actions = '<div class="re-actions"><span class="re-actions-icons">' . $actionIcons . '</span>';
     if ($payButtonHtml !== '') {

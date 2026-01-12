@@ -50,12 +50,6 @@ $getQ      = admFuncVariableIsValid($_GET, 'q', 'string');
     // }
 
 $defaultPageLength = 25;
-if (isset($gSettingsManager)) {
-    $configuredLength = (int)$gSettingsManager->getInt('system_datatables_rows');
-    if ($configuredLength > 0) {
-        $defaultPageLength = $configuredLength;
-    }
-}
 
 if ($isAdmin) {
     // Navbar-like filter form
@@ -112,9 +106,9 @@ if ($isAdmin) {
     $roles = residentsGetRoleOptions();
     $rolesWithAll = array('0' => $gL10n->get('RE_ALL')) + $roles;
 
-    $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
-    $labelGroup  = '<i class="fas fa-users" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
-    $labelUser   = '<i class="fas fa-user" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
+    $labelSearch = '<i class="bi bi-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
+    $labelGroup  = '<i class="bi bi-people" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
+    $labelUser   = '<i class="bi bi-person" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
 
 
     $filterNavbar = new HtmlNavbar('navbar_filter', '', $page, 'filter');
@@ -141,7 +135,7 @@ if ($isAdmin) {
 
     $filterForm->addCheckbox(
     'filter_active',
-    '<span class="re-check-square-checked" aria-hidden="true"><i class="fas fa-check-square"></i></span><span class="re-check-square-unchecked" aria-hidden="true"></span> '.$gL10n->get('RE_DEVICE_ACTIVE'),
+    '<span class="re-check-square-checked" aria-hidden="true"><i class="bi bi-check-square"></i></span><span class="re-check-square-unchecked" aria-hidden="true"></span> '.$gL10n->get('RE_DEVICE_ACTIVE'),
     ($getActive === '1'),
     array('class' => 're-filter-checkbox')
     );
@@ -153,7 +147,7 @@ if ($isAdmin) {
     $filterForm->addButton(
     'device_filter_apply',
     $gL10n->get('SYS_FILTER'),
-    array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
+    array('type' => 'submit', 'icon' => 'bi-funnel', 'class' => 'btn btn-primary btn-sm ms-2')
     );
 
     $loadUsersUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/load_users.php');
@@ -299,7 +293,7 @@ if ($isAdmin) {
       if (buttonEl.length) {
         return buttonEl;
       }
-      var newButtonEl = $('<button type="button" id="re-delete-selected-devices" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
+      var newButtonEl = $('<button type="button" id="re-delete-selected-devices" class="btn btn-danger btn-sm ms-2"><i class="bi bi-trash"></i> ' + deleteButtonLabel + '</button>');
       lengthEl.append(newButtonEl);
       return newButtonEl;
     }

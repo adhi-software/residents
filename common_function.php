@@ -9,8 +9,8 @@
  ***********************************************************************************************
  */
 
-require_once(__DIR__ . '/../../adm_program/system/common.php');
-require_once(__DIR__ . '/../../adm_program/system/bootstrap/constants.php');
+require_once(__DIR__ . '/../../system/common.php');
+require_once(__DIR__ . '/../../system/bootstrap/constants.php');
 require_once(__DIR__ . '/classes/ResidentsTables.php');
 
 if (!function_exists('admidioApiLog')) {
@@ -47,14 +47,19 @@ if (!isset($gCurrentOrgId) && isset($gCurrentOrganization) && is_object($gCurren
     $gCurrentOrgId = (int)$gCurrentOrganization->getValue('org_id');
 }
 
-// Admidio 5.0 class aliases if necessary
-if (defined('ADMIDIO_VERSION') && !version_compare(ADMIDIO_VERSION, '5.0', '<')) {
-    if (class_exists('Admidio\\Roles\\Entity\\RolesRights')) {
-        class_alias('Admidio\\Roles\\Entity\\RolesRights', 'RolesRights');
-    }
-    if (class_exists('Admidio\\Infrastructure\\Utils\\SecurityUtils')) {
-        class_alias('Admidio\\Infrastructure\\Utils\\SecurityUtils', 'SecurityUtils');
-    }
+// Admidio 5.0+ class aliases for convenient short names
+// This plugin requires Admidio 5.0 or higher
+if (!class_exists('RolesRights', false)) {
+    class_alias('Admidio\\Roles\\Entity\\RolesRights', 'RolesRights');
+}
+if (!class_exists('TableRoles', false)) {
+    class_alias('Admidio\\Roles\\Entity\\Role', 'TableRoles');
+}
+if (!class_exists('SecurityUtils', false)) {
+    class_alias('Admidio\\Infrastructure\\Utils\\SecurityUtils', 'SecurityUtils');
+}
+if (!class_exists('Database', false)) {
+    class_alias('Admidio\\Infrastructure\\Database', 'Database');
 }
 
 // define plugin specific constants
@@ -861,11 +866,13 @@ function residentsWriteConfig(array $config): void
 
 /**
     * Remove all stored Residents plugin preferences (RE__ prefix) for the current org.
+    * Note: In SQL LIKE, underscore is a wildcard, so we must escape it to match literal 'RE__'
     */
 function residentsDeleteConfig(): void
 {
     global $gDb, $gCurrentOrgId;
-    $gDb->queryPrepared('DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_org_id = ? AND prf_name LIKE ?', array($gCurrentOrgId, 'RE__%'), false);
+    // Escape underscores so LIKE matches literal 'RE__' prefix, not 'RE' + any two chars
+    $gDb->queryPrepared('DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_org_id = ? AND prf_name LIKE ?', array($gCurrentOrgId, 'RE\\_\\_%'), false);
 }
 
 function residentsGetDefaultInvoiceNote(?array $config = null): string
@@ -905,7 +912,7 @@ function ensureResidentsMenuItem(): void
 
     $createdMenu = false;
     if ($menuId <= 0) {
-        $pluginsRow = $gDb->queryPrepared('SELECT men_id FROM ' . TBL_MENU . ' WHERE men_name_intern = ?', array('plugins'), false);
+        $pluginsRow = $gDb->queryPrepared('SELECT men_id FROM ' . TBL_MENU . ' WHERE men_name_intern = ?', array('extensions'), false);
         if ($pluginsRow === false) {
             return;
         }
@@ -936,7 +943,7 @@ function ensureResidentsMenuItem(): void
             $menStandard,
             'residents',
             $scriptUrl,
-            'fa-file-invoice-dollar',
+            'bi-receipt',
             $menuTitle,
             $menuDescription
         );

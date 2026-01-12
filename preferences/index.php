@@ -144,7 +144,7 @@ $logoBoxHtml .= '<div style="min-width:260px;">'
 
 if ($orgLogoUrl !== '') {
     $logoBoxHtml .= '<button type="submit" name="org_logo_remove" value="1" class="btn btn-sm btn-outline-danger mt-2">'
-    . '<i class="fas fa-trash"></i> ' . htmlspecialchars($gL10n->get('RE_REMOVE_ORG_LOGO'))
+    . '<i class="bi bi-trash"></i> ' . htmlspecialchars($gL10n->get('RE_REMOVE_ORG_LOGO'))
     . '</button>';
 }
 
@@ -223,7 +223,7 @@ $modalHtml = '
             </div>
             <div class="modal-footer bg-light">
     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-dismiss="modal">'.$gL10n->get('RE_CANCEL').'</button>
-    <button type="button" class="btn btn-primary px-4" id="pg_btn_modal_save"><i class="fas fa-check me-1"></i> '.$gL10n->get('RE_OK').'</button>
+    <button type="button" class="btn btn-primary px-4" id="pg_btn_modal_save"><i class="bi bi-check-lg me-1"></i> '.$gL10n->get('RE_OK').'</button>
             </div>
     </div>
     </div>
@@ -242,15 +242,15 @@ $uiHtml = '
             <div class="card-body d-flex justify-content-between align-items-center p-3">
         <div class="d-flex align-items-center">
                     <div class="bg-white rounded-circle p-2 me-3 shadow-sm text-primary">
-            <i class="fas fa-credit-card fa-lg"></i>
+            <i class="bi bi-credit-card fs-4"></i>
                     </div>
                     <div>
             <h6 class="mb-0 fw-bold" id="pg_card_name">'.htmlspecialchars($gatewayName).'</h6>
                     </div>
         </div>
         <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-light text-primary" id="pg_btn_edit" title="'.$gL10n->get('RE_EDIT').'"><i class="fas fa-pen"></i></button>
-                    <button type="button" class="btn btn-sm btn-light text-danger" id="pg_btn_delete" title="'.$gL10n->get('RE_DELETE').'"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="btn btn-sm btn-light text-primary" id="pg_btn_edit" title="'.$gL10n->get('RE_EDIT').'"><i class="bi bi-pencil"></i></button>
+                    <button type="button" class="btn btn-sm btn-light text-danger" id="pg_btn_delete" title="'.$gL10n->get('RE_DELETE').'"><i class="bi bi-trash"></i></button>
         </div>
             </div>
     </div>
@@ -258,7 +258,7 @@ $uiHtml = '
     <!-- Add Button (Empty State) -->
     <div id="pg_add_container" class="text-start" style="'.($hasGateway ? 'display:none;' : '').'">
             <button type="button" id="pg_btn_add" class="btn btn-outline-primary border-dashed w-100 p-3 text-center">
-        <i class="fas fa-plus-circle fa-2x mb-2 d-block"></i>
+        <i class="bi bi-plus-circle fs-2 mb-2 d-block"></i>
         <span class="fw-bold">'.$gL10n->get('RE_PG_ADD_BTN').'</span>
             </button>
     </div>
@@ -276,7 +276,7 @@ $page->addHtml('
     <div class="modal-dialog modal-sm modal-dialog-centered">
     <div class="modal-content border-0 shadow">
             <div class="modal-body p-4 text-center">
-    <div class="mb-3 text-danger"><i class="fas fa-exclamation-circle fa-3x"></i></div>
+    <div class="mb-3 text-danger"><i class="bi bi-exclamation-circle fs-1"></i></div>
     <h5 class="fw-bold mb-2">'.$gL10n->get('RE_PG_DELETE_TITLE').'</h5>
     <p class="text-muted mb-4">'.$gL10n->get('RE_PG_DELETE_CONFIRM').'</p>
     <div class="d-grid gap-2">
@@ -395,4 +395,4 @@ $(function(){
 ');
 
 $uninstallUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/installation.php', array('mode' => 'uninstall'));
-$page->addHtml('<div class="mt-3"><a class="btn btn-danger text-white" href="' . $uninstallUrl . '" onclick="return confirm(\'' . htmlspecialchars($gL10n->get('RE_UNINSTALL_CONFIRM'), ENT_QUOTES, 'UTF-8') . '\');"font-size: i class="fas fa-trash"></i> ' . $gL10n->get('RE_UNINSTALL_RESIDENTS') . '</a></div>');
+$page->addHtml('<div class="mt-3"><a class="btn btn-danger text-white" href="' . $uninstallUrl . '" onclick="return confirm(\'' . htmlspecialchars($gL10n->get('RE_UNINSTALL_CONFIRM'), ENT_QUOTES, 'UTF-8') . '\');"font-size: i class="bi bi-trash"></i> ' . $gL10n->get('RE_UNINSTALL_RESIDENTS') . '</a></div>');

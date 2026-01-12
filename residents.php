@@ -10,7 +10,7 @@
  */
 
 require_once(__DIR__ . '/common_function.php');
-require_once(__DIR__ . '/../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../system/login_valid.php');
 
 $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
 if (!isUserAuthorizedForResidents($scriptUrl)) {
@@ -25,7 +25,7 @@ $canSeePreferences = isResidentsAdmin();
 $tab = admFuncVariableIsValid($_GET, 'tab', 'string', array('defaultValue' => 'invoices', 'validValues' => array('invoices', 'payments', 'chargers', 'preferences', 'devices')));
 $getId = admFuncVariableIsValid($_GET, 'id', 'int');
 
-$gNavigation->addStartUrl(CURRENT_URL, $gL10n->get('RE_TITLE'), 'fa-file-invoice-dollar');
+$gNavigation->addStartUrl(CURRENT_URL, $gL10n->get('RE_TITLE'), 'bi-receipt');
 $page = new HtmlPage('residents');
 $page->setTitle($gL10n->get('RE_TITLE'));
 $tabHeadlines = array(

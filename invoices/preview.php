@@ -172,7 +172,7 @@ if (!empty($previewData['rows'])) {
         'preview_note' => $previewData['parameters']['note'] ?? $previewNoteParam
             )
         );
-        $actionsCell = '<a class="admidio-icon-link" title="' . $gL10n->get('RE_VIEW') . '" href="' . $detailUrl . '"><i class="fas fa-eye"></i></a>';
+        $actionsCell = '<a class="admidio-icon-link" title="' . $gL10n->get('RE_VIEW') . '" href="' . $detailUrl . '"><i class="bi bi-eye"></i></a>';
         $previewTable->addRowByArray(array(
             '&mdash;',
             htmlspecialchars(residentsFormatDateForUi((string)$row['start_date'])),

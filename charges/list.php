@@ -23,7 +23,7 @@ if ($chargeStatus === 'saved') {
 }
 
 $newUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/edit.php');
-$page->addHtml('<a class="btn btn-primary" href="' . $newUrl . '"><i class="fas fa-plus"></i> ' . $gL10n->get('RE_CHARGERS_ADD') . '</a><br /><br />');
+$page->addHtml('<a class="btn btn-primary" href="' . $newUrl . '"><i class="bi bi-plus-circle"></i> ' . $gL10n->get('RE_CHARGERS_ADD') . '</a><br /><br />');
 
 if ($gCurrentOrgId > 0) {
     $countStmt = $gDb->queryPrepared('SELECT COUNT(*) FROM ' . TBL_RE_CHARGES . ' WHERE rch_org_id = ?', array($gCurrentOrgId));
@@ -35,12 +35,6 @@ $totalCharges = $countStmt ? (int)$countStmt->fetchColumn() : 0;
 // Keep rendering table even when there are no charges; suppress empty-state banner.
 
 $defaultPageLength = 25;
-if (isset($gSettingsManager)) {
-    $configuredLength = (int)$gSettingsManager->getInt('system_datatables_rows');
-    if ($configuredLength > 0) {
-        $defaultPageLength = $configuredLength;
-    }
-}
 
 $serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/list_data.php');
 
@@ -97,7 +91,7 @@ if ($isAdmin) {
       if (buttonEl.length) {
         return buttonEl;
       }
-      var newButtonEl = $('<button type="button" id="re-delete-selected-charges" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
+      var newButtonEl = $('<button type="button" id="re-delete-selected-charges" class="btn btn-danger btn-sm ms-2"><i class="bi bi-trash"></i> ' + deleteButtonLabel + '</button>');
       lengthEl.append(newButtonEl);
       return newButtonEl;
     }

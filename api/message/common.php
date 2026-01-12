@@ -2,12 +2,12 @@
 $originalScriptFilename = $_SERVER['SCRIPT_FILENAME'] ?? null;
 $scriptFilenameTemporarilyChanged = false;
 if ($originalScriptFilename && basename($originalScriptFilename) === basename(__FILE__)) {
-    // Prevent bootstrap guard in adm_program/system/common.php from exiting for same-named scripts.
+    // Prevent bootstrap guard in system/common.php from exiting for same-named scripts.
     $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/message_common_entry.php';
     $scriptFilenameTemporarilyChanged = true;
 }
 
-require_once(__DIR__ . '/../../../../adm_program/system/common.php');
+require_once(__DIR__ . '/../../../../system/common.php');
 if ($scriptFilenameTemporarilyChanged && $originalScriptFilename !== null) {
     $_SERVER['SCRIPT_FILENAME'] = $originalScriptFilename;
 }

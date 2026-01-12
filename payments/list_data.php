@@ -4,7 +4,7 @@
     */
 
 require_once(__DIR__ . '/../common_function.php');
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gSettingsManager, $gCurrentOrgId, $gDbType;
 
@@ -132,11 +132,11 @@ $data = array();
 foreach ($rows as $row) {
     $currency = $row['total_currency'] ?: $currencyFallback;
     $amountDisplay = htmlspecialchars($currency . ' ' . number_format((float)$row['total_amount'], 2, '.', ''), ENT_QUOTES, 'UTF-8');
-    $actions = '<a class="admidio-icon-link" title="'.$gL10n->get('RE_VIEW').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/view.php', array('id'=>$row['rpa_id'])).'"><i class="fas fa-eye"></i></a>';
+    $actions = '<a class="admidio-icon-link" title="'.$gL10n->get('RE_VIEW').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/view.php', array('id'=>$row['rpa_id'])).'"><i class="bi bi-eye"></i></a>';
     $deleteAction = '';
     if ($canManage) {
         if ((string)($row['rpa_pay_type'] ?? '') === 'Offline') {
-            $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('SYS_EDIT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php', array('id'=>$row['rpa_id'])).'"><i class="fas fa-edit"></i></a>';
+            $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('SYS_EDIT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php', array('id'=>$row['rpa_id'])).'"><i class="bi bi-pencil-square"></i></a>';
     }
         if ((string)($row['rpa_pay_type'] ?? '') !== 'Online') {
             $confirmText = htmlspecialchars($gL10n->get('RE_DELETE_PAYMENT_CONFIRM'), ENT_QUOTES, 'UTF-8');
@@ -145,12 +145,12 @@ foreach ($rows as $row) {
         . '<input type="hidden" name="id" value="' . (int)$row['rpa_id'] . '" />'
         . '<input type="hidden" name="admidio-csrf-token" value="' . $csrfToken . '" />'
         . '<button type="submit" class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" style="border:0;background:none;padding:0;">'
-        . '<i class="fas fa-trash"></i>'
+        . '<i class="bi bi-trash"></i>'
         . '</button>'
         . '</form>';
     }
     }
-    $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('RE_DOWNLOAD_RECEIPT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/pdf.php', array('id'=>$row['rpa_id'])).'"><i class="fas fa-file-pdf"></i></a>';
+    $actions .= ' <a class="admidio-icon-link" title="'.$gL10n->get('RE_DOWNLOAD_RECEIPT').'" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/pdf.php', array('id'=>$row['rpa_id'])).'"><i class="bi bi-file-earmark-pdf"></i></a>';
     $actions .= $deleteAction;
 
     $rowArray = array();

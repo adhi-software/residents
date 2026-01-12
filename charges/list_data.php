@@ -10,7 +10,7 @@
  */
 
 require_once(__DIR__ . '/../common_function.php');
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 require_once(__DIR__ . '/../classes/TableResidentsCharge.php');
 
 global $gDb, $gL10n, $gSettingsManager;
@@ -169,8 +169,8 @@ foreach ($pagedRows as $row) {
     $editUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/edit.php', array('id' => $chargeId));
     $deleteUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/charges/delete.php', array('id' => $chargeId));
 
-    $actions = '<a class="admidio-icon-link" title="' . $gL10n->get('SYS_EDIT') . '" href="' . $editUrl . '"><i class="fas fa-edit"></i></a>';
-    $actions .= ' <a class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" href="' . $deleteUrl . '" onclick="return confirm(\'' . $deleteConfirm . '\');"><i class="fas fa-trash"></i></a>';
+    $actions = '<a class="admidio-icon-link" title="' . $gL10n->get('SYS_EDIT') . '" href="' . $editUrl . '"><i class="bi bi-pencil-square"></i></a>';
+    $actions .= ' <a class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" href="' . $deleteUrl . '" onclick="return confirm(\'' . $deleteConfirm . '\');"><i class="bi bi-trash"></i></a>';
 
     $periodValue = (string)$chargeModel->getValue('rch_period');
     $periodDisplay = ($periodValue !== '' && isset($periodLabels[$periodValue])) ? $periodLabels[$periodValue] : $periodValue;

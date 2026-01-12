@@ -38,7 +38,7 @@ if ($useApiAuth) {
     if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
         require_once(__DIR__ . '/../../../system/login_valid.php');
     } else {
-        require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+        require_once(__DIR__ . '/../../../system/login_valid.php');
     }
 }
 

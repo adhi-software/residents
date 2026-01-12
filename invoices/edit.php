@@ -11,7 +11,7 @@
 
 require_once(__DIR__ . '/../common_function.php');
 // Enforce valid login
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 
 global $gDb, $gProfileFields, $gCurrentUser, $gL10n, $gSettingsManager;
 
@@ -554,10 +554,10 @@ ob_start();
     <div class="mb-3">
                     <div class="fw-semibold mb-1"><?php echo htmlspecialchars((string)($ownerDetails['name'] ?? '')); ?></div>
                     <?php if (!empty($ownerDetails['email'])) : ?>
-            <div class="small text-muted"><i class="fas fa-envelope me-2"></i><?php echo htmlspecialchars((string)$ownerDetails['email']); ?></div>
+            <div class="small text-muted"><i class="bi bi-envelope me-2"></i><?php echo htmlspecialchars((string)$ownerDetails['email']); ?></div>
                     <?php endif; ?>
                     <?php if (!empty($ownerDetails['tel'])) : ?>
-            <div class="small text-muted"><i class="fas fa-phone me-2"></i><?php echo htmlspecialchars((string)$ownerDetails['tel']); ?></div>
+            <div class="small text-muted"><i class="bi bi-telephone me-2"></i><?php echo htmlspecialchars((string)$ownerDetails['tel']); ?></div>
                     <?php endif; ?>
     </div>
             <?php endif; ?>
@@ -612,7 +612,7 @@ ob_start();
     <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
             <span><?php echo $gL10n->get('RE_INVOICE_ITEMS'); ?></span>
-            <button type="button" class="btn btn-primary btn-sm" id="re-add-item"><i class="fas fa-plus"></i> <?php echo $gL10n->get('RE_INVOICE_ITEMS'); ?></button>
+            <button type="button" class="btn btn-primary btn-sm" id="re-add-item"><i class="bi bi-plus-circle"></i> <?php echo $gL10n->get('RE_INVOICE_ITEMS'); ?></button>
     </div>
     <div class="card-body p-0">
             <div class="table-responsive">
@@ -666,7 +666,7 @@ ob_start();
         </td>
         <td class="text-center">
                                     <button type="button" class="btn btn-link text-danger text-decoration-none re-remove-row" title="<?php echo htmlspecialchars($gL10n->get('SYS_DELETE')); ?>">
-                    <i class="fas fa-times"></i>
+                    <i class="bi bi-x"></i>
                                     </button>
         </td>
                             </tr>
@@ -722,7 +722,7 @@ ob_start();
             </td>
             <td class="text-center">
     <button type="button" class="btn btn-link text-danger text-decoration-none re-remove-row" title="<?php echo htmlspecialchars($gL10n->get('SYS_DELETE')); ?>">
-                    <i class="fas fa-times"></i>
+                    <i class="bi bi-x"></i>
     </button>
             </td>
     </tr>
@@ -733,7 +733,7 @@ ob_start();
     <div class="d-flex justify-content-end mt-4" style="gap:0.5rem;">
     <a class="btn btn-outline-secondary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'invoices')); ?>"><?php echo $gL10n->get('SYS_CANCEL'); ?></a>
     <button type="submit" class="btn btn-primary px-4">
-            <i class="fas fa-save me-2"></i><?php echo $gL10n->get('SYS_SAVE'); ?>
+            <i class="bi bi-floppy me-2"></i><?php echo $gL10n->get('SYS_SAVE'); ?>
     </button>
     </div>
 </form>

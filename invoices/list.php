@@ -120,15 +120,12 @@ $countStmt = $gDb->queryPrepared('SELECT COUNT(*) FROM ' . TBL_RE_INVOICES . ' W
 $totalInvoices = $countStmt ? (int)$countStmt->fetchColumn() : 0;
 // Keep rendering filters/table even when there are no invoices; avoid empty-state banner.
 
-$defaultPageLength = (int)$gSettingsManager->getInt('system_datatables_rows');
-if ($defaultPageLength <= 0) {
-    $defaultPageLength = 25;
-}
+$defaultPageLength = 25;
 
 // Admin action buttons (need filter values first)
 if ($isAdmin) {
     $buttons = array();
-    $buttons[] = '<a class="btn btn-secondary" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php').'"><i class="fas fa-plus"></i> '.$gL10n->get('RE_ADD_INVOICE').'</a>';
+    $buttons[] = '<a class="btn btn-secondary" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/edit.php').'"><i class="bi bi-plus-circle"></i> '.$gL10n->get('RE_ADD_INVOICE').'</a>';
 
     $runParamsBase = array();
     if ($getGroup > 0) {
@@ -160,7 +157,7 @@ if ($isAdmin) {
         'note' => $previewNoteParam
         );
         $genUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/generate.php', $generateParams);
-        $buttons[] = '<a class="btn btn-primary" href="#" onclick="if(confirm(\''.$gL10n->get('RE_GENERATE_CONFIRM').'\')){ window.location.href=\''.$genUrl.'\'; } return false;"><i class="fas fa-file-invoice-dollar"></i> '.$gL10n->get('RE_GENERATE_BILL').'</a>';
+        $buttons[] = '<a class="btn btn-primary" href="#" onclick="if(confirm(\''.$gL10n->get('RE_GENERATE_CONFIRM').'\')){ window.location.href=\''.$genUrl.'\'; } return false;"><i class="bi bi-receipt"></i> '.$gL10n->get('RE_GENERATE_BILL').'</a>';
     } else {
         // Preview is available on the confirmation page (do not render a Preview button here)
     }
@@ -168,10 +165,10 @@ if ($isAdmin) {
     // Only show the general Generate button when not in preview to avoid duplicates
     if (!$previewRequested) {
         $generateRunParams = array('mode' => 'generate') + $runParamsBase;
-        $buttons[] = '<a class="btn btn-secondary" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/confirm_invoice.php', $generateRunParams).'"><i class="fas fa-file-invoice-dollar"></i> '.$gL10n->get('RE_GENERATE_BILL').'</a>';
+        $buttons[] = '<a class="btn btn-secondary" href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/confirm_invoice.php', $generateRunParams).'"><i class="bi bi-receipt"></i> '.$gL10n->get('RE_GENERATE_BILL').'</a>';
         // Pay now (select all unpaid invoices of current user)
         $payNowUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/confirm_pay.php', array('select_all' => 1));
-        $buttons[] = '<a class="btn btn-primary" id="re-pay-now" href="'.$payNowUrl.'"><i class="fas fa-credit-card"></i> '.$gL10n->get('RE_PAY_NOW').'</a>';
+        $buttons[] = '<a class="btn btn-primary" id="re-pay-now" href="'.$payNowUrl.'"><i class="bi bi-credit-card"></i> '.$gL10n->get('RE_PAY_NOW').'</a>';
     }
     $page->addHtml(implode(' ', $buttons) . '<br/><br/>' );
 }
@@ -238,9 +235,9 @@ if ($isAdmin) {
     $roles = residentsGetRoleOptions();
     $rolesWithAll = array('0' => $gL10n->get('RE_ALL')) + $roles;
 
-    $labelSearch = '<i class="fas fa-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
-    $labelGroup  = '<i class="fas fa-users" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
-    $labelUser   = '<i class="fas fa-user" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
+    $labelSearch = '<i class="bi bi-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
+    $labelGroup  = '<i class="bi bi-people" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
+    $labelUser   = '<i class="bi bi-person" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
 
     $paidOptions = array('' => $gL10n->get('RE_ALL')) + residentsInvoiceStatusOptions('paid');
 
@@ -280,7 +277,7 @@ if ($isAdmin) {
     $filterForm->addButton(
     're_filter_apply',
     $gL10n->get('SYS_FILTER'),
-    array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
+    array('type' => 'submit', 'icon' => 'bi-funnel', 'class' => 'btn btn-primary btn-sm ms-2')
     );
 
     $loadUsersUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/load_users.php');
@@ -356,7 +353,7 @@ else {
     $basicForm->addButton(
     're_filter_apply_basic',
     $gL10n->get('SYS_FILTER'),
-    array('type' => 'submit', 'icon' => 'fa-filter', 'class' => 'btn btn-primary btn-sm ms-2')
+    array('type' => 'submit', 'icon' => 'bi-funnel', 'class' => 'btn btn-primary btn-sm ms-2')
     );
     $basicNavbar = new HtmlNavbar('navbar_filter_basic', '', $page, 'filter');
     $basicNavbar->addForm($basicForm->show());
@@ -474,7 +471,7 @@ $jsActions = <<<'JS'
       if (buttonEl.length) {
         return buttonEl;
       }
-      var newButtonEl = $('<button type="button" id="re-delete-selected" class="btn btn-danger btn-sm ms-2"><i class="fas fa-trash"></i> ' + deleteButtonLabel + '</button>');
+      var newButtonEl = $('<button type="button" id="re-delete-selected" class="btn btn-danger btn-sm ms-2"><i class="bi bi-trash"></i> ' + deleteButtonLabel + '</button>');
       lengthEl.append(newButtonEl);
       return newButtonEl;
     }

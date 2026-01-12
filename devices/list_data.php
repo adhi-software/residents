@@ -10,7 +10,7 @@
  */
 
 require_once(__DIR__ . '/../common_function.php');
-require_once(__DIR__ . '/../../../adm_program/system/login_valid.php');
+require_once(__DIR__ . '/../../../system/login_valid.php');
 require_once(__DIR__ . '/../classes/TableResidentsDevice.php');
 
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gSettingsManager, $gCurrentOrgId, $gCurrentOrganization, $gDbType;
@@ -134,10 +134,10 @@ $unapproveConfirm = htmlspecialchars($gL10n->get('RE_UNAPPROVE_DEVICE_CONFIRM'),
 $deleteUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/delete.php';
 $btnHtml = '';
 if ($row && !$isActive) {
-    $btnHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/approve.php', array('id' => $row['rde_id'])) . '" onclick="return confirm(\'' . $approveConfirm . '\');"><i class="fas fa-check-circle"></i> ' . $gL10n->get('RE_APPROVE') . '</a>';
+    $btnHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/approve.php', array('id' => $row['rde_id'])) . '" onclick="return confirm(\'' . $approveConfirm . '\');"><i class="bi bi-check-circle"></i> ' . $gL10n->get('RE_APPROVE') . '</a>';
 }else{
-    $btnHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/reset.php', array('id' => $row['rde_id'])) . '" onclick="return confirm(\'' . $resetConfirm . '\');"><i class="fas fa-check-circle"></i> ' . $gL10n->get('RE_RESET') . '</a>';
-    $btnHtml .= ' <a class="btn btn-sm btn-danger text-white d-inline-flex align-items-center gap-1" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/unapprove.php', array('id' => $row['rde_id'])) . '" onclick="return confirm(\'' . $unapproveConfirm . '\');"><i class="fas fa-ban"></i> ' . $gL10n->get('RE_UNAPPROVE') . '</a>';
+    $btnHtml = '<a class="btn btn-sm btn-primary" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/reset.php', array('id' => $row['rde_id'])) . '" onclick="return confirm(\'' . $resetConfirm . '\');"><i class="bi bi-check-circle"></i> ' . $gL10n->get('RE_RESET') . '</a>';
+    $btnHtml .= ' <a class="btn btn-sm btn-danger text-white d-inline-flex align-items-center gap-1" href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/devices/unapprove.php', array('id' => $row['rde_id'])) . '" onclick="return confirm(\'' . $unapproveConfirm . '\');"><i class="bi bi-slash-circle"></i> ' . $gL10n->get('RE_UNAPPROVE') . '</a>';
 }
 if ($btnHtml !== '') {
     $actions = '<span class="re-actions-pay">' . $btnHtml . '</span>';
@@ -146,7 +146,7 @@ $actions .= ' <form method="post" action="' . $deleteUrl . '" class="d-inline" s
     . '<input type="hidden" name="id" value="' . (int)$row['rde_id'] . '" />'
     . '<input type="hidden" name="admidio-csrf-token" value="' . $csrfToken . '" />'
     . '<button type="submit" class="admidio-icon-link text-danger" title="' . $gL10n->get('SYS_DELETE') . '" style="border:0;background:none;padding:0;">'
-    . '<i class="fas fa-trash"></i>'
+    . '<i class="bi bi-trash"></i>'
     . '</button>'
     . '</form>';
 
