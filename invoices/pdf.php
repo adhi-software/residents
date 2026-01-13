@@ -43,12 +43,12 @@ if ($useApiAuth) {
     }
 }
 
-
-// Include TCPDF
-if (file_exists(__DIR__ . '/../../../adm_program/libs/server/tecnickcom/tcpdf/tcpdf.php')) {
-    require_once(__DIR__ . '/../../../adm_program/libs/server/tecnickcom/tcpdf/tcpdf.php');
-} else {
-    die('TCPDF library not found.');
+// Include TCPDF (Admidio 5+ uses vendor directory)
+$tcpdfPath = __DIR__ . '/../../../vendor/tecnickcom/tcpdf/tcpdf.php';
+if (file_exists($tcpdfPath)) {
+    require_once($tcpdfPath);
+} elseif (!class_exists('TCPDF')) {
+    die('TCPDF library not found. This plugin requires Admidio 5.0 or higher.');
 }
 
 global $gDb, $gL10n, $gSettingsManager, $gCurrentOrganization;

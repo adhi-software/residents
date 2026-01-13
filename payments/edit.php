@@ -370,7 +370,7 @@ ob_start();
     </div>
 
     <div class="d-flex justify-content-end mt-4" style="gap:0.5rem;">
-    <a class="btn btn-outline-secondary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'payments')); ?>"><?php echo $gL10n->get('SYS_CANCEL'); ?></a>
+    <a class="btn btn-secondary" href="<?php echo SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'payments')); ?>"><?php echo $gL10n->get('SYS_CANCEL'); ?></a>
     <button type="submit" class="btn btn-primary px-4">
             <i class="bi bi-floppy me-2"></i><?php echo $gL10n->get('SYS_SAVE'); ?>
     </button>

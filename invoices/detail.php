@@ -288,7 +288,7 @@ ob_start();
     <div class="date-value"><?php echo htmlspecialchars($formatDate($inv['riv_due_date'])); ?></div>
     <div class="d-flex justify-content-md-end flex-wrap" style="gap:0.5rem;">
                     <?php if ($previewMode) : ?>
-            <a class="btn btn-outline-secondary" href="<?php echo $previewReturnUrl; ?>">
+            <a class="btn btn-secondary" href="<?php echo $previewReturnUrl; ?>">
                             <i class="bi bi-arrow-left me-2"></i><?php echo $gL10n->get('RE_BACK'); ?>
             </a>
                     <?php else : ?>

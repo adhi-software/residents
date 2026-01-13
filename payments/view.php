@@ -54,6 +54,15 @@ residentsEnqueueStyles($page);
 
 ob_start();
 ?>
+<style>
+    .re-editor .card { border: none; border-radius: 0.9rem; box-shadow: 0 12px 24px rgba(20, 24, 45, 0.08); }
+    .re-editor .card+.card { margin-top: 1.5rem; }
+    .re-editor .card-header { border-bottom: none; background: transparent; font-weight: 600; letter-spacing: .08em; font-size: .75rem; text-transform: uppercase; color: #6c757d; }
+    .re-editor .form-label { display: block; font-weight: 600; letter-spacing: .05em; }
+    .re-editor .form-control-plaintext { padding: 0.5rem 0; }
+</style>
+
+<div class="re-editor">
 <!-- Payment Details Section -->
 <div class="card bg-light mb-4">
     <div class="card-header fw-bold"><?php echo $gL10n->get('RE_PAYMENT_DETAILS'); ?></div>
@@ -160,6 +169,7 @@ ob_start();
         <button type="submit" class="btn btn-danger text-white"><i class="bi bi-trash"></i> <?php echo $gL10n->get('SYS_DELETE'); ?></button>
             </form>
     <?php endif; ?>
+</div>
 </div>
 <div style="height: 50px;"></div>
 

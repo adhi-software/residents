@@ -64,6 +64,17 @@ if (!class_exists('SecurityUtils', false)) {
 if (!class_exists('Database', false)) {
     class_alias('Admidio\\Infrastructure\\Database', 'Database');
 }
+if (!class_exists('User', false)) {
+    class_alias('Admidio\\Users\\Entity\\User', 'User');
+}
+if (!class_exists('ProfileFields', false)) {
+    class_alias('Admidio\\ProfileFields\\ValueObjects\\ProfileFields', 'ProfileFields');
+}
+if (!class_exists('Organization', false)) {
+    class_alias('Admidio\\Organizations\\Entity\\Organization', 'Organization');
+}
+
+
 
 // define plugin specific constants
 if (!defined('PLUGIN_FOLDER_RE')) {
@@ -130,8 +141,9 @@ if (!defined('RE_STATUS_CLOSED')) {
 }
 
 /**
-    * Ensure the Residents plugin stylesheet is only added once per request.
-    */
+ * Ensure the Residents plugin stylesheet is only added once per request.
+ * Also sets the page to full width for consistent layout.
+ */
 function residentsEnqueueStyles(HtmlPage $page): void
 {
     static $stylesAdded = false;
@@ -139,6 +151,7 @@ function residentsEnqueueStyles(HtmlPage $page): void
         return;
     }
     $page->addCssFile(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.css');
+    $page->setContentFullWidth();
     $stylesAdded = true;
 }
 

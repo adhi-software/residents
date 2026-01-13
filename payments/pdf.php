@@ -10,6 +10,7 @@
  */
 
 require_once(__DIR__ . '/../common_function.php');
+
 // Check if we are in API mode (API Key provided)
 $useApiAuth = false;
 if (isset($_SERVER['HTTP_API_KEY']) && !empty($_SERVER['HTTP_API_KEY'])) {
@@ -42,11 +43,12 @@ if ($useApiAuth) {
     }
 }
 
-// Include TCPDF
-if (file_exists(__DIR__ . '/../../../adm_program/libs/server/tecnickcom/tcpdf/tcpdf.php')) {
-    require_once(__DIR__ . '/../../../adm_program/libs/server/tecnickcom/tcpdf/tcpdf.php');
-} else {
-    die('TCPDF library not found.');
+// Include TCPDF (Admidio 5+ uses vendor directory)
+$tcpdfPath = __DIR__ . '/../../../vendor/tecnickcom/tcpdf/tcpdf.php';
+if (file_exists($tcpdfPath)) {
+    require_once($tcpdfPath);
+} elseif (!class_exists('TCPDF')) {
+    die('TCPDF library not found. This plugin requires Admidio 5.0 or higher.');
 }
 
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser, $gCurrentOrganization, $gSettingsManager;
@@ -160,8 +162,10 @@ if (strlen(strip_tags($itemDescStr)) > 300) {
 if ($currency === '') {
     $currency = $gSettingsManager->getString('system_currency');
 }
-
-// Initialize PDF
+// Replace Rupee symbol with Rs. (core PDF fonts can't render ₹)
+if ($currency === '₹' || stripos($currency, 'rupee') !== false) {
+    $currency = 'Rs.';
+}
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 // Set document information
@@ -178,8 +182,8 @@ $pdf->setPrintFooter(false);
 $pdf->SetMargins(15, 15, 15);
 $pdf->SetAutoPageBreak(TRUE, 15);
 
-// Set font to support special characters (e.g. Rupee symbol)
-$pdf->SetFont('dejavusans', '', 10);
+// Set font (times is a core PDF font, no additional files needed)
+$pdf->SetFont('times', '', 10);
 
 // Add a page
 $pdf->AddPage();
