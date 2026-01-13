@@ -11,6 +11,8 @@
  ***********************************************************************************************
  */
 
+use Admidio\Infrastructure\Image;
+
 global $gDb, $gCurrentOrganization, $gL10n, $gCurrentUser;
 
 if (!$isAdmin) {
@@ -57,13 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 if (class_exists('FileSystemUtils')) {
                     FileSystemUtils::deleteFileIfExists($logoFile);
-        } elseif (file_exists($logoFile)) {
+                } elseif (file_exists($logoFile)) {
                     @unlink($logoFile);
-        }
+                }
             } catch (Exception $e) {
                 // ignore delete errors to keep preferences usable
             }
-    } elseif (isset($_FILES['userfile']) && isset($_FILES['userfile']['tmp_name'][0])) {
+        } elseif (isset($_FILES['userfile']) && isset($_FILES['userfile']['tmp_name'][0])) {
             $uploadError = (int)($_FILES['userfile']['error'][0] ?? UPLOAD_ERR_NO_FILE);
             if ($uploadError === UPLOAD_ERR_NO_FILE) {
                 // No file was uploaded, skip processing
@@ -78,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $imageProperties = getimagesize($_FILES['userfile']['tmp_name'][0]);
                 if ($imageProperties === false || !in_array($imageProperties['mime'], array('image/jpeg', 'image/png'), true)) {
                     $gMessage->show($gL10n->get('SYS_PHOTO_FORMAT_INVALID'));
-        }
+                }
 
                 try {
                     if (class_exists('FileSystemUtils')) {
@@ -93,11 +95,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $logoImage->scale(600, 200);
                     $logoImage->copyToFile(null, $logoFile);
                     $logoImage->delete();
-        } catch (Exception $e) {
+                } catch (Exception $e) {
                     $gMessage->show($gL10n->get('SYS_DATABASE_ERROR') . ': ' . htmlspecialchars($e->getMessage()));
-        }
+                }
             }
-    }
+        }
     }
 
     residentsWriteConfig($config);
@@ -143,7 +145,7 @@ $logoBoxHtml .= '<div style="min-width:260px;">'
     . '<div class="form-text">' . htmlspecialchars($gL10n->get('RE_ORG_LOGO_HELP')) . '</div>';
 
 if ($orgLogoUrl !== '') {
-    $logoBoxHtml .= '<button type="submit" name="org_logo_remove" value="1" class="btn btn-sm btn-outline-danger mt-2">'
+    $logoBoxHtml .= '<button type="submit" name="org_logo_remove" value="1" class="btn btn-sm btn-danger mt-2">'
     . '<i class="bi bi-trash"></i> ' . htmlspecialchars($gL10n->get('RE_REMOVE_ORG_LOGO'))
     . '</button>';
 }
@@ -170,20 +172,14 @@ $modalHtml = '
     <div class="modal-dialog modal-lg">
     <div class="modal-content border-0 shadow">
             <div class="modal-header bg-light">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-    </button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
                     <div id="pg_modal_error" class="alert alert-danger d-none mb-3" role="alert"></div>
                     <div class="row gx-3" style="--bs-gutter-y: 2rem;">
-            <div class="col-md-6">
+            <div class="col-12">
         <label class="form-label fw-bold">'.$gL10n->get('RE_PG_NAME').' <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="pg_name" id="pg_name" value="'.htmlspecialchars((string)$pgConf['name']).'" placeholder="e.g. CCAvenue">
-            </div>
-            <div class="col-md-6">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_CURRENCY').'</label>
-        <input type="text" class="form-control" name="pg_currency" id="pg_currency" value="'.htmlspecialchars((string)$pgConf['currency']).'" placeholder="e.g. INR">
             </div>
             
             <div class="col-md-6">
@@ -199,16 +195,6 @@ $modalHtml = '
         <label class="form-label fw-bold">'.$gL10n->get('RE_PG_WORKING_KEY').' <span class="text-danger">*</span></label>
         <input type="text" class="form-control font-monospace" name="pg_working_key" id="pg_working_key" value="'.htmlspecialchars((string)$pgConf['working_key']).'">
             </div>
-             
-            <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_REDIRECT_URL').'</label>
-        <input type="text" class="form-control" name="pg_redirect_url" id="pg_redirect_url" value="'.htmlspecialchars((string)$pgConf['redirect_url']).'">
-            </div>
-            
-            <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_CANCEL_URL').'</label>
-        <input type="text" class="form-control" name="pg_cancel_url" id="pg_cancel_url" value="'.htmlspecialchars((string)$pgConf['cancel_url']).'">
-            </div>
             
             <div class="col-12">
         <label class="form-label fw-bold">'.$gL10n->get('RE_PG_GATEWAY_URL').' <span class="text-danger">*</span></label>
@@ -222,7 +208,7 @@ $modalHtml = '
                     </div>
             </div>
             <div class="modal-footer bg-light">
-    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-dismiss="modal">'.$gL10n->get('RE_CANCEL').'</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">'.$gL10n->get('RE_CANCEL').'</button>
     <button type="button" class="btn btn-primary px-4" id="pg_btn_modal_save"><i class="bi bi-check-lg me-1"></i> '.$gL10n->get('RE_OK').'</button>
             </div>
     </div>
@@ -263,7 +249,14 @@ $uiHtml = '
             </button>
     </div>
     </div>
-</div>';
+</div>
+<style>
+#pg_btn_add:hover {
+    background-color: #4a9a9a !important;
+    border-color: #4a9a9a !important;
+    color: #fff !important;
+}
+</style>';
 $form->addHtml($uiHtml);
 $form->addHtml($modalHtml);
 

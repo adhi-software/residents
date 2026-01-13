@@ -179,4 +179,6 @@
     <string name="RE_UNPAID">Unpaid</string>
     <string name="RE_INACTIVE">InActive</string>
     <string name="RE_CLOSED">Closed</string>
+    <string name="RE_SEARCH">Search</string>
+    <string name="RE_GROUPS_ROLES">Groups &amp; Roles</string>
 </resources>

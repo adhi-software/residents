@@ -235,8 +235,8 @@ if ($isAdmin) {
     $roles = residentsGetRoleOptions();
     $rolesWithAll = array('0' => $gL10n->get('RE_ALL')) + $roles;
 
-    $labelSearch = '<i class="bi bi-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
-    $labelGroup  = '<i class="bi bi-people" alt="'.$gL10n->get('SYS_GROUPS_ROLES').'" title="'.$gL10n->get('SYS_GROUPS_ROLES').'"></i>';
+    $labelSearch = '<i class="bi bi-search" alt="'.$gL10n->get('RE_SEARCH').'" title="'.$gL10n->get('RE_SEARCH').'"></i>';
+    $labelGroup  = '<i class="bi bi-people" alt="'.$gL10n->get('RE_GROUPS_ROLES').'" title="'.$gL10n->get('RE_GROUPS_ROLES').'"></i>';
     $labelUser   = '<i class="bi bi-person" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
 
     $paidOptions = array('' => $gL10n->get('RE_ALL')) + residentsInvoiceStatusOptions('paid');

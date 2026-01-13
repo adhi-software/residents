@@ -117,7 +117,7 @@ if ($canViewAll) {
 
     $labelGroup = '<i class="bi bi-people" alt="'.$gL10n->get('RE_GROUP').'" title="'.$gL10n->get('RE_GROUP').'"></i>';
     $labelUser = '<i class="bi bi-person" alt="'.$gL10n->get('RE_USER').'" title="'.$gL10n->get('RE_USER').'"></i>';
-    $labelSearch = '<i class="bi bi-search" alt="'.$gL10n->get('SYS_SEARCH').'" title="'.$gL10n->get('SYS_SEARCH').'"></i>';
+    $labelSearch = '<i class="bi bi-search" alt="'.$gL10n->get('RE_SEARCH').'" title="'.$gL10n->get('RE_SEARCH').'"></i>';
 
     $filterNavbar = new HtmlNavbar('navbar_payments_filter', '', $page, 'filter');
     $filterForm = new HtmlForm(
