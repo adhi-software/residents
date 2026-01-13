@@ -12,6 +12,9 @@
 require_once(__DIR__ . '/../../system/common.php');
 require_once(__DIR__ . '/../../system/bootstrap/constants.php');
 require_once(__DIR__ . '/classes/ResidentsTables.php');
+use Admidio\Users\Entity\User;
+use Admidio\Messages\Entity\Message;
+use Admidio\Infrastructure\Email;
 
 if (!function_exists('admidioApiLog')) {
     function admidioApiLog(string $message, array $context = array(), string $level = 'error'): void
@@ -435,7 +438,7 @@ function residentsGetActiveRoleIdsForUser(int $userId): array
     return $roleMap[$userId] ?? array();
 }
 
-function residentsMessageIsVisibleToUser(TableMessage $message, int $userId): bool
+function residentsMessageIsVisibleToUser(Message $message, int $userId): bool
 {
     global $gDb;
 
@@ -447,7 +450,7 @@ function residentsMessageIsVisibleToUser(TableMessage $message, int $userId): bo
         return true;
     }
 
-    if ($message->getValue('msg_type') === TableMessage::MESSAGE_TYPE_PM) {
+    if ($message->getValue('msg_type') === Message::MESSAGE_TYPE_PM) {
         $statement = $gDb->queryPrepared(
             'SELECT 1 FROM ' . TBL_MESSAGES_RECIPIENTS . ' WHERE msr_msg_id = ? AND msr_usr_id = ? LIMIT 1',
             array((int)$message->getValue('msg_id'), $userId)
@@ -460,7 +463,7 @@ function residentsMessageIsVisibleToUser(TableMessage $message, int $userId): bo
     return false;
 }
 
-function residentsMessageCanDelete(TableMessage $message, int $userId): bool
+function residentsMessageCanDelete(Message $message, int $userId): bool
 {
     if ($userId <= 0) {
         return false;

@@ -12,6 +12,8 @@
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
+use Admidio\Messages\Entity\Message;
+use Admidio\Infrastructure\Utils\StringUtils;
 
 $endpointName = 'message/list';
 
@@ -20,7 +22,7 @@ $currentUserId = (int) $currentUser->getValue('usr_id');
 
 $typeFilterRaw = admFuncVariableIsValid($_GET, 'type', 'string', array('defaultValue' => ''));
 $typeFilter = strtoupper(trim($typeFilterRaw));
-$allowedTypes = array(TableMessage::MESSAGE_TYPE_PM, TableMessage::MESSAGE_TYPE_EMAIL);
+$allowedTypes = array(Message::MESSAGE_TYPE_PM, Message::MESSAGE_TYPE_EMAIL);
 if ($typeFilter !== '' && !in_array($typeFilter, $allowedTypes, true)) {
     admidioApiError('Invalid message type filter', 400, array(
     'endpoint' => $endpointName,
@@ -29,7 +31,7 @@ if ($typeFilter !== '' && !in_array($typeFilter, $allowedTypes, true)) {
     ));
 }
 
-if (!$gSettingsManager->getBool('enable_pm_module') && !$gSettingsManager->getBool('enable_mail_module')) {
+if (!$gSettingsManager->getBool('pm_module_enabled') && !$gSettingsManager->getBool('mail_module_enabled')) {
     admidioApiError('Messages module is disabled', 403, array(
     'endpoint' => $endpointName,
     'user_id' => $currentUserId
@@ -54,7 +56,7 @@ try {
                 AND msr_user.msr_usr_id = ?
     )
     )';
-    $queryParams[] = TableMessage::MESSAGE_TYPE_PM;
+    $queryParams[] = Message::MESSAGE_TYPE_PM;
     $queryParams[] = $currentUserId;
 
     $visibilityFilters[] = '(
@@ -65,7 +67,7 @@ try {
                 AND msr_mail.msr_usr_id = ?
     )
     )';
-    $queryParams[] = TableMessage::MESSAGE_TYPE_EMAIL;
+    $queryParams[] = Message::MESSAGE_TYPE_EMAIL;
     $queryParams[] = $currentUserId;
 
     $whereClause = '(' . implode(' OR ', $visibilityFilters) . ')';
@@ -204,7 +206,7 @@ try {
 
             if (
         !$messages[$index]['permissions']['can_delete']
-        && $messages[$index]['type'] === TableMessage::MESSAGE_TYPE_PM
+        && $messages[$index]['type'] === Message::MESSAGE_TYPE_PM
             ) {
                 foreach ($recipientsForMessage as $recipient) {
                     if ($recipient['type'] === 'USER' && (int) $recipient['id'] === $currentUserId) {

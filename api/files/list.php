@@ -12,6 +12,7 @@
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
+use Admidio\Documents\Entity\Folder;
 
 validateApiKey();
 
@@ -27,7 +28,7 @@ function getFolderContents(string $startFolderUuid): array
 {
     global $gDb;
 
-    $folder = new TableFolder($gDb);
+    $folder = new Folder($gDb);
     $folder->getFolderForDownload($startFolderUuid);
 
     $parentUuid = null;
@@ -79,7 +80,7 @@ function getFolderContents(string $startFolderUuid): array
             'canDownload' => true,
             'download' => array(
         'url' => SecurityUtils::encodeUrl(
-                    FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/api/files/files_download_api.php',
+                    FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/api/files/download.php',
                     array('file_uuid' => $fileUuid)
         ),
             ),

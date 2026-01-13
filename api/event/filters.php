@@ -2,6 +2,7 @@
 global $gDb, $gL10n, $gProfileFields, $gCurrentUser;
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
+use Admidio\Infrastructure\Language;
 
 header('Content-Type: application/json; charset=utf-8');
 $endpointName = 'event/filters';

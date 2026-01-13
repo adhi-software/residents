@@ -2,6 +2,10 @@
 global $gDb, $gProfileFields, $gL10n;
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
+use Admidio\Events\Entity\Event;
+use Admidio\Infrastructure\Language;
+use Admidio\Events\ValueObject\Participants;
+use Admidio\Categories\Entity\Category;
 
 header('Content-Type: application/json; charset=utf-8');
 $endpointName = 'event/list';
@@ -40,7 +44,7 @@ try {
     
     // Set parameters
     if ($getCatUuid !== '') {
-        $category = new TableCategory($gDb);
+        $category = new Category($gDb);
         if ($category->readDataByUuid($getCatUuid)) {
             $eventsModule->setParameter('cat_id', $category->getValue('cat_id'));
     }
@@ -50,7 +54,7 @@ try {
     $eventsData = $eventsModule->getDataSet($getOffset, $getLimit);
     
     $events = [];
-    $event = new TableEvent($gDb);
+    $event = new Event($gDb);
 
     foreach ($eventsData['recordset'] as $row) {
         // Load data into TableEvent object for easy access and handling
@@ -78,13 +82,13 @@ try {
             // check the rights if the user is allowed to view the participants, or he is allowed to participate
             if ($currentUser->hasRightViewRole($rolId)
         || $row['mem_leader'] == 1
-        || $currentUser->editEvents()
+        || $currentUser->isAdministratorEvents()
         || $event->allowedToParticipate()) {
             $outputNumberMembers = $participants->getCount();
             $outputNumberLeaders = $participants->getNumLeaders();
             $participantsArray = $participants->getParticipantsArray();
             }
-            $show_participants = ($currentUser->editEvents() || !$event->deadlineExceeded()) && count($participantsArray) > 0 && ($currentUser->editEvents() || $participants->isMemberOfEvent($currentUserId));
+            $show_participants = ($currentUser->isAdministratorEvents() || !$event->deadlineExceeded()) && count($participantsArray) > 0 && ($currentUser->isAdministratorEvents() || $participants->isMemberOfEvent($currentUserId));
             $allow_registration = $event->possibleToParticipate();
     }
     
@@ -118,7 +122,7 @@ try {
             'download' => array(
         'url' => SecurityUtils::encodeUrl(
                     FOLDER_MODULES . '/events/events_function.php',
-                    array('dat_uuid' => $eventUuid, 'mode' => 6)
+                    array('dat_uuid' => $eventUuid, 'mode' => 'export')
         ),
             ),
             'creator' => [

@@ -26,7 +26,7 @@ if (!defined('DATETIME_NOW')) {
 $currentUser = validateApiKey();
 $currentUserId = (int) $currentUser->getValue('usr_id');
 
-if (!$gSettingsManager->getBool('enable_pm_module') && !$gSettingsManager->getBool('enable_mail_module')) {
+if (!$gSettingsManager->getBool('pm_module_enabled') && $gSettingsManager->getInt('mail_module_enabled') === 0) {
     admidioApiError('Messages module is disabled', 403, array(
     'endpoint' => $endpointName,
     'user_id' => $currentUserId

@@ -2,6 +2,11 @@
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
+use Admidio\Messages\Entity\Message;
+use Admidio\Infrastructure\Email;
+use Admidio\Users\Entity\User;
+use Admidio\Infrastructure\Utils\StringUtils;
+use Admidio\Infrastructure\Utils\FileSystemUtils;
 
 $endpointName = 'message/save';
 
@@ -35,7 +40,7 @@ if ($isMultipart) {
     }
 }
 $msgUuid = trim((string) ($payload['msg_uuid'] ?? ''));
-$msgTypeInput = strtoupper(trim((string) ($payload['msg_type'] ?? TableMessage::MESSAGE_TYPE_EMAIL)));
+$msgTypeInput = strtoupper(trim((string) ($payload['msg_type'] ?? Message::MESSAGE_TYPE_EMAIL)));
 $msgSubjectInput = trim((string) ($payload['msg_subject'] ?? ''));
 $msgBody = trim((string) ($payload['msg_body'] ?? ''));
 $recipientInput = $payload['recipients'] ?? array();
@@ -48,7 +53,7 @@ if ($msgBody === '') {
     ));
 }
 
-$message = new TableMessage($gDb);
+$message = new Message($gDb);
 if ($msgUuid !== '') {
     $message->readDataByUuid($msgUuid);
     if ($message->isNewRecord()) {
@@ -69,7 +74,7 @@ if ($msgUuid !== '') {
         ));
     }
 } else {
-    $msgType = $msgTypeInput === TableMessage::MESSAGE_TYPE_PM ? TableMessage::MESSAGE_TYPE_PM : TableMessage::MESSAGE_TYPE_EMAIL;
+    $msgType = $msgTypeInput === Message::MESSAGE_TYPE_PM ? Message::MESSAGE_TYPE_PM : Message::MESSAGE_TYPE_EMAIL;
     $msgSubject = $msgSubjectInput;
     if ($msgSubject === '') {
         admidioApiError('Subject is required', 400, array(
@@ -89,7 +94,7 @@ if ($msgUuid !== '') {
 }
 
 if ($forwardSourceUuid !== '') {
-    if ($msgType !== TableMessage::MESSAGE_TYPE_EMAIL) {
+    if ($msgType !== Message::MESSAGE_TYPE_EMAIL) {
         admidioApiError('Forwarding is only supported for email messages', 400, array(
             'endpoint' => $endpointName,
             'user_id' => $currentUserId,
@@ -97,7 +102,7 @@ if ($forwardSourceUuid !== '') {
         ));
     }
 
-    $sourceMessage = new TableMessage($gDb);
+    $sourceMessage = new Message($gDb);
     $sourceMessage->readDataByUuid($forwardSourceUuid);
     if ($sourceMessage->isNewRecord()) {
         admidioApiError('Original message not found for forwarding', 404, array(
@@ -115,7 +120,7 @@ if ($forwardSourceUuid !== '') {
         ));
     }
 
-    $forwardAttachments = $sourceMessage->getAttachmentsInformations();
+    $forwardAttachments = $sourceMessage->getAttachmentsInformation();
 } else {
     $forwardAttachments = array();
 }
@@ -127,7 +132,7 @@ $message->setValue('msg_timestamp', date('Y-m-d H:i:s'));
 $sendResult = false;
 
 try {
-    if ($msgType === TableMessage::MESSAGE_TYPE_PM) {
+    if ($msgType === Message::MESSAGE_TYPE_PM) {
         $sendResult = processPrivateMessageSave($message, $recipientRows, $currentUserId, $uploadedAttachments, $endpointName);
     } else {
         $sendResult = processEmailMessageSave($message, $recipientRows, $currentUser, $uploadedAttachments, $forwardAttachments, $endpointName, $currentUserId);
@@ -166,7 +171,7 @@ try {
     ));
 }
 
-function processPrivateMessageSave(TableMessage $message, array $recipients, int $currentUserId, array $uploadedAttachments, string $endpointName)
+function processPrivateMessageSave(Message $message, array $recipients, int $currentUserId, array $uploadedAttachments, string $endpointName)
 {
     global $gSettingsManager;
 
@@ -177,7 +182,7 @@ function processPrivateMessageSave(TableMessage $message, array $recipients, int
         ));
     }
 
-    if (!$gSettingsManager->getBool('enable_pm_module')) {
+    if (!$gSettingsManager->getBool('pm_module_enabled')) {
         admidioApiError('Private messages are disabled', 403, array(
             'endpoint' => $endpointName,
             'user_id' => $currentUserId
@@ -187,11 +192,11 @@ function processPrivateMessageSave(TableMessage $message, array $recipients, int
     return handlePrivateMessageSend($message, $recipients, $currentUserId);
 }
 
-function processEmailMessageSave(TableMessage $message, array $recipients, User $currentUser, array $uploadedAttachments, array $forwardAttachments, string $endpointName, int $currentUserId)
+function processEmailMessageSave(Message $message, array $recipients, User $currentUser, array $uploadedAttachments, array $forwardAttachments, string $endpointName, int $currentUserId)
 {
     global $gSettingsManager;
 
-    if (!$gSettingsManager->getBool('enable_mail_module')) {
+    if ($gSettingsManager->getInt('mail_module_enabled') === 0) {
         admidioApiError('Email module is disabled', 403, array(
             'endpoint' => $endpointName,
             'user_id' => $currentUserId
@@ -203,7 +208,7 @@ function processEmailMessageSave(TableMessage $message, array $recipients, User 
     return handleEmailSend($message, $recipients, $currentUser, $emailAttachmentSources);
 }
 
-function prepareEmailAttachments(TableMessage $message, array $uploadedAttachments, array $forwardAttachments): array
+function prepareEmailAttachments(Message $message, array $uploadedAttachments, array $forwardAttachments): array
 {
     $attachmentSources = array();
 
@@ -323,7 +328,7 @@ function normalizeRecipientInput(array $recipients): array
     return $normalized;
 }
 
-function handlePrivateMessageSend(TableMessage $message, array $recipients, int $currentUserId)
+function handlePrivateMessageSend(Message $message, array $recipients, int $currentUserId)
 {
     global $gDb, $gProfileFields;
 
@@ -355,7 +360,7 @@ function handlePrivateMessageSend(TableMessage $message, array $recipients, int 
     return true;
 }
 
-function resolvePmRecipient(array $recipients, TableMessage $message, int $currentUserId): ?array
+function resolvePmRecipient(array $recipients, Message $message, int $currentUserId): ?array
 {
     $candidates = array();
 
@@ -385,7 +390,7 @@ function resolvePmRecipient(array $recipients, TableMessage $message, int $curre
     return null;
 }
 
-function handleEmailSend(TableMessage $message, array $recipients, User $currentUser, array $uploadedAttachments = array())
+function handleEmailSend(Message $message, array $recipients, User $currentUser, array $uploadedAttachments = array())
 {
     global $gSettingsManager, $gProfileFields, $gDb;
 

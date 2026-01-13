@@ -11,6 +11,7 @@
 
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
+use Admidio\Documents\Entity\File;
 
 validateApiKey();
 
@@ -18,7 +19,7 @@ $getFileUuid = admFuncVariableIsValid($_GET, 'file_uuid', 'string', array('requi
 $getView     = admFuncVariableIsValid($_GET, 'view', 'bool');
 
 try {
-    $file = new TableFile($gDb);
+    $file = new File($gDb);
     $file->getFileForDownload($getFileUuid);
 } catch (AdmException $e) {
     header('Content-Type: application/json; charset=utf-8');

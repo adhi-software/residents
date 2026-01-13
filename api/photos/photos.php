@@ -20,7 +20,7 @@ $currentOrgId = isset($gCurrentOrgId)
     : (isset($gCurrentOrganization) ? (int) $gCurrentOrganization->getValue('org_id') : 0);
 
 // Check user permissions for photos
-$canEditPhotos = $currentUser->editPhotoRight();
+$canEditPhotos = $currentUser->isAdministratorPhotos();
 
 $sql = 'SELECT pho_id, pho_name, pho_quantity, pho_begin, pho_end, pho_description, pho_pho_id_parent
     FROM adm_photos

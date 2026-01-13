@@ -12,13 +12,16 @@
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
+use Admidio\Messages\Entity\Message;
+use Admidio\Users\Entity\User;
+use Admidio\Infrastructure\Utils\StringUtils;
 
 $endpointName = 'message/detail';
 
 $currentUser = validateApiKey();
 $currentUserId = (int) $currentUser->getValue('usr_id');
 
-if (!$gSettingsManager->getBool('enable_pm_module') && !$gSettingsManager->getBool('enable_mail_module')) {
+if (!$gSettingsManager->getBool('pm_module_enabled') && $gSettingsManager->getInt('mail_module_enabled') === 0) {
     admidioApiError('Messages module is disabled', 403, array(
     'endpoint' => $endpointName,
     'user_id' => $currentUserId
@@ -36,7 +39,7 @@ if ($getMsgUuid === '') {
 }
 
 try {
-    $message = new TableMessage($gDb);
+    $message = new Message($gDb);
     $message->readDataByUuid($getMsgUuid);
 
     if ($message->isNewRecord()) {
@@ -117,13 +120,13 @@ try {
     }
 
     $attachments = array();
-    foreach ($message->getAttachmentsInformations() as $attachment) {
+    foreach ($message->getAttachmentsInformation() as $attachment) {
         $attachments[] = array(
-            'id' => (int) $attachment['msa_id'],
+            'id' => (string) $attachment['msa_uuid'],
             'file_name' => $attachment['file_name'],
             'download_url' => SecurityUtils::encodeUrl(
-        ADMIDIO_URL . FOLDER_MODULES . '/messages/get_attachment.php',
-        array('msa_id' => (int) $attachment['msa_id'], 'view' => 1)
+        FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/api/message/attachment.php',
+        array('msa_uuid' => (string) $attachment['msa_uuid'])
             )
         );
     }

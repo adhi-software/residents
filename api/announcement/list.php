@@ -12,6 +12,10 @@
 global $gDb, $gProfileFields, $gCurrentUser;
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
+use Admidio\Announcements\Entity\Announcement;
+use Admidio\Categories\Entity\Category;
+use Admidio\Announcements\Service\AnnouncementsService;
+use Admidio\Infrastructure\Language;
 
 header('Content-Type: application/json; charset=utf-8');
 $endpointName = 'announcement/list';
@@ -43,23 +47,20 @@ try {
     }
 
     // Create object for announcements
-    $announcementsModule = new ModuleAnnouncements();
+    $announcementsModule = new AnnouncementsService($gDb);
     
     // Set parameters
     if ($getCatUuid !== '') {
-        $category = new TableCategory($gDb);
-        if ($category->readDataByUuid($getCatUuid)) {
-            $announcementsModule->setParameter('cat_id', $category->getValue('cat_id'));
-    }
+        $announcementsModule = new AnnouncementsService($gDb, $getCatUuid);
     }
     
     // Fetch data using the module class
-    $announcementsData = $announcementsModule->getDataSet($getOffset, $getLimit);
+    $announcementsData = $announcementsModule->findAll($getOffset, $getLimit);
     
     $announcements = [];
-    $announcementObj = new TableAnnouncement($gDb);
+    $announcementObj = new Announcement($gDb);
 
-    foreach ($announcementsData['recordset'] as $row) {
+    foreach ($announcementsData as $row) {
         // Load data into TableAnnouncement object for easy access and handling
         $announcementObj->clear();
         $announcementObj->setArray($row);

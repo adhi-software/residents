@@ -12,6 +12,8 @@
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
+use Admidio\Users\Entity\User;
+use Admidio\ProfileFields\ValueObjects\ProfileFields;
 
 $currentUser = validateApiKey();
 $userId = $_GET['contact_id'] ?? '';

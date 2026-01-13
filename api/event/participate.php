@@ -2,6 +2,10 @@
 global $gDb, $gProfileFields, $gCurrentUser, $gL10n;
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
+use Admidio\Events\Entity\Event;
+use Admidio\Users\Entity\User;
+use Admidio\Events\ValueObject\Participants;
+use Admidio\Roles\Entity\Membership;
 
 header('Content-Type: application/json; charset=utf-8');
 $endpointName = 'event/participate';
@@ -43,7 +47,7 @@ if ($mode === '' || !in_array($mode, array(3,4), true)) {
 }
 $participationPossible = true;
 $outputMessage = "";
-$event = new TableEvent($gDb);
+$event = new Event($gDb);
 $event->readDataByUuid($getEventUuid);
 
 // read user data
@@ -57,7 +61,7 @@ try {
             'dat_uuid' => $getEventUuid
         ));
     }
-    $member = new TableMembers($gDb);
+    $member = new Membership($gDb);
     $participants = new Participants($gDb, (int) $event->getValue('dat_rol_id'));
     if ($event->possibleToParticipate() || $participants->isLeader($currentUserId)) {
         $member->readDataByColumns(array('mem_rol_id' => (int) $event->getValue('dat_rol_id'), 'mem_usr_id' => $user->getValue('usr_id')));

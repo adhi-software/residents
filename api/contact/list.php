@@ -12,6 +12,7 @@
 require_once(__DIR__ . '/../../../../system/common.php');
 require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
+use Admidio\Users\Entity\User;
 
 $currentUser = validateApiKey();
 $picPath = THEME_PATH. '/images/no_profile_pic.png';
