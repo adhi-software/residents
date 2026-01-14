@@ -76,6 +76,10 @@ $inv = array(
 
 $totals = residentsGetInvoiceTotals($id);
 $currencyLabel = $totals['currency'] ?? $gSettingsManager->getString('system_currency');
+// Replace Rupee symbol with Rs. (core PDF fonts can't render ₹)
+if ($currencyLabel === '₹' || stripos($currencyLabel, 'rupee') !== false) {
+    $currencyLabel = 'Rs.';
+}
 $amountFormatted = number_format((float)$totals['amount'], 2, '.', ',');
 
 $items = $invoice->getItems();
@@ -182,7 +186,7 @@ $pdf->SetMargins(15, 15, 15);
 $pdf->SetAutoPageBreak(TRUE, 15);
 
 // Set font
-$pdf->SetFont('dejavusans', '', 10);
+$pdf->SetFont('times', '', 10);
 
 // Add a page
 $pdf->AddPage();
