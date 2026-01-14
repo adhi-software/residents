@@ -218,14 +218,23 @@ $serverUrl = SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLD
 
 
 $tableHeaderStyle = '#table_re_devices thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}#table_re_devices thead th{font-weight:700;color:#495057;padding:12px 15px;white-space:nowrap;border:none;}';
-$tableHeaderStyle .= 'input.re-filter-checkbox{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0;}'
-. '.re-check-square-checked{display:none!important;}'
-. '.re-check-square-unchecked{display:inline-block;}'
-. 'input.re-filter-checkbox:checked ~ .re-check-square-checked{display:inline-block!important;}'
-. 'input.re-filter-checkbox:checked ~ .re-check-square-unchecked{display:none!important;}'
-. '.re-check-square-checked{margin-right:0.35rem;line-height:1;font-size:1.15em;vertical-align:-0.1em;}'
-. '.re-check-square-unchecked{margin-right:0.35rem;display:inline-block;width:1.05em;height:1.05em;border:2px solid currentColor;border-radius:0.15em;opacity:0.7;vertical-align:-0.15em;box-sizing:border-box;}'
-. '.checkbox label{cursor:pointer;}';
+$tableHeaderStyle .= '
+#filter_active_group.form-switch {padding-left: 0 !important;}
+#filter_active_group.form-switch .form-check-input {margin-left: 0 !important;background-image: none !important;}
+input.re-filter-checkbox {position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;margin:0;}
+.re-check-square-checked {display: none;margin-right:0.35rem;line-height:1;font-size:1.15em;vertical-align:-0.1em;}
+.re-check-square-unchecked {
+    display: inline-block;
+    width: 1.15em;
+    height: 1.15em;
+    border: 2px solid currentColor;
+    border-radius: 0.15em;
+    vertical-align: middle;
+    margin-right: 0.35rem;
+}
+#filter_active_group input.re-filter-checkbox:checked + label .re-check-square-checked { display: inline-block !important;}
+#filter_active_group input.re-filter-checkbox:checked + label .re-check-square-unchecked {display: none !important;}
+#filter_active_group .form-check-label {cursor: pointer; display: inline-flex; align-items: center;}';
 $tableHeaderStyle .= '#table_re_devices_wrapper .dataTables_length,#table_re_devices_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}'
 . '#table_re_devices_wrapper .dataTables_length label,#table_re_devices_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
 $tableHeaderStyle .= '#table_re_devices_wrapper .dataTables_length select,#table_re_devices_length select{width:auto;min-width:70px;display:inline-block;}';
