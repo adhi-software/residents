@@ -81,7 +81,13 @@ $userOptions = TableResidentsPayment::fetchUserOptions($gDb, $canViewAll, $first
 $filterAction = SecurityUtils::encodeUrl($baseUrl, array('tab' => 'payments'));
 // Show "New payment" button only to residents admins
 if ($canCreatePayments) {
-    $page->addHtml('<div class="mb-3 text-start"><a href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php').'" class="btn btn-secondary"><i class="bi bi-plus-circle"></i> '.$gL10n->get('RE_ADD_PAYMENT').'</a></div>');
+    $buttonsHtml = '<a href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php').'" class="btn btn-secondary"><i class="bi bi-plus-circle"></i> '.$gL10n->get('RE_ADD_PAYMENT').'</a>';
+    if ($canManage) {
+        $buttonsHtml .= ' <button type="button" id="re-delete-selected-payments" class="btn btn-danger" disabled><i class="bi bi-trash"></i> '.$gL10n->get('RE_DELETE_ALL').'</button>';
+    }
+    $page->addHtml('<div class="mb-3 text-start">'.$buttonsHtml.'</div>');
+} elseif ($canManage) {
+    $page->addHtml('<div class="mb-3 text-start"><button type="button" id="re-delete-selected-payments" class="btn btn-danger" disabled><i class="bi bi-trash"></i> '.$gL10n->get('RE_DELETE_ALL').'</button></div>');
 }
 
 if (!$canViewAll) {
@@ -171,7 +177,21 @@ if ($canViewAll) {
     );
 }
 
-$paymentsStyle = '#table_re_payments thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}#table_re_payments thead th{font-weight:700;color:#495057;padding:12px 30px 12px 15px !important;white-space:nowrap;position:relative;border:none;background-position: right 5px center !important;}';
+$paymentsStyle = '#table_re_payments{table-layout:auto;width:100%;}';
+$paymentsStyle .= '#table_re_payments thead{border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;background-color:#fff;}';
+$paymentsStyle .= '#table_re_payments thead th{font-weight:700;color:#495057;padding:12px 15px !important;white-space:nowrap;position:relative;border:none;}';
+$paymentsStyle .= '#table_re_payments tbody td{padding:12px 15px !important;}';
+// DataTables 2.x fix: Override flex-direction for numeric/date columns so sorting icon stays on the right
+$paymentsStyle .= '#table_re_payments thead th.dt-type-numeric div.dt-column-header,#table_re_payments thead th.dt-type-date div.dt-column-header{flex-direction:row !important;}';
+// Ensure consistent text alignment between header and body
+$paymentsStyle .= '#table_re_payments thead th:nth-child(1),#table_re_payments tbody td:nth-child(1){text-align:center !important;width:40px;}'; // Checkbox
+$paymentsStyle .= '#table_re_payments thead th:nth-child(2),#table_re_payments tbody td:nth-child(2){text-align:left !important;}'; // Payment #
+$paymentsStyle .= '#table_re_payments thead th:nth-child(3),#table_re_payments tbody td:nth-child(3){text-align:left !important;}'; // Payment Date
+$paymentsStyle .= '#table_re_payments thead th:nth-child(4),#table_re_payments tbody td:nth-child(4){text-align:left !important;}'; // Payment Method
+$paymentsStyle .= '#table_re_payments thead th:nth-child(5),#table_re_payments tbody td:nth-child(5){text-align:left !important;}'; // Payment Type
+$paymentsStyle .= '#table_re_payments thead th:nth-child(6),#table_re_payments tbody td:nth-child(6){text-align:left !important;}'; // Customer
+$paymentsStyle .= '#table_re_payments thead th:nth-child(7),#table_re_payments tbody td:nth-child(7){text-align:left !important;}'; // Total Amount
+$paymentsStyle .= '#table_re_payments thead th:nth-child(8),#table_re_payments tbody td:nth-child(8){text-align:left !important;}'; // Actions
 $paymentsStyle .= '#table_re_payments_wrapper .dataTables_length,#table_re_payments_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}';
 $paymentsStyle .= '#table_re_payments_wrapper .dataTables_length label,#table_re_payments_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
 $paymentsStyle .= '#table_re_payments_wrapper .dataTables_length select,#table_re_payments_length select{width:auto;min-width:70px;display:inline-block;}';
@@ -227,48 +247,26 @@ if ($canManage) {
     $bulkDeleteUrlJs = json_encode($bulkDeleteUrl);
     $paymentsDeleteConfirm = json_encode($gL10n->get('RE_DELETE_PAYMENT_CONFIRM'));
     $paymentsDeleteError = json_encode('Error deleting selected payments');
-    $deleteAllLabel = json_encode($gL10n->get('RE_DELETE_ALL'));
     $csrfTokenJs = json_encode($GLOBALS['gCurrentSession']->getCsrfToken());
     $jsPayments = <<<'JS'
         $(function(){
             var bulkDeleteUrl = {{BULK_DELETE_URL}};
             var deleteConfirmMsg = {{DELETE_CONFIRM}};
             var deleteErrorMsg = {{DELETE_ERROR}};
-            var deleteButtonLabel = {{DELETE_BUTTON_LABEL}};
             var csrfToken = {{CSRF_TOKEN}};
             
             var tableEl = $('#table_re_payments');
             var dataTable = tableEl.DataTable();
             var wrapperEl = $('#table_re_payments_wrapper');
-            function locateLengthContainer(){
-                var lengthEl = $('#table_re_payments_length');
-                if (lengthEl.length) {
-                    return lengthEl;
-                }
-                lengthEl = wrapperEl.find('.dataTables_length');
-                if (lengthEl.length) {
-                    return lengthEl;
-                }
-                return $();
-            }
-            function ensureDeleteButton(){
-                var lengthEl = locateLengthContainer();
-                if (!lengthEl.length) {
-                    return $();
-                }
-                var buttonEl = $('#re-delete-selected-payments');
-                if (buttonEl.length) {
-                    return buttonEl;
-                }
-                var newButtonEl = $('<button type="button" id="re-delete-selected-payments" class="btn btn-danger btn-sm ms-2"><i class="bi bi-trash"></i> ' + deleteButtonLabel + '</button>');
-                lengthEl.append(newButtonEl);
-                return newButtonEl;
-            }
-            function bindDeleteButton(buttonEl){
-                if (!buttonEl.length || buttonEl.data('residentsDeleteBound')) {
+            
+            // Use the existing static button
+            var deleteButtonEl = $('#re-delete-selected-payments');
+            
+            function bindDeleteButton(){
+                if (!deleteButtonEl.length || deleteButtonEl.data('residentsDeleteBound')) {
                     return;
                 }
-                buttonEl.data('residentsDeleteBound', true).on('click', function(e){
+                deleteButtonEl.data('residentsDeleteBound', true).on('click', function(e){
                     e.preventDefault();
                     var ids = [];
                     tableEl.find('tbody input.re-row-select:checked').each(function(){ ids.push($(this).val()); });
@@ -285,22 +283,15 @@ if ($canManage) {
                     });
                 });
             }
-            function getDeleteButton(){
-                var buttonEl = ensureDeleteButton();
-                bindDeleteButton(buttonEl);
-                return buttonEl;
-            }
             function updateDeleteButtonState(){
-                var buttonEl = getDeleteButton();
-                if (!buttonEl.length) {
+                if (!deleteButtonEl.length) {
                     return;
                 }
                 var hasSelection = tableEl.find('tbody input.re-row-select:checked').length > 0;
-                buttonEl.prop('disabled', !hasSelection);
+                deleteButtonEl.prop('disabled', !hasSelection);
             }
-            var deleteButtonEl = getDeleteButton();
+            bindDeleteButton();
             dataTable.on('init.dt', function(){
-                deleteButtonEl = getDeleteButton();
                 updateDeleteButtonState();
             });
             var firstHeader = tableEl.find('thead th').first();
@@ -338,7 +329,6 @@ if ($canManage) {
             dataTable.on('draw', function(){
                 updateInfo();
                 syncHeaderCheckboxPayments();
-                deleteButtonEl = getDeleteButton();
                 updateDeleteButtonState();
             });
             tableEl.on('change', 'input.re-row-select', function(){
@@ -355,7 +345,6 @@ if ($canManage) {
             '{{BULK_DELETE_URL}}' => $bulkDeleteUrlJs,
             '{{DELETE_CONFIRM}}' => $paymentsDeleteConfirm,
             '{{DELETE_ERROR}}' => $paymentsDeleteError,
-            '{{DELETE_BUTTON_LABEL}}' => $deleteAllLabel,
             '{{CSRF_TOKEN}}' => $csrfTokenJs,
         ));
         $page->addJavascript("\n".$jsPayments."\n", true);
