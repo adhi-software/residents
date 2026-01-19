@@ -403,7 +403,7 @@ $page->addHtml('<style>'.$tableHeaderStyle.'</style>');
 $table = new HtmlTable('table_re_invoices', $page, true, true, 'table table-hover align-middle');
 $table->setServerSideProcessing($serverUrl);
 $table->setDatatablesRowsPerPage($defaultPageLength);
-$table->setDatatablesOrderColumns(array(array(1, 'desc')));
+$table->setDatatablesOrderColumns(array(array(2, 'desc')));
 $headings = array(
 $gL10n->get('RE_NUMBER'),
 $gL10n->get('RE_START_DATE'),
@@ -416,7 +416,7 @@ $gL10n->get('RE_ACTIONS')
 );
 array_unshift($headings, '<input type="checkbox" id="re-select-all" />');
 $table->disableDatatablesColumnsSort(array(1,9));
-$table->setColumnAlignByArray(array('center','left','left','left','left','left','left','right','left'));
+$table->setColumnAlignByArray(array('center','left','left','left','left','left','left','left','left'));
 $table->addRowHeadingByArray($headings);
 
 $bulkDeleteUrl = $isAdmin ? SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/delete_all.php') : '';

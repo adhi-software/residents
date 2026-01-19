@@ -50,7 +50,7 @@ $errors = array();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        SecurityUtils::validateCsrfToken((string)($_POST['admidio-csrf-token'] ?? ''));
+        SecurityUtils::validateCsrfToken((string)($_POST['adm_csrf_token'] ?? ''));
     } catch (Throwable $e) {
         $gMessage->show($e->getMessage());
     }

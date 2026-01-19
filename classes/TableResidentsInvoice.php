@@ -172,7 +172,7 @@ class TableResidentsInvoice extends TableResidentsBase
             'date' => 'b.riv_date',
             'start_date' => 'b.riv_start_date',
             'end_date' => 'b.riv_end_date',
-            'status' => $hasPaidColumn ? 'b.riv_is_paid' : 'b.riv_id',
+            'status' => 'b.riv_is_paid',
             'user' => 'user_name',
             'due_date' => 'b.riv_due_date',
             'amount' => 'total_amount'

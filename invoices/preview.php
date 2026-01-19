@@ -178,7 +178,7 @@ if (!empty($previewData['rows'])) {
             htmlspecialchars(residentsFormatDateForUi((string)$row['start_date'])),
             htmlspecialchars(residentsFormatDateForUi((string)$row['end_date'])),
             array(
-        'value' => '<span class="badge bg-info text-dark">' . htmlspecialchars($statusText) . '</span>',
+        'value' => '<span class="badge bg-info">' . htmlspecialchars($statusText) . '</span>',
         'order' => $statusText,
         'search' => $statusText
             ),
@@ -200,11 +200,11 @@ if (!empty($previewData['rows'])) {
 
 $page->addHtml($previewTable->show(false));
 
-$previewPlaceholderCleanup = <<<'JS'
-  $(function(){
-      if (typeof admidioTable_table_re_invoices_preview !== 'undefined') {
-        admidioTable_table_re_invoices_preview.rows('.preview-placeholder-row').remove().draw();
-    }
-  });
-JS;
-$page->addJavascript("\n" . $previewPlaceholderCleanup . "\n", true);
+// $previewPlaceholderCleanup = <<<'JS'
+//   $(function(){
+//       if (typeof admidioTable_table_re_invoices_preview !== 'undefined') {
+//         admidioTable_table_re_invoices_preview.rows('.preview-placeholder-row').remove().draw();
+//     }
+//   });
+// JS;
+// $page->addJavascript("\n" . $previewPlaceholderCleanup . "\n", true);
