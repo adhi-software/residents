@@ -82,12 +82,7 @@ $filterAction = SecurityUtils::encodeUrl($baseUrl, array('tab' => 'payments'));
 // Show "New payment" button only to residents admins
 if ($canCreatePayments) {
     $buttonsHtml = '<a href="'.SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payments/edit.php').'" class="btn btn-secondary"><i class="bi bi-plus-circle"></i> '.$gL10n->get('RE_ADD_PAYMENT').'</a>';
-    if ($canManage) {
-        $buttonsHtml .= ' <button type="button" id="re-delete-selected-payments" class="btn btn-danger" disabled><i class="bi bi-trash"></i> '.$gL10n->get('RE_DELETE_ALL').'</button>';
-    }
     $page->addHtml('<div class="mb-3 text-start">'.$buttonsHtml.'</div>');
-} elseif ($canManage) {
-    $page->addHtml('<div class="mb-3 text-start"><button type="button" id="re-delete-selected-payments" class="btn btn-danger" disabled><i class="bi bi-trash"></i> '.$gL10n->get('RE_DELETE_ALL').'</button></div>');
 }
 
 if (!$canViewAll) {
@@ -192,10 +187,11 @@ $paymentsStyle .= '#table_re_payments thead th:nth-child(5),#table_re_payments t
 $paymentsStyle .= '#table_re_payments thead th:nth-child(6),#table_re_payments tbody td:nth-child(6){text-align:left !important;}'; // Customer
 $paymentsStyle .= '#table_re_payments thead th:nth-child(7),#table_re_payments tbody td:nth-child(7){text-align:left !important;}'; // Total Amount
 $paymentsStyle .= '#table_re_payments thead th:nth-child(8),#table_re_payments tbody td:nth-child(8){text-align:left !important;}'; // Actions
-$paymentsStyle .= '#table_re_payments_wrapper .dataTables_length,#table_re_payments_length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}';
-$paymentsStyle .= '#table_re_payments_wrapper .dataTables_length label,#table_re_payments_length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
-$paymentsStyle .= '#table_re_payments_wrapper .dataTables_length select,#table_re_payments_length select{width:auto;min-width:70px;display:inline-block;}';
-$paymentsStyle .= '#table_re_payments_filter{display:none!important;}';
+$paymentsStyle .= '#table_re_payments_wrapper .dataTables_length,#table_re_payments_length,.dt-length{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}';
+$paymentsStyle .= '#table_re_payments_wrapper .dataTables_length label,#table_re_payments_length label,.dt-length label{margin-bottom:0;display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}';
+$paymentsStyle .= '#table_re_payments_wrapper .dataTables_length select,#table_re_payments_length select,.dt-length select{width:auto;min-width:70px;display:inline-block;}';
+$paymentsStyle .= '#table_re_payments_filter,.dt-search{display:none!important;}';
+$paymentsStyle .= '#re-delete-selected-payments{margin-left:10px;}';
 if ($canViewAll) {
     $paymentsStyle .= '#table_re_payments thead th:first-child:before,#table_re_payments thead th:first-child:after{display:none!important;}';
 }
@@ -247,109 +243,150 @@ if ($canManage) {
     $bulkDeleteUrlJs = json_encode($bulkDeleteUrl);
     $paymentsDeleteConfirm = json_encode($gL10n->get('RE_DELETE_PAYMENT_CONFIRM'));
     $paymentsDeleteError = json_encode('Error deleting selected payments');
+    $deleteButtonLabel = json_encode($gL10n->get('RE_DELETE_ALL'));
     $csrfTokenJs = json_encode($GLOBALS['gCurrentSession']->getCsrfToken());
     $jsPayments = <<<'JS'
-        $(function(){
-            var bulkDeleteUrl = {{BULK_DELETE_URL}};
-            var deleteConfirmMsg = {{DELETE_CONFIRM}};
-            var deleteErrorMsg = {{DELETE_ERROR}};
-            var csrfToken = {{CSRF_TOKEN}};
-            
-            var tableEl = $('#table_re_payments');
-            var dataTable = tableEl.DataTable();
-            var wrapperEl = $('#table_re_payments_wrapper');
-            
-            // Use the existing static button
-            var deleteButtonEl = $('#re-delete-selected-payments');
-            
-            function bindDeleteButton(){
-                if (!deleteButtonEl.length || deleteButtonEl.data('residentsDeleteBound')) {
-                    return;
-                }
-                deleteButtonEl.data('residentsDeleteBound', true).on('click', function(e){
-                    e.preventDefault();
-                    var ids = [];
-                    tableEl.find('tbody input.re-row-select:checked').each(function(){ ids.push($(this).val()); });
-                    if (ids.length === 0) {
-                        return;
-                    }
-                    if (!confirm(deleteConfirmMsg)) { return; }
-                    $.ajax({
-                        type: 'POST',
-                        url: bulkDeleteUrl,
-                        data: { ids: ids, 'admidio-csrf-token': csrfToken },
-                        success: function(){ location.reload(); },
-                        error: function(){ alert(deleteErrorMsg); }
-                    });
-                });
-            }
-            function updateDeleteButtonState(){
-                if (!deleteButtonEl.length) {
-                    return;
-                }
-                var hasSelection = tableEl.find('tbody input.re-row-select:checked').length > 0;
-                deleteButtonEl.prop('disabled', !hasSelection);
-            }
-            bindDeleteButton();
-            dataTable.on('init.dt', function(){
-                updateDeleteButtonState();
-            });
-            var firstHeader = tableEl.find('thead th').first();
-            if (firstHeader.length) {
-                firstHeader.removeClass('sorting sorting_asc sorting_desc');
-            }
-            function syncHeaderCheckboxPayments(){
-                var total = tableEl.find('tbody input.re-row-select').length;
-                var selected = tableEl.find('tbody input.re-row-select:checked').length;
-                var hdr = $('#re-select-all-payments').get(0);
-                if (!hdr) { return; }
-                hdr.indeterminate = selected > 0 && selected < total;
-                hdr.checked = total > 0 && selected === total;
-            }
-            tableEl.find('thead')
-                .on('click', '#re-select-all-payments', function(e){ e.stopPropagation(); })
-                .on('change', '#re-select-all-payments', function(e){
-                    e.stopPropagation();
-                    var checked = this.checked;
-                    tableEl.find('tbody input.re-row-select')
-                        .prop('checked', checked)
-                        .trigger('change');
-                    syncHeaderCheckboxPayments();
-                });
-            function updateInfo(){
-                var pageInfo = dataTable.page.info();
-                var selected = tableEl.find('tbody input.re-row-select:checked').length;
-                var infoEl = wrapperEl.find('.dataTables_info');
-                if (selected > 0){
-                    infoEl.text(selected + ' selected');
-                } else {
-                    infoEl.text('Showing ' + (pageInfo.start + 1) + ' to ' + pageInfo.end + ' of ' + pageInfo.recordsDisplay + ' entries');
-                }
-            }
-            dataTable.on('draw', function(){
-                updateInfo();
-                syncHeaderCheckboxPayments();
-                updateDeleteButtonState();
-            });
-            tableEl.on('change', 'input.re-row-select', function(){
-                updateInfo();
-                syncHeaderCheckboxPayments();
-                updateDeleteButtonState();
-            });
-            updateInfo();
-            syncHeaderCheckboxPayments();
-            updateDeleteButtonState();
+  $(function(){
+    var bulkDeleteUrl = {{BULK_DELETE_URL}};
+    var deleteConfirmMsg = {{DELETE_CONFIRM}};
+    var deleteErrorMsg = {{DELETE_ERROR}};
+    var deleteButtonLabel = {{DELETE_BUTTON_LABEL}};
+    var csrfToken = {{CSRF_TOKEN}};
+    var tableEl = $('#table_re_payments');
+    var dataTable = tableEl.DataTable();
+    var tableWrapperEl = $('#table_re_payments_wrapper');
+    function locateLengthContainer(){
+      var wrapperEl = $('#table_re_payments_wrapper');
+      var lengthEl = $('#table_re_payments_length');
+      if (lengthEl.length) {
+        return lengthEl;
+      }
+      lengthEl = wrapperEl.find('.dt-length');
+      if (lengthEl.length) {
+        return lengthEl;
+      }
+      // Direct lookup as fallback
+      lengthEl = $('.dt-length');
+      if (lengthEl.length) {
+        return lengthEl;
+      }
+      return $();
+    }
+    function gatherSelectedIds(){
+      var ids = [];
+      tableEl.find('tbody input.re-row-select:checked').each(function(){
+        ids.push($(this).val());
+      });
+      return ids;
+    }
+    function ensureDeleteButton(){
+      var lengthEl = locateLengthContainer();
+      if (!lengthEl.length) {
+        return $();
+      }
+      var buttonEl = $('#re-delete-selected-payments');
+      if (buttonEl.length) {
+        return buttonEl;
+      }
+      var newButtonEl = $('<button type="button" id="re-delete-selected-payments" class="btn btn-danger btn-sm ms-2"><i class="bi bi-trash"></i> ' + deleteButtonLabel + '</button>');
+      lengthEl.append(newButtonEl);
+      return newButtonEl;
+    }
+    function bindDeleteButton(buttonEl){
+      if (!buttonEl.length || buttonEl.data('residentsDeleteBound')) {
+        return;
+      }
+      buttonEl.data('residentsDeleteBound', true).on('click', function(e){
+        e.preventDefault();
+        var ids = gatherSelectedIds();
+        if (ids.length === 0) {
+          return;
+        }
+        if (!confirm(deleteConfirmMsg)) { return; }
+        $.ajax({
+          type: 'POST',
+          url: bulkDeleteUrl,
+          data: { ids: ids, 'admidio-csrf-token': csrfToken },
+          success: function(){ location.reload(); },
+          error: function(){ alert(deleteErrorMsg); }
         });
-        JS;
-        $jsPayments = strtr($jsPayments, array(
-            '{{BULK_DELETE_URL}}' => $bulkDeleteUrlJs,
-            '{{DELETE_CONFIRM}}' => $paymentsDeleteConfirm,
-            '{{DELETE_ERROR}}' => $paymentsDeleteError,
-            '{{CSRF_TOKEN}}' => $csrfTokenJs,
-        ));
-        $page->addJavascript("\n".$jsPayments."\n", true);
+      });
+    }
+    function getDeleteButton(){
+      var buttonEl = ensureDeleteButton();
+      bindDeleteButton(buttonEl);
+      return buttonEl;
+    }
+    function updateDeleteButtonState(){
+      var buttonEl = getDeleteButton();
+      if (!buttonEl.length) {
+        return;
+      }
+      var hasSelection = tableEl.find('tbody input.re-row-select:checked').length > 0;
+      buttonEl.prop('disabled', !hasSelection);
+    }
+    var deleteButtonEl = getDeleteButton();
+    dataTable.on('init.dt', function(){
+      deleteButtonEl = getDeleteButton();
+    });
+    var headerEl = tableEl.find('thead');
+    var firstHeader = headerEl.find('th').first();
+    if (firstHeader.length) {
+      firstHeader.removeClass('sorting sorting_asc sorting_desc');
+    }
+    function syncHeaderCheckbox(){
+      var total = tableEl.find('tbody input.re-row-select').length;
+      var selected = tableEl.find('tbody input.re-row-select:checked').length;
+      var hdr = $('#re-select-all-payments').get(0);
+      if (!hdr) { return; }
+      hdr.indeterminate = selected > 0 && selected < total;
+      hdr.checked = total > 0 && selected === total;
+    }
+    function updateInfo(){
+      var pageInfo = dataTable.page.info();
+      var selected = tableEl.find('tbody input.re-row-select:checked').length;
+      var infoEl = tableWrapperEl.find('.dataTables_info');
+      if (selected > 0) {
+        infoEl.text(selected + ' selected');
+      } else {
+        infoEl.text('Showing ' + (pageInfo.start + 1) + ' to ' + pageInfo.end + ' of ' + pageInfo.recordsDisplay + ' entries');
+      }
+      updateDeleteButtonState();
+    }
+    headerEl
+      .on('click', '#re-select-all-payments', function(e){ e.stopPropagation(); })
+      .on('change', '#re-select-all-payments', function(e){
+        e.stopPropagation();
+        var checked = this.checked;
+        tableEl.find('tbody input.re-row-select')
+          .prop('checked', checked)
+          .trigger('change');
+        syncHeaderCheckbox();
+      });
+    dataTable.on('draw', function(){
+      updateInfo();
+      syncHeaderCheckbox();
+      deleteButtonEl = getDeleteButton();
+      updateDeleteButtonState();
+    });
+    tableEl.on('change', 'input.re-row-select', function(){
+      updateInfo();
+      syncHeaderCheckbox();
+    });
+    updateInfo();
+    syncHeaderCheckbox();
+    updateDeleteButtonState();
+  });
+JS;
+    $jsPayments = strtr($jsPayments, array(
+        '{{BULK_DELETE_URL}}' => $bulkDeleteUrlJs,
+        '{{DELETE_CONFIRM}}' => $paymentsDeleteConfirm,
+        '{{DELETE_ERROR}}' => $paymentsDeleteError,
+        '{{DELETE_BUTTON_LABEL}}' => $deleteButtonLabel,
+        '{{CSRF_TOKEN}}' => $csrfTokenJs,
+    ));
+    $page->addJavascript("\n".$jsPayments."\n", true);
 }
 
 $page->addHtml($table->show(false));
-
 

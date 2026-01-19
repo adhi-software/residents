@@ -283,11 +283,17 @@ if ($isAdmin) {
     var dataTable = tableEl.DataTable();
     var wrapperEl = $('#table_re_devices_wrapper');
     function locateLengthContainer(){
+      var wrapperEl = $('#table_re_devices_wrapper');
       var lengthEl = $('#table_re_devices_length');
       if (lengthEl.length) {
         return lengthEl;
       }
-      lengthEl = wrapperEl.find('.dataTables_length');
+      lengthEl = wrapperEl.find('.dt-length');
+      if (lengthEl.length) {
+        return lengthEl;
+      }
+      // Direct lookup as fallback
+      lengthEl = $('.dt-length');
       if (lengthEl.length) {
         return lengthEl;
       }

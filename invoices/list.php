@@ -441,11 +441,17 @@ $jsActions = <<<'JS'
     var dataTable = tableEl.DataTable();
     var tableWrapperEl = $('#table_re_invoices_wrapper');
     function locateLengthContainer(){
+      var wrapperEl = $('#table_re_invoices_wrapper');
       var lengthEl = $('#table_re_invoices_length');
       if (lengthEl.length) {
         return lengthEl;
       }
-      lengthEl = tableWrapperEl.find('.dataTables_length');
+      lengthEl = wrapperEl.find('.dt-length');
+      if (lengthEl.length) {
+        return lengthEl;
+      }
+      // Direct lookup as fallback
+      lengthEl = $('.dt-length');
       if (lengthEl.length) {
         return lengthEl;
       }

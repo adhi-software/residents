@@ -72,11 +72,17 @@ if ($isAdmin) {
     var dataTable = tableEl.DataTable();
     var wrapperEl = $('#residents_chargers_wrapper');
     function locateLengthContainer(){
+      var wrapperEl = $('#residents_chargers_wrapper');
       var lengthEl = $('#residents_chargers_length');
       if (lengthEl.length) {
         return lengthEl;
       }
-      lengthEl = wrapperEl.find('.dataTables_length');
+      lengthEl = wrapperEl.find('.dt-length');
+      if (lengthEl.length) {
+        return lengthEl;
+      }
+      // Direct lookup as fallback
+      lengthEl = $('.dt-length');
       if (lengthEl.length) {
         return lengthEl;
       }
