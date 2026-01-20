@@ -180,7 +180,7 @@ $amountFormatted = number_format((float)$totals['amount'], 2, '.', ',');
 
 $isPaid = !$previewMode && (int)($inv['riv_is_paid'] ?? 0) === 1;
 $statusLabel = $gL10n->get('RE_OPEN');
-$badgeClass = $previewMode ? 'bg-info text-dark' : ($isPaid ? 'bg-success' : 'bg-warning text-dark');
+$badgeClass = $previewMode ? 'bg-secondary' : ($isPaid ? 'bg-success' : 'bg-warning text-dark');
 
 // Paid status label for the top highlight pill.
 $paidStatusLabel = $previewMode ? $gL10n->get('RE_PREVIEW_STATUS') : ($isPaid ? $gL10n->get('RE_PAID') : $gL10n->get('RE_UNPAID'));

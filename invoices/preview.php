@@ -189,13 +189,6 @@ if (!empty($previewData['rows'])) {
         ));
         ++$previewRowCount;
     }
-
-    if ($previewRowCount < 11) {
-        $placeholderColumns = array_fill(0, 8, '<span class="visually-hidden">placeholder</span>');
-        for ($i = $previewRowCount; $i < 11; ++$i) {
-            $previewTable->addRowByArray($placeholderColumns, '', array('class' => 'preview-placeholder-row'));
-    }
-    }
 }
 
 $page->addHtml($previewTable->show(false));
