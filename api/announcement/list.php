@@ -70,8 +70,8 @@ try {
             $catName = $gL10n->get($catName);
     }
 
-        $creatorName = $row['create_name'] ?? '';
-        $changerName = $row['change_name'] ?? '';
+        $creatorName = $row['create_firstname'] . ' ' . $row['create_surname'];
+        $changerName = $row['change_firstname'] . ' ' . $row['change_surname'];
 
         $announcements[] = [
             'id' => (int)$announcementObj->getValue('ann_id'),

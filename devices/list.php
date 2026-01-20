@@ -241,6 +241,8 @@ $tableHeaderStyle .= '#table_re_devices_wrapper .dataTables_length select,#table
 $tableHeaderStyle .= '#table_re_devices thead th:nth-last-child(2){padding-right:34px;}';
 $tableHeaderStyle .= '#table_re_devices thead th:last-child{padding-left:22px;padding-right:22px;}';
 $tableHeaderStyle .= '#table_re_devices_filter{display:none!important;}';
+$tableHeaderStyle .= '#device_filter #q_group { flex: 0 0 auto;}';
+$tableHeaderStyle .= '#device_filter #filter_active_group { align-content: center;}';
 if ($isAdmin) {
     $tableHeaderStyle .= '#table_re_devices thead th:first-child:before,#table_re_devices thead th:first-child:after{display:none!important;}';
 }
