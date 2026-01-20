@@ -395,6 +395,7 @@ $tableHeaderStyle .= 'input.re-filter-checkbox{position:absolute;opacity:0;point
 . '.re-check-square-checked{margin-right:0.35rem;line-height:1;font-size:1.15em;vertical-align:-0.1em;}'
 . '.re-check-square-unchecked{margin-right:0.35rem;display:inline-block;width:1.05em;height:1.05em;border:2px solid currentColor;border-radius:0.15em;opacity:0.7;vertical-align:-0.15em;box-sizing:border-box;}'
 . '.checkbox label{cursor:pointer;}';
+$tableHeaderStyle .= '#invoice_filter #q_group { flex: 0 0 auto;}';
 if ($isAdmin) {
     $tableHeaderStyle .= '#table_re_invoices thead th:first-child:before,#table_re_invoices thead th:first-child:after{display:none!important;}';
 }

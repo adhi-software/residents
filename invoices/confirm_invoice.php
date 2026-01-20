@@ -256,6 +256,13 @@ $jsConfirmDetails = str_replace(
     array($loadUsersUrlJs, json_encode($gL10n->get('RE_ALL')), json_encode($gL10n->get('RE_GENERATE_CONFIRM'))),
     $jsConfirmDetails
 );
+    margin: 0.5rem 0;
+    text-align: start;
+    width: 100%;
+    display: inline-block;
+    max-width: 1000px;
+}';
 $page->addJavascript("\n".$jsConfirmDetails."\n", true);
 $page->addHtml('<div style="height: 50px;"></div>');
+$page->addHtml('<style>'.$tableHeaderStyle.'</style>');
 $page->show();

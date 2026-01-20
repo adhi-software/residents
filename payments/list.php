@@ -192,6 +192,7 @@ $paymentsStyle .= '#table_re_payments_wrapper .dataTables_length label,#table_re
 $paymentsStyle .= '#table_re_payments_wrapper .dataTables_length select,#table_re_payments_length select,.dt-length select{width:auto;min-width:70px;display:inline-block;}';
 $paymentsStyle .= '#table_re_payments_filter,.dt-search{display:none!important;}';
 $paymentsStyle .= '#re-delete-selected-payments{margin-left:10px;}';
+$paymentsStyle .= '#payments_filter #q_group { flex: 0 0 auto;}';
 if ($canViewAll) {
     $paymentsStyle .= '#table_re_payments thead th:first-child:before,#table_re_payments thead th:first-child:after{display:none!important;}';
 }
