@@ -20,6 +20,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
 $device = $data['device'] ?? [];
+$orgId = $_GET['org_id'] ?? $gCurrentOrgId;
 
 if ($username === '' || $password === '') {
     echo json_encode(['error' => 'Username and password are required.']);
@@ -39,7 +40,7 @@ $guser = $gDb->queryPrepared(
             AND u.usr_valid = true
             AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)
         LIMIT 1',
-    [$today, $today, $username, (int) $gCurrentOrgId],
+    [$today, $today, $username, $orgId],
     false
 );
 if ($guser === false) {
@@ -53,6 +54,7 @@ if (!$row) {
 }
 
 $userId = (int) $row['usr_id'];
+$GLOBALS['gCurrentOrgId'] = (int) $orgId;
 
 //Check whether the user is allowed to log in
 validateUserLogin($userId, $password);
