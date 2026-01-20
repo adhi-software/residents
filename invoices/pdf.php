@@ -65,6 +65,9 @@ if ($invoice->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
+// Organization check: invoice must belong to current organization
+residentsValidateOrganization($invoice, 'riv_org_id');
+
 $inv = array(
     'riv_id' => (int)$invoice->getValue('riv_id'),
     'riv_number' => (string)$invoice->getValue('riv_number'),

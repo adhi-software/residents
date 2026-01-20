@@ -30,6 +30,10 @@ $invoice = new TableResidentsInvoice($gDb, $id);
 if ($id > 0 && $invoice->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
+// Organization check: invoice must belong to current organization
+if ($id > 0) {
+    residentsValidateOrganization($invoice, 'riv_org_id');
+}
 if ($id > 0) {
     $isPaidExisting = (int)$invoice->getValue('riv_is_paid') === 1;
     if ($isPaidExisting) {

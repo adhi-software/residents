@@ -33,6 +33,9 @@ if ($charge->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
+// Organization check: charge must belong to current organization
+residentsValidateOrganization($charge, 'rch_org_id');
+
 $deleted = $charge->delete();
 
 $params = array('tab' => 'chargers');

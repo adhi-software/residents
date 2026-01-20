@@ -36,6 +36,9 @@ if ($invoice->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
+// Organization check: invoice must belong to current organization
+residentsValidateOrganization($invoice, 'riv_org_id');
+
 $isPaid = (int)$invoice->getValue('riv_is_paid') === 1;
 if ($isPaid) {
     $gMessage->show($gL10n->get('RE_DELETE_PAID_DENIED'));

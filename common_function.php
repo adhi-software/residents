@@ -658,6 +658,32 @@ function isPaymentAdmin(): bool
 }
 
 /**
+ * Validate that a record belongs to the current organization.
+ * If the record belongs to a different organization, shows an error and exits.
+ *
+ * @param object $record The TableAccess record to validate (must have getValue method)
+ * @param string $orgIdField The field name containing the organization ID (e.g., 'riv_org_id', 'rpa_org_id', 'rch_org_id')
+ * @param bool $useGMessage If true, uses $gMessage->show(), otherwise uses die()
+ * @return void Exits with error if validation fails
+ */
+function residentsValidateOrganization(object $record, string $orgIdField, bool $useGMessage = true): void
+{
+    global $gL10n, $gMessage, $gCurrentOrgId;
+    
+    $recordOrgId = (int)$record->getValue($orgIdField);
+    $currentOrgId = (int)$gCurrentOrgId;
+    
+    if ($recordOrgId !== $currentOrgId) {
+        $errorMsg = $gL10n->get('SYS_NO_RIGHTS');
+        if ($useGMessage && isset($gMessage)) {
+            $gMessage->show($errorMsg);
+        } else {
+            die($errorMsg);
+        }
+    }
+}
+
+/**
     * Check if the current user is leader/administrator of the configured owner group.
     */
 // isResidentsOwnersLeader removed: no longer used after settings simplification

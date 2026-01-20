@@ -33,6 +33,9 @@ if ($paymentRecord->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
+// Organization check: payment must belong to current organization
+residentsValidateOrganization($paymentRecord, 'rpa_org_id');
+
 $ownerId = (int)$paymentRecord->getValue('rpa_usr_id');
 if (!$canViewAll && $ownerId !== (int)$gCurrentUser->getValue('usr_id')) {
     $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));

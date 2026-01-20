@@ -67,6 +67,9 @@ if ($paymentRecord->isNewRecord()) {
     die($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
+// Organization check: payment must belong to current organization
+residentsValidateOrganization($paymentRecord, 'rpa_org_id', false);
+
 $ownerId = (int)$paymentRecord->getValue('rpa_usr_id');
 if (!$isAdmin && $ownerId !== (int)$gCurrentUser->getValue('usr_id')) {
     die($gL10n->get('SYS_NO_RIGHTS'));

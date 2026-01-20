@@ -195,6 +195,9 @@ if ($id > 0) {
         $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
     }
 
+    // Organization check: payment must belong to current organization
+    residentsValidateOrganization($paymentRecord, 'rpa_org_id');
+
     $paymentData = array(
     'rpa_id' => (int)$paymentRecord->getValue('rpa_id'),
     'rpa_usr_id' => (int)$paymentRecord->getValue('rpa_usr_id'),

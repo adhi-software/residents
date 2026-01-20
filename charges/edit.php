@@ -39,6 +39,11 @@ if ($chargeId > 0 && $charge->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
+// Organization check: charge must belong to current organization
+if ($chargeId > 0) {
+    residentsValidateOrganization($charge, 'rch_org_id');
+}
+
 $errors = array();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

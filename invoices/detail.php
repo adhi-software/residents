@@ -150,6 +150,9 @@ if ($previewMode) {
         $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
     }
 
+    // Organization check: invoice must belong to current organization
+    residentsValidateOrganization($invoice, 'riv_org_id');
+
     // Permission check: admins can view all invoices, regular users can only view their own
     $isAdmin = isResidentsAdminBySettings();
     $currentUserId = (int)$gCurrentUser->getValue('usr_id');

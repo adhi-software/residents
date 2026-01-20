@@ -43,6 +43,9 @@ if ($payment->isNewRecord()) {
     $gMessage->show($gL10n->get('SYS_INVALID_PAGE_VIEW'));
 }
 
+// Organization check: payment must belong to current organization
+residentsValidateOrganization($payment, 'rpa_org_id');
+
 if ($payment->getValue('rpa_pay_type') === 'Online') {
     $gMessage->show('Online payments cannot be deleted.');
 }
