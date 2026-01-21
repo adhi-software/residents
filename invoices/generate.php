@@ -153,23 +153,6 @@ try {
         $dueDays = (int)($cfg['defaults']['due_days'] ?? 15);
         if ($dueDays <= 0) { $dueDays = 15; }
         $dueDate = date('Y-m-d', strtotime($invoiceDate . ' +' . $dueDays . ' days'));
-        // Assign a unique invoice number/index from our batch counter.
-        // This avoids duplicate-key errors that would otherwise trigger a separate SQL error page.
-        $index = $nextIndex;
-        while (true) {
-            $number = residentsFormatInvoiceNumber($index);
-            $st = $gDb->queryPrepared($invoiceNumberExistsSql, array($gCurrentOrgId, (string)$number, (int)$index), false);
-            if ($st === false) {
-                throw new RuntimeException('Could not verify invoice number uniqueness.');
-            }
-            $exists = ($st->fetchColumn() !== false);
-            if (!$exists) {
-                break;
-            }
-            ++$index;
-    }
-        $lastNumber = max($lastNumber, $index);
-        $nextIndex = $index + 1; // Increment for the next invoice in this batch
         $noteValue = (string)($row['note'] ?? $noteParam ?? '');
         $items = array();
         $invoiceStart = null; // DATE (Y-m-d)
@@ -229,6 +212,24 @@ try {
         if (empty($items)) {
             continue;
     }
+
+        // Assign a unique invoice number/index from our batch counter.
+        // This avoids duplicate-key errors that would otherwise trigger a separate SQL error page.
+        $index = $nextIndex;
+        while (true) {
+            $number = residentsFormatInvoiceNumber($index);
+            $st = $gDb->queryPrepared($invoiceNumberExistsSql, array($gCurrentOrgId, (string)$number, (int)$index), false);
+            if ($st === false) {
+                throw new RuntimeException('Could not verify invoice number uniqueness.');
+            }
+            $exists = ($st->fetchColumn() !== false);
+            if (!$exists) {
+                break;
+            }
+            ++$index;
+    }
+        $lastNumber = max($lastNumber, $index);
+        $nextIndex = $index + 1; // Increment for the next invoice in this batch
 
         $finalStart = $invoiceStart ?? $periodStart;
         $finalEnd = $invoiceEnd ?? $periodEnd;
