@@ -34,13 +34,13 @@ $selectedInvoiceIds = array_unique(array_filter(array_map('intval', $incomingInv
 
 $selectAll = ((int)admFuncVariableIsValid($_GET, 'select_all', 'int', array('defaultValue' => 0)) === 1);
 
-// Fetch all unpaid invoices for the current user
+// Fetch all unpaid invoices for the current user in the current organization
 $userId = (int)$gCurrentUser->getValue('usr_id');
 $sql = 'SELECT riv_id, riv_number, riv_date, COALESCE(riv_is_paid, 0) AS riv_is_paid 
     FROM ' . TBL_RE_INVOICES . ' 
-    WHERE riv_usr_id = ? AND COALESCE(riv_is_paid, 0) = 0 
+    WHERE riv_usr_id = ? AND riv_org_id = ? AND COALESCE(riv_is_paid, 0) = 0 
     ORDER BY riv_date ASC';
-$stmt = $gDb->queryPrepared($sql, array($userId), false);
+$stmt = $gDb->queryPrepared($sql, array($userId, (int)$gCurrentOrgId), false);
 
 if ($stmt === false) {
     $invoices = array();

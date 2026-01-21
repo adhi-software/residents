@@ -49,14 +49,15 @@ $currency = '';
 $ownerId = 0;
 
 foreach ($invoiceIds as $invId) {
-    $invoiceStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ?', array($invId), false);
+    $invoiceStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ? AND riv_org_id = ?', array($invId, (int)$gCurrentOrgId), false);
     if ($invoiceStmt === false) {
         $gMessage->show($gL10n->get('SYS_DATABASE_ERROR'));
     }
     $invoice = $invoiceStmt->fetch();
     
     if (!$invoice) {
-        continue; // Skip invalid
+        // Invoice not found or belongs to different organization
+        $gMessage->show($gL10n->get('SYS_NO_RIGHTS'));
     }
     
     // Check paid flag
