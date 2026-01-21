@@ -256,6 +256,8 @@ $jsConfirmDetails = str_replace(
     array($loadUsersUrlJs, json_encode($gL10n->get('RE_ALL')), json_encode($gL10n->get('RE_GENERATE_CONFIRM'))),
     $jsConfirmDetails
 );
+$tableHeaderStyle .= '.admidio-form-required-notice {
+    font-size: 9pt;
     margin: 0.5rem 0;
     text-align: start;
     width: 100%;
