@@ -912,9 +912,9 @@ function residentsWriteConfig(array $config): void
     */
 function residentsDeleteConfig(): void
 {
-    global $gDb, $gCurrentOrgId;
+    global $gDb;
     // Escape underscores so LIKE matches literal 'RE__' prefix, not 'RE' + any two chars
-    $gDb->queryPrepared('DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_org_id = ? AND prf_name LIKE ?', array($gCurrentOrgId, 'RE\\_\\_%'), false);
+    $gDb->queryPrepared('DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_name LIKE ?', array('RE\\_\\_%'), false);
 }
 
 function residentsGetDefaultInvoiceNote(?array $config = null): string
