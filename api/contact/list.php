@@ -17,6 +17,23 @@ use Admidio\Users\Entity\User;
 $currentUser = validateApiKey();
 $picPath = THEME_PATH. '/images/no_profile_pic.png';
 
+$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : null;
+$offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
+$searchQuery = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
+
+$pagingEnabled = $limit !== null;
+if ($pagingEnabled) {
+    if ($limit <= 0) {
+        $limit = 50;
+    }
+    if ($limit > 100) {
+        $limit = 100;
+    }
+    if ($offset < 0) {
+        $offset = 0;
+    }
+}
+
 function encodeProfileImage(string $binary): array
 {
     if ($binary === '') {
@@ -62,46 +79,87 @@ if ($users === false) {
 }
 $contacts = [];
 
+$allContacts = [];
 while ($row = $users->fetch()) {
     $user = new User($gDb, $gProfileFields);
     $user->readDataById($row['usr_id']);
     if (!isMemberOfOrganization($user)) {
         continue;
     }
+    
+    $firstName = $user->getValue('FIRST_NAME');
+    $lastName = $user->getValue('LAST_NAME');
+    $email = $user->getValue('EMAIL');
+    
+    // Apply search filter if provided
+    if (!empty($searchQuery)) {
+        $searchLower = strtolower($searchQuery);
+        $matchFound = false;
+        if (stripos($firstName, $searchQuery) !== false) {
+            $matchFound = true;
+        } elseif (stripos($lastName, $searchQuery) !== false) {
+            $matchFound = true;
+        } elseif (stripos($email, $searchQuery) !== false) {
+            $matchFound = true;
+        } elseif (stripos($firstName . ' ' . $lastName, $searchQuery) !== false) {
+            $matchFound = true;
+        }
+        if (!$matchFound) {
+            continue;
+        }
+    }
+    
     $profileBinary = '';
     if ((int) $gSettingsManager->get('profile_photo_storage') === 0) {
         $usr_photo = $user->getValue('usr_photo');
         if (!empty($usr_photo)) {
             $profileBinary = $usr_photo;
-    }
+        }
     }
     else {
         $file = ADMIDIO_PATH . FOLDER_DATA . '/user_profile_photos/' . $user->getValue('usr_id') . '.jpg';
         if (is_file($file)) {
             $profileBinary = (string) @file_get_contents($file);
-    }
+        }
     }
 
     $encodedProfile = encodeProfileImage($profileBinary);
-    $contacts[] = [
-    'id'            => $row['usr_id'],
-    'login'         => $user->getValue('usr_login_name'),
-    'first_name'    => $user->getValue('FIRST_NAME'),
-    'last_name'     => $user->getValue('LAST_NAME'),
-    'email'         => $user->getValue('EMAIL'),
-    'gender'        => $user->getValue('GENDER'),
-    'street'        => $user->getValue('STREET'),
-    'post_code'     => $user->getValue('POSTCODE'),
-    'city'          => $user->getValue('CITY'),
-    'country'       => $user->getValue('COUNTRY'),
-    'phone'         => $user->getValue('PHONE'),
-    'mobile'        => $user->getValue('MOBILE'),
-    'birthday'      => $user->getValue('BIRTHDAY'),
-    'website'       => $user->getValue('WEBSITE'),
-    'profile'           => $encodedProfile['profile'],
-    'profile_mime'      => $encodedProfile['profile_mime'],
-    'profile_has_image' => $encodedProfile['profile_has_image']
+    $allContacts[] = [
+        'id'            => $row['usr_id'],
+        'login'         => $user->getValue('usr_login_name'),
+        'first_name'    => $firstName,
+        'last_name'     => $lastName,
+        'email'         => $email,
+        'gender'        => $user->getValue('GENDER'),
+        'street'        => $user->getValue('STREET'),
+        'post_code'     => $user->getValue('POSTCODE'),
+        'city'          => $user->getValue('CITY'),
+        'country'       => $user->getValue('COUNTRY'),
+        'phone'         => $user->getValue('PHONE'),
+        'mobile'        => $user->getValue('MOBILE'),
+        'birthday'      => $user->getValue('BIRTHDAY'),
+        'website'       => $user->getValue('WEBSITE'),
+        'profile'           => $encodedProfile['profile'],
+        'profile_mime'      => $encodedProfile['profile_mime'],
+        'profile_has_image' => $encodedProfile['profile_has_image']
     ];
 }
 
-echo json_encode([ 'contacts' => $contacts ]);
+$totalCount = count($allContacts);
+
+if ($pagingEnabled) {
+    $contacts = array_slice($allContacts, $offset, $limit);
+    $hasMore = ($offset + count($contacts)) < $totalCount;
+    
+    echo json_encode([
+        'contacts' => $contacts,
+        'paging' => [
+            'offset' => $offset,
+            'limit' => $limit,
+            'total' => $totalCount,
+            'hasMore' => $hasMore
+        ]
+    ]);
+} else {
+    echo json_encode([ 'contacts' => $allContacts ]);
+}

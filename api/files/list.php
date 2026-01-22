@@ -17,14 +17,32 @@ use Admidio\Documents\Entity\Folder;
 validateApiKey();
 
 $folderUuid = admFuncVariableIsValid($_GET, 'folder_uuid', 'string');
+$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : null;
+$offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
+
+$pagingEnabled = $limit !== null;
+if ($pagingEnabled) {
+    if ($limit <= 0) {
+        $limit = 50;
+    }
+    if ($limit > 100) {
+        $limit = 100;
+    }
+    if ($offset < 0) {
+        $offset = 0;
+    }
+}
 
 /**
     * Return current folder + immediate children (folders + files).
     *
     * @param string $startFolderUuid
+    * @param bool $pagingEnabled
+    * @param int $offset
+    * @param int $limit
     * @return array<string, mixed>
     */
-function getFolderContents(string $startFolderUuid): array
+function getFolderContents(string $startFolderUuid, bool $pagingEnabled = false, int $offset = 0, int $limit = 50): array
 {
     global $gDb;
 
@@ -98,14 +116,27 @@ function getFolderContents(string $startFolderUuid): array
         return $nameA <=> $nameB;
     });
 
+    $paging = null;
+    if ($pagingEnabled) {
+        $total = count($entries);
+        $entries = array_slice($entries, $offset, $limit);
+        $paging = array(
+            'limit' => $limit,
+            'offset' => $offset,
+            'total' => $total,
+            'hasMore' => ($offset + count($entries)) < $total,
+        );
+    }
+
     return array(
     'currentFolder' => $current,
     'entries' => $entries,
+    'paging' => $paging,
     );
 }
 
 try {
-    $payload = getFolderContents((string) $folderUuid);
+    $payload = getFolderContents((string) $folderUuid, $pagingEnabled, $offset, (int) $limit);
     echo json_encode($payload);
 } catch (AdmException $e) {
     $msg = (string) $e->getMessage();

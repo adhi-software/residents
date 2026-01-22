@@ -1623,13 +1623,15 @@ function handleIncorrectPasswordLogin(User $user): string
     if ($user->getValue('usr_number_invalid') >= User::MAX_INVALID_LOGINS) {
         $user->clear();
 
-        echo json_encode(['error' => 'You have tried to login too many times recently using a wrong password.For security reasons your account has been locked for 15 minutes']);
+        http_response_code(429);
+        echo json_encode(['error' => 'You have tried to login too many times recently using a wrong password. For security reasons your account has been locked for 15 minutes.']);
         exit;
     }
 
     $user->clear();
 
-    echo json_encode(['error' => 'Password is incorrect']);
+    http_response_code(401);
+    echo json_encode(['error' => 'Invalid username or password']);
     exit;
 }
 
@@ -1639,7 +1641,8 @@ function validateUserLogin(int $userId, string $password){
     $user->readDataById($userId);
     
     if (hasMaxInvalidLogins($user)) {
-        echo json_encode(['error' => 'You have tried to login too many times recently using a wrong password.For security reasons your account has been locked for 15 minutes']);
+        http_response_code(429);
+        echo json_encode(['error' => 'You have tried to login too many times recently using a wrong password. For security reasons your account has been locked for 15 minutes.']);
         exit;
     }
     
@@ -1648,7 +1651,8 @@ function validateUserLogin(int $userId, string $password){
     }
     
     if (!isMemberOfOrganization($user)) {
-        echo json_encode(['error' => 'Your login data were correct but you are not an active member of this organization']);
+        http_response_code(403);
+        echo json_encode(['error' => 'Your login data were correct but you are not an active member of this organization.']);
         exit;
     }
 }

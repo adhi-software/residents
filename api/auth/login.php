@@ -23,6 +23,7 @@ $device = $data['device'] ?? [];
 $orgId = $_GET['org_id'] ?? $gCurrentOrgId;
 
 if ($username === '' || $password === '') {
+    http_response_code(400);
     echo json_encode(['error' => 'Username and password are required.']);
     exit;
 }
@@ -49,7 +50,8 @@ if ($guser === false) {
 $row = $guser->fetch();
 
 if (!$row) {
-    echo json_encode(['error' => 'Invalid user name']);
+    http_response_code(401);
+    echo json_encode(['error' => 'Invalid username or password']);
     exit;
 }
 
@@ -65,9 +67,9 @@ if (!is_array($device)
     || empty($device['platform'])
     || empty($device['brand'])
     || empty($device['model'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Device information is required.']);
-        exit;
+    http_response_code(400);
+    echo json_encode(['error' => 'Device information is required.']);
+    exit;
 }
 
 $platform = (string) $device['platform'];

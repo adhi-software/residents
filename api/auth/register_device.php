@@ -19,6 +19,7 @@ $password = $data['password'] ?? '';
 $device = $data['device'] ?? [];
 
 if ($username === '' || $password === '') {
+    http_response_code(400);
     echo json_encode(['error' => 'Username and password are required.']);
     exit;
 }
@@ -46,7 +47,8 @@ if ($guser === false) {
 $row = $guser->fetch();
 
 if (!$row) {
-    echo json_encode(['error' => 'Invalid user name']);
+    http_response_code(401);
+    echo json_encode(['error' => 'Invalid username or password']);
     exit;
 }
 
@@ -57,6 +59,7 @@ validateUserLogin($userId, $password);
 
 // Ensure the user belongs to the current organization
 if ($currentOrgId > 0 && !isMember($userId)) {
+    http_response_code(403);
     echo json_encode(['error' => 'User has no active membership in this organization.']);
     exit;
 }
@@ -66,8 +69,9 @@ if (!is_array($device)
     || empty($device['platform'])
     || empty($device['brand'])
     || empty($device['model'])) {
-        echo json_encode(['error' => 'Device information is required.']);
-        exit;
+    http_response_code(400);
+    echo json_encode(['error' => 'Device information is required.']);
+    exit;
 }
 
 $platform = (string) $device['platform'];
