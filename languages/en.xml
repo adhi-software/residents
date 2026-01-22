@@ -380,7 +380,7 @@
     <string name="MOB_PROFILE_UPDATE_FAILED">Failed to update profile</string>
     <string name="MOB_PROFILE_CLEAR_CREDENTIALS_FAILED">Unable to clear saved credentials.</string>
     <string name="MOB_PROFILE_LOGOUT_FAILED">Unable to logout</string>
-    <string name="MOB_PROFILE_PHOTO_CONFIRM">Are you sure you want to remove profile?</string>
+    <string name="MOB_PROFILE_PHOTO_CONFIRM">Are you sure you want to remove profile photo?</string>
 
     <!-- Mobile App Labels - Auth / Login -->
     <string name="MOB_AUTH_LOGIN">Login</string>
