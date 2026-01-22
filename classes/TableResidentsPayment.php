@@ -270,6 +270,8 @@ class TableResidentsPayment extends TableResidentsBase
             return array($currentUserId => residentsFetchUserNameById($currentUserId));
     }
 
+        global $gCurrentOrgId;
+
         $sql = 'SELECT DISTINCT u.usr_id,
                         (SELECT usd_value FROM ' . TBL_USER_DATA . ' WHERE usd_usr_id = u.usr_id AND usd_usf_id = ?) AS first_name,
                         (SELECT usd_value FROM ' . TBL_USER_DATA . ' WHERE usd_usr_id = u.usr_id AND usd_usf_id = ?) AS last_name
@@ -277,12 +279,20 @@ class TableResidentsPayment extends TableResidentsBase
 
         $params = array($firstNameFieldId, $lastNameFieldId);
 
-        if ($groupId > 0) {
-            $sql .= ' JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id AND m.mem_rol_id = ? AND m.mem_end > NOW()';
-            $params[] = $groupId;
-    }
+        // Always join to scope users to the current organization
+        $sql .= ' JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id AND m.mem_end > NOW()';
+        $sql .= ' JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = 1';
+        $sql .= ' JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)';
+        $params[] = (int)$gCurrentOrgId;
 
-        $sql .= ' WHERE u.usr_valid = 1
+        $where = array('u.usr_valid = 1');
+
+        if ($groupId > 0) {
+            $where[] = 'm.mem_rol_id = ?';
+            $params[] = $groupId;
+        }
+
+        $sql .= ' WHERE ' . implode(' AND ', $where) . '
                             ORDER BY last_name, first_name';
 
         $statement = $database->queryPrepared($sql, $params, false);
