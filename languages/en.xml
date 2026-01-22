@@ -367,7 +367,7 @@
     <!-- Mobile App Labels - Profile -->
     <string name="MOB_PROFILE_PHOTO">Profile Photo</string>
     <string name="MOB_PROFILE_UPLOADING">Uploading...</string>
-    <string name="MOB_PROFILE_CHANGE_PHOTO">Change Photo</string>
+    <string name="MOB_PROFILE_CHANGE_PHOTO">Upload Photo</string>
     <string name="MOB_PROFILE_YOUR_DEVICE">Your Device</string>
     <string name="MOB_PROFILE_USERNAME">Username</string>
     <string name="MOB_PROFILE_SERVER_URL">Server URL</string>
