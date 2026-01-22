@@ -20,6 +20,15 @@ require_once(__DIR__ . '/ccavenue_crypto.php');
 
 global $gDb, $gCurrentUser, $gCurrentOrgId, $gSettingsManager, $gL10n, $gProfileFields;
 
+// SECURITY: Validate CSRF token for POST requests (web payment initiation)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['invoice_ids'])) {
+    try {
+        SecurityUtils::validateCsrfToken($_POST['admidio-csrf-token'] ?? '');
+    } catch (AdmException $e) {
+        $gMessage->show($gL10n->get('SYS_INVALID_CSRF_TOKEN'));
+    }
+}
+
 // Validate Configuration
 if (empty(CCAVENUE_MERCHANT_ID) || empty(CCAVENUE_ACCESS_CODE) || empty(CCAVENUE_WORKING_KEY) || empty(CCAVENUE_API_URL)) {
     $gMessage->show($gL10n->get('RE_PG_CONFIG_MISSING'));
@@ -70,7 +79,7 @@ foreach ($invoiceIds as $invId) {
     if ($ownerId === 0) {
         $ownerId = (int)$invoice['riv_usr_id'];
     } elseif ($ownerId !== (int)$invoice['riv_usr_id']) {
-        $gMessage->show('All invoices must belong to the same user.');
+        $gMessage->show($gL10n->get('RE_PG_INVOICES_SAME_USER'));
     }
     
     // Add to total
@@ -91,11 +100,16 @@ if (!$isAdmin && $ownerId !== (int)$gCurrentUser->getValue('usr_id')) {
 // Use the first invoice ID for legacy checks/references if needed, or just 0
 $primaryInvoiceId = $invoiceIds[0];
 
+// Mark OLD initiated payments as TIMEOUT first (global check)
+// This must happen BEFORE checking for recent initiated payments
+residentsCheckPaymentTimeouts();
+
 // Check for recent initiated payments (timeout from config or default 15 mins)
 $timeoutMins = isset($pgConf['timeout']) && (int)$pgConf['timeout'] > 0 ? (int)$pgConf['timeout'] : 15;
 $timeoutTime = date('Y-m-d H:i:s', strtotime('-' . $timeoutMins . ' minutes'));
 
-// Check if ANY of the selected invoices have a recent pending payment
+// Check if ANY of the selected invoices have a recent pending payment (status = IT only)
+// Payments with SU (success), FA (failure), or TO (timeout) status will NOT block new transactions
 $initiatedInvoices = array();
 foreach ($invoiceIds as $invId) {
     // Check for RECENTLY INITIATED payments (within last X mins)
@@ -121,11 +135,30 @@ if (!empty($initiatedInvoices)) {
     $gMessage->show(sprintf($gL10n->get('RE_PAYMENT_ALREADY_INITIATED'), $timeoutMins) . ' (Invoices: ' . implode(', ', $initiatedInvoices) . ')');
 }
 
-// Mark OLD initiated payments as TIMEOUT (global check)
-// Pass custom timeout to the function if possible, or update the function.
-// For now, residentsCheckPaymentTimeouts() likely uses a hardcoded value or needs update.
-// We will look at that function later if needed, but for now we proceed.
-residentsCheckPaymentTimeouts();
+// Check if ANY of the selected invoices already have a successful payment (status = SU)
+$alreadyPaidInvoices = array();
+foreach ($invoiceIds as $invId) {
+    $checkPaidSql = 'SELECT COUNT(*)
+            FROM ' . TBL_RE_TRANS_ITEMS . ' i
+            JOIN ' . TBL_RE_TRANS . ' p ON p.rtr_id = i.rti_pg_payment_id
+            WHERE i.rti_inv_id = ? AND p.rtr_status = ?';
+    $checkPaidStmt = $gDb->queryPrepared($checkPaidSql, array($invId, 'SU'), false);
+    if ($checkPaidStmt === false) {
+        $gMessage->show($gL10n->get('SYS_DATABASE_ERROR'));
+    }
+    if ($checkPaidStmt->fetchColumn() > 0) {
+        $invNumStmt = $gDb->queryPrepared('SELECT riv_number FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ?', array($invId), false);
+        if ($invNumStmt === false) {
+            $gMessage->show($gL10n->get('SYS_DATABASE_ERROR'));
+        }
+        $invNum = $invNumStmt->fetchColumn();
+        $alreadyPaidInvoices[] = $invNum;
+    }
+}
+
+if (!empty($alreadyPaidInvoices)) {
+    $gMessage->show($gL10n->get('RE_PAYMENT_ALREADY_PAID') . ' (Invoices: ' . implode(', ', $alreadyPaidInvoices) . ')');
+}
 
 $isAdmin = isResidentsAdmin();
 $ownerId = (int)$invoice['riv_usr_id'];

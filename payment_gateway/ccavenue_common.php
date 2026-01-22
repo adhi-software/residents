@@ -29,11 +29,69 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
         empty(CCAVENUE_WORKING_KEY) ||
         empty(CCAVENUE_API_URL)
     ) {
-        return ['error' => 'CCAvenue is not configured. Please contact administrator.'];
+        return ['error' => 'CCAvenue is not configured. Please contact administrator.', 'error_code' => 'RE_PG_NOT_CONFIGURED'];
     }
 
     if (empty($invoiceIds)) {
-        return ['error' => 'No invoices selected'];
+        return ['error' => 'No invoices selected', 'error_code' => 'RE_PG_NO_INVOICES'];
+    }
+
+    // Mark OLD initiated payments as TIMEOUT first (global check)
+    // This must happen BEFORE checking for recent initiated payments
+    residentsCheckPaymentTimeouts();
+
+    // Check for recent initiated payments (timeout from config or default 15 mins)
+    $timeoutMins = isset($pgConf['timeout']) && (int)$pgConf['timeout'] > 0 ? (int)$pgConf['timeout'] : 15;
+    $timeoutTime = date('Y-m-d H:i:s', strtotime('-' . $timeoutMins . ' minutes'));
+
+    // Check if ANY of the selected invoices have a recent pending payment (status = IT only)
+    // Payments FA (failure), or TO (timeout) status will NOT block new transactions
+    $initiatedInvoices = [];
+    foreach ($invoiceIds as $invId) {
+        $invId = (int)$invId;
+        $checkRecentSql = 'SELECT COUNT(*)
+            FROM ' . TBL_RE_TRANS_ITEMS . ' i
+            JOIN ' . TBL_RE_TRANS . ' p ON p.rtr_id = i.rti_pg_payment_id
+            WHERE i.rti_inv_id = ? AND p.rtr_status = ? AND p.rtr_timestamp_create >= ?';
+        $checkRecentStmt = $gDb->queryPrepared($checkRecentSql, [$invId, 'IT', $timeoutTime], false);
+        if ($checkRecentStmt !== false && $checkRecentStmt->fetchColumn() > 0) {
+            $invNumStmt = $gDb->queryPrepared('SELECT riv_number FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ?', [$invId], false);
+            $invNum = $invNumStmt !== false ? $invNumStmt->fetchColumn() : $invId;
+            $initiatedInvoices[] = $invNum ?: $invId;
+        }
+    }
+
+    if (!empty($initiatedInvoices)) {
+        return [
+            'error' => 'A payment was already initiated for invoice(s) ' . implode(', ', $initiatedInvoices) . '. Please wait ' . $timeoutMins . ' minutes before trying again.',
+            'error_code' => 'RE_PG_PAYMENT_INITIATED',
+            'invoices' => implode(', ', $initiatedInvoices),
+            'timeout' => $timeoutMins
+        ];
+    }
+
+    // Check if ANY of the selected invoices already have a successful payment (status = SU)
+    $alreadyPaidInvoices = [];
+    foreach ($invoiceIds as $invId) {
+        $invId = (int)$invId;
+        $checkPaidSql = 'SELECT COUNT(*)
+            FROM ' . TBL_RE_TRANS_ITEMS . ' i
+            JOIN ' . TBL_RE_TRANS . ' p ON p.rtr_id = i.rti_pg_payment_id
+            WHERE i.rti_inv_id = ? AND p.rtr_status = ?';
+        $checkPaidStmt = $gDb->queryPrepared($checkPaidSql, [$invId, 'SU'], false);
+        if ($checkPaidStmt !== false && $checkPaidStmt->fetchColumn() > 0) {
+            $invNumStmt = $gDb->queryPrepared('SELECT riv_number FROM ' . TBL_RE_INVOICES . ' WHERE riv_id = ?', [$invId], false);
+            $invNum = $invNumStmt !== false ? $invNumStmt->fetchColumn() : $invId;
+            $alreadyPaidInvoices[] = $invNum ?: $invId;
+        }
+    }
+
+    if (!empty($alreadyPaidInvoices)) {
+        return [
+            'error' => 'Invoice(s) ' . implode(', ', $alreadyPaidInvoices) . ' already have a successful payment. Cannot initiate another payment.',
+            'error_code' => 'RE_PG_ALREADY_PAID',
+            'invoices' => implode(', ', $alreadyPaidInvoices)
+        ];
     }
 
     // Validate invoices & calculate total
@@ -50,26 +108,26 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
             false
         );
         if ($stmt === false) {
-            return ['error' => 'Database error'];
+            return ['error' => 'Database error', 'error_code' => 'RE_PG_DATABASE_ERROR'];
         }
         $invoice = $stmt->fetch();
 
         if (!$invoice) {
-            return ['error' => 'Invalid invoice'];
+            return ['error' => 'Invalid invoice', 'error_code' => 'RE_PG_INVALID_INVOICE'];
         }
 
         if ((int)$invoice['riv_is_paid'] === 1) {
-            return ['error' => 'Invoice already paid'];
+            return ['error' => 'Invoice already paid', 'error_code' => 'RE_PG_INVOICE_PAID'];
         }
 
         if ($ownerId === 0) {
             $ownerId = (int)$invoice['riv_usr_id'];
         } elseif ($ownerId !== (int)$invoice['riv_usr_id']) {
-            return ['error' => 'Invoices must belong to same user'];
+            return ['error' => 'Invoices must belong to same user', 'error_code' => 'RE_PG_INVOICES_SAME_USER'];
         }
 
         if ($ownerId !== $userId) {
-            return ['error' => 'Unauthorized invoice access'];
+            return ['error' => 'Unauthorized invoice access', 'error_code' => 'RE_PG_UNAUTHORIZED'];
         }
 
         $totals = residentsGetInvoiceTotals($invId);
@@ -78,7 +136,7 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
     }
 
     if ($totalAmount <= 0) {
-        return ['error' => 'Invalid payment amount'];
+        return ['error' => 'Invalid payment amount', 'error_code' => 'RE_PG_INVALID_AMOUNT'];
     }
 
     // Determine redirect URLs based on source
@@ -121,7 +179,7 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
         ],
         false
     ) === false) {
-        return ['error' => 'Failed to create initiated payment'];
+        return ['error' => 'Failed to create initiated payment', 'error_code' => 'RE_PG_CREATE_FAILED'];
     }
 
     $paymentId = (int)$gDb->lastInsertId();
@@ -153,7 +211,7 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
             ],
             false
         ) === false) {
-            return ['error' => 'Failed to create initiated payment items'];
+            return ['error' => 'Failed to create initiated payment items', 'error_code' => 'RE_PG_ITEMS_FAILED'];
         }
     }
 
@@ -178,6 +236,13 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
     $merchantStr = rtrim($merchantStr, '&');
 
     $encryptedData = encrypt_ccavenue($merchantStr, CCAVENUE_WORKING_KEY);
+
+    // Save request data to rtr_pg_request
+    $gDb->queryPrepared(
+        'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_request = ?, rtr_timestamp_change = NOW() WHERE rtr_id = ?',
+        [$merchantStr, $paymentId],
+        false
+    );
 
     return [
         'success'      => true,

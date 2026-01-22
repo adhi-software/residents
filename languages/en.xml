@@ -71,6 +71,7 @@
     <string name="RE_PAYMENT_MSG_MISSING_ORDER">We couldn&apos;t find the payment that was referenced.</string>
     <string name="RE_PAYMENT_MSG_PAYMENT_NOT_FOUND">This payment record no longer exists. Please start over.</string>
     <string name="RE_PAYMENT_MSG_PROCESSING_ERROR">Something went wrong while finalizing the payment. Please try again later.</string>
+    <string name="RE_PAYMENT_MSG_DB_UPDATE_FAILED">Failed to save payment details. Please contact support.</string>
     <string name="RE_PAYMENT_MSG_UNKNOWN">The payment failed for an unknown reason. Please contact support if it keeps happening.</string>
     <string name="RE_PAYMENT_NUMBER">Payment #</string>
     <string name="RE_PAYMENT_METHOD">Payment method</string>
@@ -99,6 +100,7 @@
     <string name="RE_STATUS_ABORTED">Aborted</string>
     <string name="RE_INVOICE_ALREADY_PAID">This invoice has already been paid.</string>
     <string name="RE_PAYMENT_ALREADY_INITIATED">A payment for this invoice is already in progress. Please wait %s minutes before trying again.</string>
+    <string name="RE_PAYMENT_ALREADY_PAID">A successful payment already exists for the selected invoice(s).</string>
     <string name="RE_TRANSACTION_ID">Transaction ID</string>
     <string name="RE_ALL">All</string>
     <string name="RE_REFERENCE_NUMBER">Receipt No</string>
@@ -181,4 +183,283 @@
     <string name="RE_CLOSED">Closed</string>
     <string name="RE_SEARCH">Search</string>
     <string name="RE_GROUPS_ROLES">Groups &amp; Roles</string>
+
+    <!-- Mobile App Labels - Navigation -->
+    <string name="MOB_NAV_HOME">Home</string>
+    <string name="MOB_NAV_CONTACTS">Contacts</string>
+    <string name="MOB_NAV_BILLING">Billing</string>
+    <string name="MOB_NAV_MESSAGES">Messages</string>
+    <string name="MOB_NAV_PHOTOS">Photos</string>
+    <string name="MOB_NAV_PROFILE">Profile</string>
+    <string name="MOB_NAV_SETTINGS">Settings</string>
+    <string name="MOB_NAV_ABOUT">About Us</string>
+    <string name="MOB_NAV_INVOICES">Invoices</string>
+    <string name="MOB_NAV_PAYMENTS">Payments</string>
+    <string name="MOB_NAV_EMAIL">Email</string>
+
+    <!-- Mobile App Labels - Sub-Tab Navigation -->
+    <string name="MOB_TAB_ANNOUNCEMENTS">Announcements</string>
+    <string name="MOB_TAB_EVENTS">Events</string>
+    <string name="MOB_TAB_FILES">Files</string>
+
+    <!-- Mobile App Labels - Screen Headers -->
+    <string name="MOB_HEADER_INVOICE_DETAIL">Invoice Detail</string>
+    <string name="MOB_HEADER_CONFIRM_PAYMENT">Confirm Payment</string>
+    <string name="MOB_HEADER_PAYMENT_DETAILS">Payment Details</string>
+    <string name="MOB_HEADER_CONTACT_DETAILS">Contact Details</string>
+    <string name="MOB_HEADER_ALBUM">Album</string>
+
+    <!-- Mobile App Labels - Common -->
+    <string name="MOB_LOADING">Loading...</string>
+    <string name="MOB_TRY_AGAIN">Try again</string>
+    <string name="MOB_RETRY">Retry</string>
+    <string name="MOB_CANCEL">Cancel</string>
+    <string name="MOB_DELETE">Delete</string>
+    <string name="MOB_OK">OK</string>
+    <string name="MOB_DONE">Done</string>
+    <string name="MOB_CONFIRM">Confirm</string>
+    <string name="MOB_APPLY">Apply</string>
+    <string name="MOB_CLEAR">Clear</string>
+    <string name="MOB_FILTER">Filter</string>
+    <string name="MOB_APPLY_FILTER">Apply Filter</string>
+    <string name="MOB_DOWNLOAD">Download</string>
+    <string name="MOB_SHARE">Share</string>
+    <string name="MOB_SEND">Send</string>
+    <string name="MOB_SAVE">Save</string>
+    <string name="MOB_EDIT">Edit</string>
+    <string name="MOB_SELECT">Select</string>
+    <string name="MOB_SELECTED">selected</string>
+    <string name="MOB_OFFLINE">Offline</string>
+    <string name="MOB_ERROR">Error</string>
+    <string name="MOB_NO_DATA">No data found</string>
+
+    <!-- Mobile App Labels - About Us -->
+    <string name="MOB_ABOUT_UNABLE_LOAD">Unable to load version information</string>
+    <string name="MOB_ABOUT_ADMIDIO_VERSION">Admidio Version</string>
+    <string name="MOB_ABOUT_RESIDENTS_VERSION">Residents Version</string>
+    <string name="MOB_ABOUT_BUILT_BY">Built by</string>
+
+    <!-- Mobile App Labels - Invoice -->
+    <string name="MOB_INVOICE_PAY_NOW">Pay Now</string>
+    <string name="MOB_INVOICE_LOADING">Loading Invoices...</string>
+    <string name="MOB_INVOICE_NO_INVOICES">No invoices found.</string>
+    <string name="MOB_INVOICE_GROUP">Group</string>
+    <string name="MOB_INVOICE_USER">User</string>
+    <string name="MOB_INVOICE_SELECT_GROUP">Select Group</string>
+    <string name="MOB_INVOICE_SELECT_USER">Select User</string>
+    <string name="MOB_INVOICE_STATUS">Status</string>
+    <string name="MOB_INVOICE_ALL">All</string>
+    <string name="MOB_INVOICE_PAID">Paid</string>
+    <string name="MOB_INVOICE_UNPAID">Unpaid</string>
+    <string name="MOB_INVOICE_DUE">Due</string>
+    <string name="MOB_INVOICE_LOADING_DETAILS">Loading details...</string>
+    <string name="MOB_INVOICE_NOT_AVAILABLE">Invoice not available</string>
+    <string name="MOB_INVOICE_NUMBER">Invoice #</string>
+    <string name="MOB_INVOICE_USERNAME">Username</string>
+    <string name="MOB_INVOICE_PERIOD">Period</string>
+    <string name="MOB_INVOICE_DATE">Invoice Date</string>
+    <string name="MOB_INVOICE_DUE_DATE">Due Date</string>
+    <string name="MOB_INVOICE_ITEMS">Invoice Items</string>
+    <string name="MOB_INVOICE_TOTAL">Total</string>
+    <string name="MOB_INVOICE_NOTES">Notes</string>
+    <string name="MOB_INVOICE_DOWNLOAD_PDF">Download PDF</string>
+    <string name="MOB_INVOICE_SECURE_PAYMENT">Secure Payment</string>
+    <string name="MOB_INVOICE_PAYMENT_SUCCESS">Your payment has been processed successfully.</string>
+    <string name="MOB_INVOICE_PAYMENT_FAILED">Your payment could not be completed.</string>
+    <string name="MOB_INVOICE_NO_SELECTED">No invoices selected</string>
+    <string name="MOB_INVOICE_SERVER_UNAVAILABLE">Server URL is not available</string>
+    <string name="MOB_INVOICE_START_DATE">Start Date</string>
+    <string name="MOB_INVOICE_END_DATE">End Date</string>
+
+    <!-- Mobile App Labels - Payments -->
+    <string name="MOB_PAYMENT_TOTAL_PAID">Total Paid</string>
+    <string name="MOB_PAYMENT_TYPE">Type</string>
+    <string name="MOB_PAYMENT_DATE">Payment Date</string>
+    <string name="MOB_PAYMENT_NO_PAYMENTS">No payments found.</string>
+    <string name="MOB_PAYMENT_LOADING">Loading payments...</string>
+
+    <!-- Mobile App Labels - Messages -->
+    <string name="MOB_MSG_INBOX">Inbox</string>
+    <string name="MOB_MSG_LOADING">Loading messages...</string>
+    <string name="MOB_MSG_UNABLE_LOAD">Unable to load messages</string>
+    <string name="MOB_MSG_NO_CONVERSATIONS">No conversations yet.</string>
+    <string name="MOB_MSG_NO_EMAILS">No emails yet.</string>
+    <string name="MOB_MSG_DELETE_TITLE">Delete Conversation</string>
+    <string name="MOB_MSG_DELETE_CONFIRM">This removes the thread for you without notifying others.</string>
+    <string name="MOB_MSG_RECIPIENTS">Recipients</string>
+    <string name="MOB_MSG_SELECT_CONTACT">Select contact</string>
+    <string name="MOB_MSG_CONTACT">Contact</string>
+    <string name="MOB_MSG_START_CHAT">Start a private chat</string>
+    <string name="MOB_MSG_PICK_MEMBER">Pick a member and add a subject to continue.</string>
+    <string name="MOB_MSG_SELECT_MEMBER">Select one member to start the chat.</string>
+    <string name="MOB_MSG_DUPLICATES_REMOVED">Duplicates were removed. Review and send again.</string>
+    <string name="MOB_MSG_MESSAGE">Message</string>
+    <string name="MOB_MSG_UNAVAILABLE">Message unavailable.</string>
+    <string name="MOB_MSG_BACK_INBOX">Back to inbox</string>
+    <string name="MOB_MSG_SENDER">Sender</string>
+    <string name="MOB_MSG_RECIPIENT">Recipient</string>
+    <string name="MOB_MSG_DELETE_INBOX">This removes the thread from your inbox.</string>
+    <string name="MOB_MSG_UNABLE_SEND">Unable to send</string>
+    <string name="MOB_MSG_TO">To</string>
+    <string name="MOB_MSG_SUBJECT">Subject</string>
+    <string name="MOB_MSG_SUBJECT_PLACEHOLDER">Enter subject...</string>
+    <string name="MOB_MSG_MESSAGE_PLACEHOLDER">Type your message...</string>
+    <string name="MOB_MSG_UNTITLED">Untitled</string>
+    <string name="MOB_MSG_ATTACHMENTS">Attachments</string>
+    <string name="MOB_MSG_ATTACH_FILES">Attach files</string>
+    <string name="MOB_MSG_FILE_HINT">Common formats under 10 MB work best.</string>
+    <string name="MOB_MSG_SENDING">Sending...</string>
+    <string name="MOB_MSG_PREPARING">Preparing...</string>
+    <string name="MOB_MSG_SEARCH_PLACEHOLDER">Search recipients...</string>
+    <string name="MOB_MSG_NO_MATCHES">No matches for that search.</string>
+    <string name="MOB_MSG_MEMBER">Member</string>
+    <string name="MOB_MSG_SENT_SUCCESS">Your message is on its way.</string>
+    <string name="MOB_MSG_SELECT_RECIPIENT">Select at least one person or role.</string>
+    <string name="MOB_MSG_FORWARD_PREPARING">Preparing the original message to forward.</string>
+    <string name="MOB_MSG_PHOTO_LIBRARY">Photo Library</string>
+    <string name="MOB_MSG_FILES">Files</string>
+    <string name="MOB_MSG_ADD_ATTACHMENT">Add Attachment</string>
+    <string name="MOB_MSG_EMAIL_UNAVAILABLE">Email unavailable.</string>
+    <string name="MOB_MSG_NO_CONTENT">No message content available.</string>
+    <string name="MOB_MSG_NEW">NEW</string>
+    <string name="MOB_MSG_DOWNLOADING">Downloading...</string>
+    <string name="MOB_MSG_CONVERSATION">Conversation</string>
+    <string name="MOB_MSG_REPLY">Reply</string>
+    <string name="MOB_MSG_FORWARD">Forward</string>
+    <string name="MOB_MSG_NEW_MESSAGE">New Message</string>
+    <string name="MOB_MSG_NEW_EMAIL">New Email</string>
+    <string name="MOB_MSG_COMPOSE">Compose</string>
+
+    <!-- Mobile App Labels - Photos -->
+    <string name="MOB_PHOTO_ALBUMS">Albums</string>
+    <string name="MOB_PHOTO_LOADING">Loading albums...</string>
+    <string name="MOB_PHOTO_NO_ALBUMS">No albums yet</string>
+    <string name="MOB_PHOTO_ALBUMS_HINT">Albums from Admidio appear here automatically.</string>
+    <string name="MOB_PHOTO_PHOTOS">photos</string>
+    <string name="MOB_PHOTO_TIMELINE">Timeline</string>
+    <string name="MOB_PHOTO_ALBUM">Album</string>
+    <string name="MOB_PHOTO_ERROR_LOAD">Unable to load album</string>
+    <string name="MOB_PHOTO_ERROR_DETAILS">Unable to load album details</string>
+    <string name="MOB_PHOTO_NO_PHOTOS">No photos yet</string>
+    <string name="MOB_PHOTO_UPLOAD_HINT">Upload photos in Admidio to see them here.</string>
+    <string name="MOB_PHOTO_CHILD_ALBUMS">Child Albums</string>
+    <string name="MOB_PHOTO_SAVED">Photo saved to Downloads.</string>
+    <string name="MOB_PHOTO_SAVE_FAILED">Failed to save photo</string>
+    <string name="MOB_PHOTO_DELETE_TITLE">Delete Photo</string>
+    <string name="MOB_PHOTO_DELETE_CONFIRM">This photo will be permanently removed.</string>
+    <string name="MOB_PHOTO_DELETE_FAILED">Failed to delete photo</string>
+    <string name="MOB_PHOTO_SELECT_FAILED">Failed to select images</string>
+    <string name="MOB_PHOTO_FORMAT_WARNING">Only JPEG and PNG images are supported.</string>
+    <string name="MOB_PHOTO_UPLOADING">Uploading photos...</string>
+    <string name="MOB_PHOTO_UPLOAD_SUCCESS">Successfully uploaded photos.</string>
+    <string name="MOB_PHOTO_UPLOAD_FAILED">Failed to upload photos.</string>
+    <string name="MOB_PHOTO_CREATE_ALBUM">Create Album</string>
+    <string name="MOB_PHOTO_ALBUM_NAME">Album Name</string>
+    <string name="MOB_PHOTO_ALBUM_PLACEHOLDER">Enter album name...</string>
+    <string name="MOB_PHOTO_START_DATE">Start date</string>
+    <string name="MOB_PHOTO_END_DATE">End date</string>
+    <string name="MOB_PHOTO_PARENT_ALBUM">Parent Album</string>
+    <string name="MOB_PHOTO_NO_PARENT">No parent (top level)</string>
+    <string name="MOB_PHOTO_NAME_REQUIRED">Album name is required</string>
+    <string name="MOB_PHOTO_DATE_REQUIRED">Start date is required</string>
+    <string name="MOB_PHOTO_DATE_INVALID">Invalid date format</string>
+
+    <!-- Mobile App Labels - Profile -->
+    <string name="MOB_PROFILE_PHOTO">Profile Photo</string>
+    <string name="MOB_PROFILE_UPLOADING">Uploading...</string>
+    <string name="MOB_PROFILE_CHANGE_PHOTO">Change Photo</string>
+    <string name="MOB_PROFILE_YOUR_DEVICE">Your Device</string>
+    <string name="MOB_PROFILE_USERNAME">Username</string>
+    <string name="MOB_PROFILE_SERVER_URL">Server URL</string>
+    <string name="MOB_PROFILE_SIGNING_OUT">Signing out...</string>
+    <string name="MOB_PROFILE_LOGOUT">Logout</string>
+    <string name="MOB_PROFILE_LOGOUT_CONFIRM">Are you sure you want to logout?</string>
+    <string name="MOB_PROFILE_LOGOUT_WARNING">You may need to re-login after this action.</string>
+    <string name="MOB_PROFILE_PHOTO_UPDATED">Profile photo updated successfully.</string>
+    <string name="MOB_PROFILE_PHOTO_REMOVED">Your profile image has been removed.</string>
+    <string name="MOB_PROFILE_UPDATE_FAILED">Failed to update profile</string>
+    <string name="MOB_PROFILE_CLEAR_CREDENTIALS_FAILED">Unable to clear saved credentials.</string>
+    <string name="MOB_PROFILE_LOGOUT_FAILED">Unable to logout</string>
+
+    <!-- Mobile App Labels - Auth / Login -->
+    <string name="MOB_AUTH_LOGIN">Login</string>
+    <string name="MOB_AUTH_USERNAME">Username</string>
+    <string name="MOB_AUTH_PASSWORD">Password</string>
+    <string name="MOB_AUTH_SERVER_URL">Server URL</string>
+    <string name="MOB_AUTH_LOGGING_IN">Logging in...</string>
+    <string name="MOB_AUTH_LOGIN_FAILED">Login failed</string>
+    <string name="MOB_AUTH_INVALID_CREDENTIALS">Invalid username or password</string>
+    <string name="MOB_AUTH_SERVER_REQUIRED">Server URL is required</string>
+    <string name="MOB_AUTH_DEVICE_PENDING">Device approval pending</string>
+    <string name="MOB_AUTH_SELECT_ORG">Select Organization</string>
+
+    <!-- Mobile App Labels - Events -->
+    <string name="MOB_EVENT_EVENTS">Events</string>
+    <string name="MOB_EVENT_LOADING">Loading events...</string>
+    <string name="MOB_EVENT_NO_EVENTS">No events found.</string>
+    <string name="MOB_EVENT_DATE">Date</string>
+    <string name="MOB_EVENT_TIME">Time</string>
+    <string name="MOB_EVENT_LOCATION">Location</string>
+    <string name="MOB_EVENT_DESCRIPTION">Description</string>
+    <string name="MOB_EVENT_REGISTER">Register</string>
+    <string name="MOB_EVENT_UNREGISTER">Unregister</string>
+    <string name="MOB_EVENT_REGISTERED">Registered</string>
+    <string name="MOB_EVENT_PARTICIPANTS">Participants</string>
+
+    <!-- Mobile App Labels - Contacts -->
+    <string name="MOB_CONTACT_CONTACTS">Contacts</string>
+    <string name="MOB_CONTACT_LOADING">Loading contacts...</string>
+    <string name="MOB_CONTACT_NO_CONTACTS">No contacts found.</string>
+    <string name="MOB_CONTACT_SEARCH">Search contacts...</string>
+    <string name="MOB_CONTACT_EMAIL">Email</string>
+    <string name="MOB_CONTACT_PHONE">Phone</string>
+    <string name="MOB_CONTACT_ADDRESS">Address</string>
+    <string name="MOB_CONTACT_CALL">Call</string>
+    <string name="MOB_CONTACT_MESSAGE">Message</string>
+
+    <!-- Mobile App Labels - Time Ago -->
+    <string name="MOB_TIME_JUST_NOW">Just now</string>
+    <string name="MOB_TIME_MIN_AGO">m ago</string>
+    <string name="MOB_TIME_HOUR_AGO">h ago</string>
+    <string name="MOB_TIME_DAY_AGO">d ago</string>
+    <string name="MOB_TIME_YESTERDAY">Yesterday</string>
+
+    <!-- Payment Gateway Messages -->
+    <string name="RE_PG_NOT_CONFIGURED">CCAvenue is not configured. Please contact administrator.</string>
+    <string name="RE_PG_NO_INVOICES">No invoices selected</string>
+    <string name="RE_PG_PAYMENT_INITIATED">A payment was already initiated for invoice(s) %1. Please wait %2 minutes before trying again.</string>
+    <string name="RE_PG_ALREADY_PAID">Invoice(s) %1 already have a successful payment. Cannot initiate another payment.</string>
+    <string name="RE_PG_DATABASE_ERROR">Database error</string>
+    <string name="RE_PG_INVALID_INVOICE">Invalid invoice</string>
+    <string name="RE_PG_INVOICE_PAID">Invoice already paid</string>
+    <string name="RE_PG_INVOICES_SAME_USER">Invoices must belong to same user</string>
+    <string name="RE_PG_UNAUTHORIZED">Unauthorized invoice access</string>
+    <string name="RE_PG_INVALID_AMOUNT">Invalid payment amount</string>
+    <string name="RE_PG_CREATE_FAILED">Failed to create initiated payment</string>
+    <string name="RE_PG_ITEMS_FAILED">Failed to create initiated payment items</string>
+    <string name="RE_PG_PAYMENT_ERROR">Payment Error</string>
+    <string name="RE_PG_CONNECTING">Connecting to Payment Gateway</string>
+    <string name="RE_PG_WAIT_MSG">Please wait, do not close this window...</string>
+    <string name="RE_PG_INVALID_RESPONSE">Invalid response from payment gateway.</string>
+    <string name="RE_PG_RECORD_NOT_FOUND">Payment record not found.</string>
+    <string name="RE_PG_SUCCESS_MSG">Your payment has been processed successfully.</string>
+    <string name="RE_PG_FAILED_MSG">Your payment could not be completed. Please try again.</string>
+    <string name="RE_PG_PAYMENT_SUCCESSFUL">Payment Successful</string>
+    <string name="RE_PG_PAYMENT_FAILED">Payment Failed</string>
+    <string name="RE_PG_DONE">Done</string>
+    <string name="RE_PG_ORDER_ID">Order ID</string>
+    <string name="RE_PG_TRANSACTION_ID">Transaction ID</string>
+    <string name="RE_PG_AMOUNT">Amount</string>
+    <string name="RE_PG_CANCELLED">Payment cancelled.</string>
+    <string name="RE_PG_SERVER_URL_MISSING">Server URL is not available</string>
+    <string name="RE_PG_CANNOT_INITIATE">Cannot initiate payment</string>
+    <string name="RE_PG_LOAD_INVOICES_FAILED">Failed to load invoices</string>
+
+    <!-- Mobile App Labels - Invoice -->
+    <string name="MOB_INV_FETCH_FAILED">Failed to fetch invoice details</string>
+    <string name="MOB_INV_DOWNLOAD_FAILED">Could not download invoice PDF</string>
+    <string name="MOB_INV_LOADING">Loading details…</string>
+    <string name="MOB_INV_NOT_AVAILABLE">Invoice not available</string>
+    <string name="MOB_INV_INVOICES">Invoices</string>
+    <string name="MOB_INV_LOADING_INVOICES">Loading Invoices...</string>
 </resources>

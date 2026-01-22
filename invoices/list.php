@@ -24,7 +24,8 @@ if (!$isPreviewForMsg) {
         'invalid_response' => 'RE_PAYMENT_MSG_INVALID_RESPONSE',
         'missing_order' => 'RE_PAYMENT_MSG_MISSING_ORDER',
         'payment_not_found' => 'RE_PAYMENT_MSG_PAYMENT_NOT_FOUND',
-        'processing_error' => 'RE_PAYMENT_MSG_PROCESSING_ERROR'
+        'processing_error' => 'RE_PAYMENT_MSG_PROCESSING_ERROR',
+        'db_update_failed' => 'RE_PAYMENT_MSG_DB_UPDATE_FAILED'
         );
 
         if (array_key_exists($msgDetail, $errorMap)) {

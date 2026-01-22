@@ -15,8 +15,9 @@ $countStmt = $gDb->queryPrepared('SELECT COUNT(*) FROM ' . TBL_RE_PAYMENTS . ' W
 $totalPayments = $countStmt ? (int)$countStmt->fetchColumn() : 0;
 // Continue rendering filters/table even if there are zero payments; suppress empty-state banner.
 
-// Check for timed out payments (Initiated > 15 mins ago)
-$timeoutMinutes = 15;
+// Check for timed out payments (Initiated > X mins ago, uses config value)
+global $pgConf;
+$timeoutMinutes = isset($pgConf['timeout']) && (int)$pgConf['timeout'] > 0 ? (int)$pgConf['timeout'] : 15;
 $timeoutDate = date('Y-m-d H:i:s', strtotime("-{$timeoutMinutes} minutes"));
 TableResidentsTransaction::expireInitiated($gDb, $timeoutDate);
 

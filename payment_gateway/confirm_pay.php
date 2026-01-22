@@ -61,6 +61,7 @@ $page->addHtml('<div class="card">
     </div>
     <div class="card-body">
     <form action="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/ccavenue_pay.php') . '" method="post" id="confirm_pay_form">
+            <input type="hidden" name="admidio-csrf-token" value="' . $gCurrentSession->getCsrfToken() . '" />
             <p>Please select the invoices you wish to pay:</p>
             <table class="table table-striped table-hover">
     <thead>

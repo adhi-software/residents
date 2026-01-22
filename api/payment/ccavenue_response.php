@@ -28,20 +28,27 @@ function renderMobileResultPage(bool $success, array $data): void
     $statusColor = $success ? '#28a745' : '#dc3545';
     $statusIcon = $success ? '✓' : '✕';
     $statusTitle = $success ? 'Payment Successful' : 'Payment Failed';
+    $statusTitleKey = $success ? 'RE_PG_PAYMENT_SUCCESSFUL' : 'RE_PG_PAYMENT_FAILED';
     $statusMessage = $data['message'] ?? ($success ? 'Your payment has been processed successfully.' : 'Your payment could not be completed.');
+    $statusMessageKey = $data['message_code'] ?? ($success ? 'RE_PG_SUCCESS_MSG' : 'RE_PG_FAILED_MSG');
     
     $orderId = htmlspecialchars($data['order_id'] ?? '-');
     $trackingId = htmlspecialchars($data['tracking_id'] ?? '-');
     $amount = htmlspecialchars($data['amount'] ?? '-');
     $currency = htmlspecialchars($data['currency'] ?? '₹');
     
-    // Build JSON data for mobile app to read
+    // JavaScript boolean string for script embedding
+    $successJs = $success ? 'true' : 'false';
+    
+    // Build JSON data for mobile app to read (includes i18n keys)
     $resultData = json_encode([
         'success' => $success,
         'order_id' => $data['order_id'] ?? null,
         'tracking_id' => $data['tracking_id'] ?? null,
         'amount' => $data['amount'] ?? null,
         'message' => $statusMessage,
+        'message_code' => $statusMessageKey,
+        'title_code' => $statusTitleKey,
     ]);
     
     echo <<<HTML
@@ -196,18 +203,14 @@ function renderMobileResultPage(bool $success, array $data): void
     <script>
         // For React Native WebView to detect completion
         function closePayment() {
-            // Try to communicate with React Native
+            // Communicate with React Native WebView
             if (window.ReactNativeWebView) {
                 window.ReactNativeWebView.postMessage(JSON.stringify({
                     type: 'PAYMENT_COMPLETE',
-                    success: {$success},
+                    success: {$successJs},
                     data: {$resultData}
                 }));
             }
-            window.location.href = 'madmidio://payment/result?' + 
-                'success=' + {$success} + 
-                '&order_id=' + encodeURIComponent('{$orderId}') +
-                '&tracking_id=' + encodeURIComponent('{$trackingId}');
         }
         
         // Auto-post result to React Native on page load
@@ -215,7 +218,7 @@ function renderMobileResultPage(bool $success, array $data): void
             if (window.ReactNativeWebView) {
                 window.ReactNativeWebView.postMessage(JSON.stringify({
                     type: 'PAYMENT_RESULT_LOADED',
-                    success: {$success},
+                    success: {$successJs},
                     data: {$resultData}
                 }));
             }
@@ -234,6 +237,7 @@ HTML;
 if (!isset($_POST['encResp'])) {
     renderMobileResultPage(false, [
         'message' => 'Invalid response from payment gateway.',
+        'message_code' => 'RE_PG_INVALID_RESPONSE',
         'order_id' => '-',
         'tracking_id' => '-',
         'amount' => '-'
@@ -275,6 +279,7 @@ try {
 if ($pgPaymentData === null) {
     renderMobileResultPage(false, [
         'message' => 'Database error.',
+        'message_code' => 'RE_PG_DATABASE_ERROR',
         'order_id' => $orderId,
         'tracking_id' => $trackingId,
         'amount' => $amount,
@@ -285,6 +290,7 @@ if ($pgPaymentData === null) {
 if (!$pgPaymentData) {
     renderMobileResultPage(false, [
         'message' => 'Payment record not found.',
+        'message_code' => 'RE_PG_RECORD_NOT_FOUND',
         'order_id' => $orderId,
         'tracking_id' => $trackingId,
         'amount' => $amount,
@@ -438,6 +444,7 @@ renderMobileResultPage($isSuccess, [
     'message' => $isSuccess 
         ? 'Your payment has been processed successfully.' 
         : ($statusMessage ?: 'Your payment could not be completed. Please try again.'),
+    'message_code' => $isSuccess ? 'RE_PG_SUCCESS_MSG' : 'RE_PG_FAILED_MSG',
     'order_id' => $orderId,
     'tracking_id' => $trackingId,
     'amount' => $amount,

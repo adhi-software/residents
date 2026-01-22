@@ -1374,12 +1374,15 @@ function residentsGetUserAddress(int $userId): array
 }
 
 /**
-    * Check for timed out payments (Initiated > 15 mins ago) and update status to TO.
+    * Check for timed out payments (Initiated > X mins ago) and update status to TO.
+    * Uses timeout value from payment gateway config, defaults to 15 minutes.
     */
 function residentsCheckPaymentTimeouts(): void
 {
-    global $gDb;
-    $timeoutMinutes = 15;
+    global $gDb, $pgConf;
+    
+    // Get timeout from config or default to 15 minutes
+    $timeoutMinutes = isset($pgConf['timeout']) && (int)$pgConf['timeout'] > 0 ? (int)$pgConf['timeout'] : 15;
     $timeoutDate = date('Y-m-d H:i:s', strtotime("-{$timeoutMinutes} minutes"));
     
     // Update TBL_RE_TRANS
