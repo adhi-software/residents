@@ -267,7 +267,7 @@ if ($isAdmin) {
 
     $filterForm->addSelectBox(
     'filter_paid',
-    'Paid Status',
+    $gL10n->get('RE_PAID_STATUS'),
     $paidOptions,
     array('defaultValue' => (string)$getPaid, 'showContextDependentFirstEntry' => false)
     );
@@ -345,7 +345,7 @@ else {
     $paidOptions = array('' => $gL10n->get('RE_ALL')) + residentsInvoiceStatusOptions('paid');
     $basicForm->addSelectBox(
     'filter_paid',
-    'Paid Status',
+    $gL10n->get('RE_PAID_STATUS'),
     $paidOptions,
     array('defaultValue' => (string)$getPaid, 'showContextDependentFirstEntry' => false)
     );
@@ -410,7 +410,7 @@ $headings = array(
 $gL10n->get('RE_NUMBER'),
 $gL10n->get('RE_START_DATE'),
 $gL10n->get('RE_END_DATE'),
-'Paid Status',
+$gL10n->get('RE_PAID_STATUS'),
 $gL10n->get('RE_USER'),
 $gL10n->get('RE_DUE_DATE'),
 $gL10n->get('RE_AMOUNT'),

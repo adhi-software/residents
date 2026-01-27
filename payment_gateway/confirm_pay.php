@@ -62,7 +62,7 @@ $page->addHtml('<div class="card">
     <div class="card-body">
     <form action="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/ccavenue_pay.php') . '" method="post" id="confirm_pay_form">
             <input type="hidden" name="admidio-csrf-token" value="' . $gCurrentSession->getCsrfToken() . '" />
-            <p>Please select the invoices you wish to pay:</p>
+            <p>'. $gL10n->get('RE_SELECT_INVOICES_PAY') .'</p>
             <table class="table table-striped table-hover">
     <thead>
                     <tr>
@@ -110,7 +110,7 @@ if (!$hasInvoices) {
 $page->addHtml('</tbody>
     <tfoot>
                     <tr>
-            <th colspan="3" class="text-end">Total Payable:</th>
+            <th colspan="3" class="text-end">' . $gL10n->get('RE_TOTAL_PAYABLE') . '</th>
             <th id="total_display">0.00</th>
                     </tr>
     </tfoot>
@@ -118,7 +118,7 @@ $page->addHtml('</tbody>
             
             <div class="d-flex justify-content-end mt-3" style="gap:0.5rem;">
     <a href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'invoices')) . '" class="btn btn-secondary me-2">' . $gL10n->get('SYS_CANCEL') . '</a>
-    <button type="submit" class="btn btn-primary" id="btn_pay" disabled>Confirm Pay</button>
+    <button type="submit" class="btn btn-primary" id="btn_pay" disabled>'. $gL10n->get('RE_CONFIRM_PAY') .'</button>
             </div>
     </form>
     </div>

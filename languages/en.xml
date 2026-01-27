@@ -38,6 +38,7 @@
     <string name="RE_START_DATE">Start date</string>
     <string name="RE_END_DATE">End date</string>
     <string name="RE_INVOICE_ITEMS">Invoice items</string>
+    <string name="RE_PAID_STATUS">Paid Status</string>
     <string name="RE_FILTER">Filter</string>
     <string name="RE_VALIDATION_OWNER_AND_ITEM">Please select an owner and add at least one invoice item.</string>
     <string name="RE_DELETE_INVOICE_CONFIRM">Delete this invoice and its items?</string>
@@ -183,7 +184,15 @@
     <string name="RE_CLOSED">Closed</string>
     <string name="RE_SEARCH">Search</string>
     <string name="RE_GROUPS_ROLES">Groups &amp; Roles</string>
-
+    <string name="RE_CONFIRM_PAY">Confirm Pay</string>
+    <string name="RE_SELECT_INVOICES_PAY">Please select the invoices you wish to pay:</string>
+    <string name="RE_TOTAL_PAYABLE">Total Payable:</string>
+    <string name="RE_ESTIMATED_TOTAL">Estimated total</string>
+    <string name="RE_ADD_ROWS_HELP">Click "+" to insert more rows.</string>
+    <string name="RE_OPTIONAL">Optional</string>
+    <string name="RE_PAY_METHOD_EXAMPLE">e.g. Cash, Bank Transfer</string>
+    <string name="RE_GATEWAY_LIMITATION">Currently supports only CCAvenue payment gateway.</string>
+    
     <!-- Mobile App Labels - Navigation -->
     <string name="MOB_NAV_HOME">Home</string>
     <string name="MOB_NAV_CONTACTS">Contacts</string>

@@ -110,7 +110,7 @@ $recordsFiltered = (int)($listResult['total'] ?? 0);
 $recordsTotal = (int)($listResult['total_base'] ?? $recordsFiltered);
 $currencyFallback = $gSettingsManager->getString('system_currency');
     $paidLabel = $gL10n->get('RE_PAID');
-    $unpaidLabel = 'Unpaid';
+    $unpaidLabel = $gL10n->get('RE_UNPAID');
 $currentUserId = (int)$gCurrentUser->getValue('usr_id');
     $csrfToken = htmlspecialchars($GLOBALS['gCurrentSession']->getCsrfToken(), ENT_QUOTES, 'UTF-8');
 

@@ -298,7 +298,7 @@ ob_start();
     </div>
     <div class="col-md-8">
                     <label class="form-label fw-bold"><?php echo $gL10n->get('RE_PAYMENT_METHOD'); ?></label>
-            <input class="form-control" name="rpa_pg_pay_method" value="<?php echo htmlspecialchars((string)$paymentData['rpa_pg_pay_method']); ?>" placeholder="e.g. Cash, Bank Transfer" />
+            <input class="form-control" name="rpa_pg_pay_method" value="<?php echo htmlspecialchars((string)$paymentData['rpa_pg_pay_method']); ?>" placeholder="<?php echo htmlspecialchars($gL10n->get('RE_PAY_METHOD_EXAMPLE')); ?>" />
     </div>
             </div>
     </div>
@@ -311,11 +311,11 @@ ob_start();
             <div class="row g-3">
     <div class="col-md-6">
                     <label class="form-label fw-bold"><?php echo $gL10n->get('RE_TRANSACTION_ID'); ?></label>
-                    <input class="form-control" name="rtr_pg_id" value="<?php echo htmlspecialchars((string)($paymentData['rpa_trans_id'] ?? '')); ?>" placeholder="Optional" />
+                    <input class="form-control" name="rtr_pg_id" value="<?php echo htmlspecialchars((string)($paymentData['rpa_trans_id'] ?? '')); ?>" placeholder="<?php echo htmlspecialchars($gL10n->get('RE_OPTIONAL')); ?>" />
     </div>
     <div class="col-md-6">
                     <label class="form-label fw-bold"><?php echo $gL10n->get('RE_BANK_REF_NO'); ?></label>
-                    <input class="form-control" name="rtr_bank_ref_no" value="<?php echo htmlspecialchars((string)($paymentData['rpa_bank_ref_no'] ?? '')); ?>" placeholder="Optional" />
+                    <input class="form-control" name="rtr_bank_ref_no" value="<?php echo htmlspecialchars((string)($paymentData['rpa_bank_ref_no'] ?? '')); ?>" placeholder="<?php echo htmlspecialchars($gL10n->get('RE_OPTIONAL')); ?>" />
     </div>
             </div>
     </div>
