@@ -248,6 +248,7 @@ $uiHtml = '
         <span class="fw-bold">'.$gL10n->get('RE_PG_ADD_BTN').'</span>
             </button>
     </div>
+    <small class="form-text text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Currently supports only CCAvenue payment gateway.</small>
     </div>
 </div>
 <style>
