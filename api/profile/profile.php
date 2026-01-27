@@ -9,6 +9,8 @@ $userId = (int) $currentUser->getValue('usr_id');
 $login = (string) $currentUser->getValue('usr_login_name');
 $firstName = (string) $currentUser->getValue('FIRST_NAME');
 $lastName = (string) $currentUser->getValue('LAST_NAME');
+// App/system language (organization preference)
+$appLanguage = isset($gL10n) ? $gL10n->getLanguage() : 'en';
 
 $photoData = null;
 
@@ -53,6 +55,7 @@ echo json_encode([
     'login' => $login,
     'first_name' => $firstName,
     'last_name' => $lastName,
+    'language' => $appLanguage ?: 'en',
     ],
     'photo' => $photo,
 ]);
