@@ -9,8 +9,8 @@ $userId = (int) $currentUser->getValue('usr_id');
 $login = (string) $currentUser->getValue('usr_login_name');
 $firstName = (string) $currentUser->getValue('FIRST_NAME');
 $lastName = (string) $currentUser->getValue('LAST_NAME');
-// App/system language (organization preference)
-$appLanguage = isset($gL10n) ? $gL10n->getLanguage() : 'en';
+// Get organization's configured language from settings (not session)
+$appLanguage = $gSettingsManager->getString('system_language') ?: 'en';
 
 $photoData = null;
 
