@@ -182,7 +182,7 @@
     <string name="RE_UNPAID">பணம் செலுத்தப்படாதது</string>
     <string name="RE_INACTIVE">செயலற்றது</string>
     <string name="RE_CLOSED">மூடப்பட்டது</string>
-	<string name="RE_SEARCH">Search</string>
+	<string name="RE_SEARCH">தேடு</string>
     <string name="RE_GROUPS_ROLES">குழுக்கள் மற்றும் பாத்திரங்கள்</string>
     <string name="RE_CONFIRM_PAY">பணம் செலுத்துவதை உறுதிப்படுத்து</string>
     <string name="RE_SELECT_INVOICES_PAY">நீங்கள் செலுத்த விரும்பும் விலைப்பட்டியல்களைத் தேர்ந்தெடுக்கவும்:</string>
@@ -246,6 +246,7 @@
     <string name="MOB_LOADING_DETAILS">விவரங்களை ஏற்றுகிறது...</string>
     <string name="MOB_USERNAME">பயனர்பெயர்</string>
     <string name="MOB_ALL">அனைத்தும்</string>
+    <string name="MOB_SEARCH">தேடு</string>
     <!-- Mobile App Labels - About Us -->
     <string name="MOB_ABOUT_UNABLE_LOAD">பதிப்புத் தகவலை ஏற்ற முடியவில்லை.</string>
     <string name="MOB_ABOUT_ADMIDIO_VERSION">அட்மிடியோ பதிப்பு</string>
@@ -253,11 +254,9 @@
     <string name="MOB_ABOUT_BUILT_BY">உருவாக்கியவர்</string>
 
     <!-- Mobile App Labels - Invoice -->
-    <string name="MOB_INVOICE_PAY_NOW">இப்போது பணம் செலுத்துங்கள்</string>
+    <string name="MOB_INVOICE_PAY_NOW">பணம் செலுத்துங்கள்</string>
     <string name="MOB_INVOICE_LOADING">விலைப்பட்டியல்கள் ஏற்றப்படுகின்றன...</string>
     <string name="MOB_INVOICE_NO_INVOICES">எந்த விலைப்பட்டியல்களும் காணப்படவில்லை.</string>
-    <string name="MOB_INVOICE_GROUP">குழு</string>
-    <string name="MOB_INVOICE_USER">பயனர்</string>
 	<string name="MOB_INVOICE_STATUS">நிலை</string>
     <string name="MOB_INVOICE_PAID">பணம் செலுத்தப்பட்டது</string>
     <string name="MOB_INVOICE_UNPAID">பணம் செலுத்தப்படாதது</string>
@@ -282,7 +281,6 @@
     <!-- Mobile App Labels - Payments -->
     <string name="MOB_PAYMENT_TOTAL_PAID">மொத்த கட்டணம்</string>
     <string name="MOB_PAYMENT_TYPE">வகை</string>
-    <string name="MOB_PAYMENT_DATE">பணம் செலுத்தும் தேதி</string>
     <string name="MOB_PAYMENT_NO_PAYMENTS">எந்தப் பணம் செலுத்துதல்களும் காணப்படவில்லை.</string>
     <string name="MOB_PAYMENT_LOADING">பணம் செலுத்தும் விவரங்கள் ஏற்றப்படுகின்றன...</string>
     <string name="MOB_PAYER_INFO">பணம் செலுத்துபவர் தகவல்</string>
@@ -290,15 +288,11 @@
     <string name="MOB_PAYMENT_STANDARD">தரநிலை</string>
 	
     <!-- Mobile App Labels - Messages -->
-    <string name="MOB_MSG_INBOX">பெறப்பட்ட செய்திகள்</string>
     <string name="MOB_MSG_LOADING">செய்திகள் ஏற்றப்படுகின்றன...</string>
     <string name="MOB_MSG_UNABLE_LOAD">செய்திகளை ஏற்ற முடியவில்லை.</string>
     <string name="MOB_MSG_NO_CONVERSATIONS">இதுவரை உரையாடல்கள் எதுவும் இல்லை.</string>
     <string name="MOB_MSG_NO_EMAILS">இதுவரை மின்னஞ்சல்கள் எதுவும் வரவில்லை.</string>
-    <string name="MOB_MSG_DELETE_TITLE">உரையாடலை நீக்கு</string>
     <string name="MOB_MSG_DELETE_CONFIRM">இது மற்றவர்களுக்குத் தெரிவிக்காமல் உங்களுக்காக அந்தப் பதிவை நீக்கிவிடும்.</string>
-    <string name="MOB_MSG_RECIPIENTS">பெறுநர்கள்</string>
-    <string name="MOB_MSG_SELECT_CONTACT">தொடர்பைத் தேர்ந்தெடுக்கவும்</string>
     <string name="MOB_MSG_CONTACT">தொடர்பு</string>
     <string name="MOB_MSG_START_CHAT">ஒரு தனிப்பட்ட உரையாடலைத் தொடங்குங்கள்</string>
     <string name="MOB_MSG_PICK_MEMBER">தொடர ஒரு உறுப்பினரைத் தேர்ந்தெடுத்து ஒரு தலைப்பைச் சேர்க்கவும்.</string>
@@ -307,39 +301,27 @@
     <string name="MOB_MSG_MESSAGE">செய்தி</string>
     <string name="MOB_MSG_UNAVAILABLE">செய்தி கிடைக்கவில்லை.</string>
     <string name="MOB_MSG_BACK_INBOX">பெறப்பட்ட செய்திகள் திரும்பு</string>
-    <string name="MOB_MSG_SENDER">அனுப்புநர்</string>
-    <string name="MOB_MSG_RECIPIENT">பெறுநர்</string>
     <string name="MOB_MSG_DELETE_INBOX">இது உங்கள் பெறப்பட்ட செய்திகள் பட்டியலிலிருந்து இந்த உரையாடலை நீக்கும்.</string>
     <string name="MOB_MSG_UNABLE_SEND">அனுப்ப முடியவில்லை</string>
     <string name="MOB_MSG_TO">வழியாக</string>
     <string name="MOB_MSG_SUBJECT">தலைப்பு</string>
-    <string name="MOB_MSG_SUBJECT_PLACEHOLDER">தலைப்பை உள்ளிடவும்...</string>
-    <string name="MOB_MSG_MESSAGE_PLACEHOLDER">உங்கள் செய்தியை உள்ளிடவும்...</string>
-    <string name="MOB_MSG_UNTITLED">தலைப்பிடப்படாதது</string>
     <string name="MOB_MSG_ATTACHMENTS">இணைப்புகள்</string>
     <string name="MOB_MSG_ATTACH_FILES">கோப்புகளை இணைக்கவும்</string>
     <string name="MOB_MSG_FILE_HINT">10 எம்பி-க்கும் குறைவான பொதுவான வடிவங்கள் சிறப்பாகச் செயல்படுகின்றன.</string>
     <string name="MOB_MSG_SENDING">அனுப்பப்படுகிறது...</string>
     <string name="MOB_MSG_PREPARING">தயாராகிறது...</string>
-    <string name="MOB_MSG_SEARCH_PLACEHOLDER">பெறுநர்களைத் தேடுங்கள்...</string>
-    <string name="MOB_MSG_NO_MATCHES">அந்த தேடலுக்கு பொருத்தமான தகவல்கள் இல்லை.</string>
-    <string name="MOB_MSG_MEMBER">உறுப்பினர்</string>
     <string name="MOB_MSG_SENT_SUCCESS">உங்கள் செய்தி அனுப்பப்பட்டுக்கொண்டிருக்கிறது.</string>
     <string name="MOB_MSG_SELECT_RECIPIENT">குறைந்தது ஒரு நபரையோ அல்லது பதவியையோ தேர்ந்தெடுக்கவும்.</string>
     <string name="MOB_MSG_FORWARD_PREPARING">அசல் செய்தியைப் பகிரத் தயார் செய்தல்.</string>
     <string name="MOB_MSG_PHOTO_LIBRARY">புகைப்பட நூலகம்</string>
     <string name="MOB_MSG_FILES">கோப்புகள்</string>
     <string name="MOB_MSG_ADD_ATTACHMENT">இணைப்பைச் சேர்க்கவும்</string>
-    <string name="MOB_MSG_EMAIL_UNAVAILABLE">மின்னஞ்சல் முகவரி கிடைக்கவில்லை.</string>
     <string name="MOB_MSG_NO_CONTENT">செய்தியின் உள்ளடக்கம் எதுவும் கிடைக்கவில்லை.</string>
     <string name="MOB_MSG_NEW">புதியது</string>
     <string name="MOB_MSG_DOWNLOADING">பதிவிறக்கம் செய்யப்படுகிறது...</string>
     <string name="MOB_MSG_CONVERSATION">உரையாடல்</string>
-    <string name="MOB_MSG_REPLY">பதில் அளி</string>
-    <string name="MOB_MSG_FORWARD">முன்னோக்கி</string>
     <string name="MOB_MSG_NEW_MESSAGE">புதிய செய்தி</string>
     <string name="MOB_MSG_NEW_EMAIL">புதிய மின்னஞ்சல்</string>
-    <string name="MOB_MSG_COMPOSE">செய்தி உருவாக்கு</string>
     <string name="MOB_MSG_PROVIDE_ALBUM">சேமிப்பதற்கு முன் ஆல்பத்தின் பெயரை வழங்கவும்.</string>
     <string name="MOB_DATE_START_HINT">தொடக்கத் தேதிக்கு YYYY-MM-DD வடிவத்தைப் பயன்படுத்தவும்.</string>
     <string name="MOB_DATE_END_HINT">முடிவுத் தேதிக்கு YYYY-MM-DD வடிவத்தைப் பயன்படுத்தவும்.</string>
@@ -358,6 +340,7 @@
     <string name="MOB_FORWARD_ATTACHMENT_NOTE_PLURAL">அசல் மின்னஞ்சலில் இருந்து %1$d இணைப்புகள் இதில் அடங்கும்.</string>
     <string name="MOB_LOADING_ORIGINAL_MSG">அசல் செய்தி ஏற்றப்படுகிறது</string>
     <string name="MOB_FORWARD_ORIGINAL_SUBJECT">அசல் பொருள்: %1$s</string>
+    <string name="MOB_LABEL_UNTITLED">தலைப்பிடப்படாதது</string>
     <string name="MOB_PLACEHOLDER_MESSAGE_BODY">செய்தியை உள்ளிடவும்</string>
     <string name="MOB_ATTACH_ADD_ANOTHER">மற்றொரு கோப்பைச் சேர்க்கவும்</string>
     <string name="MOB_BTN_SEND_MESSAGE">செய்தி அனுப்புங்கள்</string>
@@ -377,40 +360,27 @@
     <string name="MOB_WARN_PICK_RECIPIENT_AND_SUBJECT">தொடர ஒரு பெறுநரைத் தேர்ந்தெடுத்து ஒரு தலைப்பை உள்ளிடவும்.</string>
     <string name="MOB_CONVERSATION_SUBJECT">உரையாடல் தலைப்பு</string>
     <string name="MOB_WARN_MISSING_CONFIG">முதலில் சர்வர் URL மற்றும் API விசையை அமைக்கவும்.</string>
-    
+    <string name="MOB_FORWARD_EMAIL">இந்த மின்னஞ்சலை மற்றவருக்கு அனுப்பவும்</string>
+
     <!-- Mobile App Labels - Photos -->
     <string name="MOB_PHOTO_ALBUMS">படத் தொகுப்புகள்</string>
     <string name="MOB_PHOTO_LOADING">படத் தொகுப்புகள் ஏற்றப்படுகிறது...</string>
     <string name="MOB_PHOTO_NO_ALBUMS">இதுவரை படத் தொகுப்புகள் எதுவும் இல்லை</string>
     <string name="MOB_PHOTO_ALBUMS_HINT">அட்மிடியோவின் படத் தொகுப்புகள் இங்கே தானாகவே தோன்றும்.</string>
     <string name="MOB_PHOTO_PHOTOS">புகைப்படங்கள்</string>
-    <string name="MOB_PHOTO_TIMELINE">நிகழ்வுகளின் வரிசை</string>
-    <string name="MOB_PHOTO_ALBUM">படத் தொகுப்பு</string>
     <string name="MOB_PHOTO_ERROR_LOAD">படத் தொகுப்பு ஏற்ற முடியவில்லை</string>
-    <string name="MOB_PHOTO_ERROR_DETAILS">படத் தொகுப்பு  விவரங்களை ஏற்ற முடியவில்லை”</string>
-    <string name="MOB_PHOTO_NO_PHOTOS">இன்னும் புகைப்படங்கள் இல்லை</string>
     <string name="MOB_PHOTO_UPLOAD_HINT">புகைப்படங்களை இங்கே பார்க்க, அவற்றை அட்மிடியோ-வில் பதிவேற்றவும்.</string>
     <string name="MOB_PHOTO_CHILD_ALBUMS">உள் படத் தொகுப்புகள்</string>
-    <string name="MOB_PHOTO_SAVED">புகைப்படம் பதிவிறக்கங்களில் சேமிக்கப்பட்டது.</string>
-    <string name="MOB_PHOTO_SAVE_FAILED">புகைப்படத்தைச் சேமிக்கத் தவறிவிட்டது</string>
     <string name="MOB_PHOTO_DELETE_TITLE">புகைப்படத்தை நீக்கு</string>
     <string name="MOB_PHOTO_DELETE_CONFIRM">இந்த புகைப்படம் நிரந்தரமாக நீக்கப்படும்.</string>
-    <string name="MOB_PHOTO_DELETE_FAILED">புகைப்படத்தை நீக்கத் தவறிவிட்டது</string>
     <string name="MOB_PHOTO_SELECT_FAILED">படங்களைத் தேர்ந்தெடுக்கத் தவறிவிட்டது</string>
-    <string name="MOB_PHOTO_FORMAT_WARNING">ஜேபிஇஜி மற்றும் பிஎன்ஜி படங்களுக்கு மட்டுமே ஆதரவு உண்டு</string>
     <string name="MOB_PHOTO_UPLOADING">புகைப்படங்கள் பதிவேற்றப்படுகின்றன...</string>
-    <string name="MOB_PHOTO_UPLOAD_SUCCESS">புகைப்படங்கள் வெற்றிகரமாகப் பதிவேற்றப்பட்டன.</string>
     <string name="MOB_PHOTO_UPLOAD_FAILED">புகைப்படங்களைப் பதிவேற்றத் தவறிவிட்டது.</string>
     <string name="MOB_PHOTO_CREATE_ALBUM">படத் தொகுப்பு உருவாக்கவும்</string>
     <string name="MOB_PHOTO_ALBUM_NAME">படத் தொகுப்பு பெயர்</string>
-    <string name="MOB_PHOTO_ALBUM_PLACEHOLDER">படத் தொகுப்பின் பெயரை உள்ளிடவும்...</string>
     <string name="MOB_PHOTO_START_DATE">தொடங்கும் தேதி</string>
     <string name="MOB_PHOTO_END_DATE">முடிவு தேதி</string>
     <string name="MOB_PHOTO_PARENT_ALBUM">பெற்றோர் படத் தொகுப்பு</string>
-    <string name="MOB_PHOTO_NO_PARENT">பெற்றோர் (மேல்நிலை) எதுவும் இல்லை</string>
-    <string name="MOB_PHOTO_NAME_REQUIRED">படத் தொகுப்பின் பெயர் அவசியம்</string>
-    <string name="MOB_PHOTO_DATE_REQUIRED">தொடக்கத் தேதி அவசியம்.</string>
-    <string name="MOB_PHOTO_DATE_INVALID">தவறான தேதி வடிவம்</string>
     <string name="MOB_PHOTO_NEW_ALBUM">படத் தொகுப்பு</string>
     <string name="MOB_PHOTO_CREATE_ALBUM">ஒரு படத் தொகுப்பை உருவாக்கவும்</string>
     <string name="MOB_PHOTO_UPLOAD_RIGHT">பெற்றோர் தெரிவுநிலை + பதிவேற்ற உரிமைகளைப் பெறுகிறார்கள்</string>
@@ -450,7 +420,7 @@
     <string name="MOB_DOCUMENTS_AND_FILES">ஆவணங்கள் மற்றும் கோப்புகள்</string>
     <string name="MOB_FILES_EMPTY_LOCATION">இந்த இடத்தில் கோப்புறைகளோ கோப்புகளோ எதுவும் கிடைக்கவில்லை.</string>
     <string name="MOB_LABEL_FOLDER">கோப்புறை</string>
-    <string name="MOB_LABEL_UNTITLED">தலைப்பிடப்படாதது</string>
+    
 
     <!-- Mobile App Labels - Profile -->
     <string name="MOB_PROFILE_PHOTO">சுயவிவரப் புகைப்படம்</string>
@@ -467,7 +437,6 @@
     <string name="MOB_PROFILE_PHOTO_REMOVED">உங்கள் சுயவிவரப் படம் நீக்கப்பட்டுவிட்டது.</string>
     <string name="MOB_PROFILE_UPDATE_FAILED">சுயவிவரத்தைப் புதுப்பிக்கத் தவறிவிட்டது</string>
     <string name="MOB_PROFILE_CLEAR_CREDENTIALS_FAILED">சேமித்த சான்றுகளை அழிக்க முடியவில்லை.</string>
-    <string name="MOB_PROFILE_LOGOUT_FAILED">வெளியேற முடியவில்லை</string>
     <string name="MOB_PROFILE_PHOTO_CONFIRM">சுயவிவரப் புகைப்படத்தை நீக்க விரும்புகிறீர்களா என்பது உங்களுக்கு உறுதியாகத் தெரியுமா?</string>
 
     <!-- Mobile App Labels - Auth / Login -->
@@ -490,17 +459,11 @@
     <string name="MOB_ENTR_PASS">கடவுச்சொல்லை உள்ளிடவும்</string>
 
     <!-- Mobile App Labels - Events -->
-    <string name="MOB_EVENT_EVENTS">நிகழ்வுகள்</string>
     <string name="MOB_EVENT_LOADING">நிகழ்வுகள் ஏற்றப்படுகின்றன...</string>
     <string name="MOB_EVENT_NO_EVENTS">எந்த நிகழ்வுகளும் காணப்படவில்லை.</string>
-    <string name="MOB_EVENT_DATE">தேதி</string>
     <string name="MOB_EVENT_TIME">நேரம்</string>
     <string name="MOB_EVENT_LOCATION">இடம்</string>
     <string name="MOB_EVENT_DESCRIPTION">விளக்கம்</string>
-    <string name="MOB_EVENT_REGISTER">பதிவு செய்யவும்</string>
-    <string name="MOB_EVENT_UNREGISTER">பதிவு நீக்கு</string>
-    <string name="MOB_EVENT_REGISTERED">பதிவு செய்யப்பட்டது</string>
-    <string name="MOB_EVENT_PARTICIPANTS">பங்கேற்பாளர்கள்</string>
     <string name="MOB_EVENT_CALENDAR">நாட்காட்டி</string>
     <string name="MOB_EVENT_VENUE">நிகழும் இடம்</string>
     <string name="MOB_EVENT_DEADLINE">காலக்கெடு</string>
@@ -511,15 +474,9 @@
     <string name="MOB_EVENT_BY">வழங்கியவர்:</string>
 
     <!-- Mobile App Labels - Contacts -->
-    <string name="MOB_CONTACT_CONTACTS">தொடர்புகள்</string>
     <string name="MOB_CONTACT_LOADING">தொடர்புகளை ஏற்றுகிறது...</string>
     <string name="MOB_CONTACT_NO_CONTACTS">தொடர்புகள் எதுவும் காணப்படவில்லை.</string>
     <string name="MOB_CONTACT_SEARCH">தொடர்புகளைத் தேடுங்கள்...</string>
-    <string name="MOB_CONTACT_EMAIL">மின்னஞ்சல்</string>
-    <string name="MOB_CONTACT_PHONE">தொலைபேசி</string>
-    <string name="MOB_CONTACT_ADDRESS">முகவரி</string>
-    <string name="MOB_CONTACT_CALL">அழைப்பு</string>
-    <string name="MOB_CONTACT_MESSAGE">செய்தி</string>
 
     <!-- Mobile App Labels - Time Ago -->
     <string name="MOB_TIME_JUST_NOW">சற்று முன்</string>
