@@ -286,6 +286,8 @@
     <string name="MOB_PAYER_INFO">பணம் செலுத்துபவர் தகவல்</string>
     <string name="MOB_PAYMENT_UNKNOWN">தெரியாதது</string>
     <string name="MOB_PAYMENT_STANDARD">தரநிலை</string>
+    <string name="MOB_BANK_REF_NO">வங்கி குறிப்பு எண்.</string>
+    <string name="MOB_PAYMENT_FOR_INVOICE">விலைப்பட்டியல் கட்டணம்</string>
 	
     <!-- Mobile App Labels - Messages -->
     <string name="MOB_MSG_LOADING">செய்திகள் ஏற்றப்படுகின்றன...</string>

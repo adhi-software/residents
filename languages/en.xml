@@ -286,6 +286,8 @@
     <string name="MOB_PAYER_INFO">Payer Information</string>
     <string name="MOB_PAYMENT_UNKNOWN">Unknown</string>
     <string name="MOB_PAYMENT_STANDARD">Standard</string>
+    <string name="MOB_BANK_REF_NO">Bank Ref No.</string>
+    <string name="MOB_PAYMENT_FOR_INVOICE">Payment for invoice</string>
 
     <!-- Mobile App Labels - Messages -->
     <string name="MOB_MSG_LOADING">Loading messages...</string>
