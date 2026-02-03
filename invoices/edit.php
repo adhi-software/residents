@@ -341,7 +341,7 @@ if ($hasSaveError && is_array($itemsFromPost)) {
     $items = $itemsFromPost;
 }
 
-$page = new HtmlPage('bl-residents-edit', $gL10n->get('RE_TITLE'));
+$page = new HtmlPage('bl-residents-edit', $gL10n->get('RES_TITLE'));
 $page->setHeadline($gL10n->get('RE_TAB_INVOICES'));
 residentsEnqueueStyles($page);
 

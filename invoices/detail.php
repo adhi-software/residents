@@ -206,7 +206,7 @@ $formatDate = static function ($value) use ($gSettingsManager) {
     }
 };
 
-$page = new HtmlPage('bl-residents-view', $gL10n->get('RE_TITLE'));
+$page = new HtmlPage('bl-residents-view', $gL10n->get('RES_TITLE'));
 $page->setHeadline($gL10n->get('RE_TAB_INVOICES'));
 $isAdminDetail = isResidentsAdminBySettings();
 $ownsInvoice = !$previewMode && isset($gCurrentUser) && (int)$inv['riv_usr_id'] === (int)$gCurrentUser->getValue('usr_id');

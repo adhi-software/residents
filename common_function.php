@@ -943,8 +943,8 @@ function ensureResidentsMenuItem(): void
     $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
 
     global $gDb, $gL10n;
-    $menuTitle = $gL10n->get('RE_TITLE');
-    $menuDescription = $gL10n->get('RE_DESC');
+    $menuTitle = 'RES_TITLE';
+    $menuDescription = 'RES_DESC';
 
     $menuId = 0;
     $exists = $gDb->queryPrepared('SELECT men_id FROM ' . TBL_MENU . ' WHERE men_url = ?', array($scriptUrl), false);

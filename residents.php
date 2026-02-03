@@ -25,9 +25,9 @@ $canSeePreferences = isResidentsAdmin();
 $tab = admFuncVariableIsValid($_GET, 'tab', 'string', array('defaultValue' => 'invoices', 'validValues' => array('invoices', 'payments', 'chargers', 'preferences', 'devices')));
 $getId = admFuncVariableIsValid($_GET, 'id', 'int');
 
-$gNavigation->addStartUrl(CURRENT_URL, $gL10n->get('RE_TITLE'), 'bi-receipt');
+$gNavigation->addStartUrl(CURRENT_URL, $gL10n->get('RES_TITLE'), 'bi-receipt');
 $page = new HtmlPage('residents');
-$page->setTitle($gL10n->get('RE_TITLE'));
+$page->setTitle($gL10n->get('RES_TITLE'));
 $tabHeadlines = array(
     'invoices' => $gL10n->get('RE_TAB_INVOICES'),
     'payments' => $gL10n->get('RE_TAB_PAYMENTS'),
@@ -35,7 +35,7 @@ $tabHeadlines = array(
     'preferences' => $gL10n->get('RE_TAB_PREFERENCES'),
     'devices' => $gL10n->get('RE_TAB_DEVICES')
 );
-$page->setHeadline($tabHeadlines[$tab] ?? $gL10n->get('RE_TITLE'));
+$page->setHeadline($tabHeadlines[$tab] ?? $gL10n->get('RES_TITLE'));
 residentsEnqueueStyles($page);
 
 // Render tabs
