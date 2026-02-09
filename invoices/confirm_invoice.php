@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($startDateValue === '') {
-        $errors[] = $gL10n->get('RE_START_DATE') . ': ' . $gL10n->get('SYS_FIELD_EMPTY');
+        $errors[] = $gL10n->get('RE_START') . ': ' . $gL10n->get('SYS_FIELD_EMPTY');
     }
     if ($invoiceDateValue === '') {
         $errors[] = $gL10n->get('RE_DATE') . ': ' . $gL10n->get('SYS_FIELD_EMPTY');
@@ -181,7 +181,7 @@ foreach ($filters as $key => $value) {
     }
     $form->addInput($key, '', (string)$value, array('property' => HtmlForm::FIELD_HIDDEN));
 }
-$form->addInput('start_date', $gL10n->get('RE_START_DATE'), $startDateValue, array(
+$form->addInput('start_date', $gL10n->get('RE_START'), $startDateValue, array(
     'type' => 'date',
     'property' => HtmlForm::FIELD_REQUIRED
 ));

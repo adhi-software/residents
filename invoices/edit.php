@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $startDatePost = trim((string)($_POST['riv_start_date'] ?? ''));
     $endDatePost = trim((string)($_POST['riv_end_date'] ?? ''));
     if ($invoiceDatePost === '' || $startDatePost === '' || $endDatePost === '') {
-        $gMessage->show($gL10n->get('SYS_FIELD_EMPTY', array($gL10n->get('RE_DATE') . ', ' . $gL10n->get('RE_START_DATE') . ', ' . $gL10n->get('RE_END_DATE'))));
+        $gMessage->show($gL10n->get('SYS_FIELD_EMPTY', array($gL10n->get('RE_DATE') . ', ' . $gL10n->get('RE_START') . ', ' . $gL10n->get('RE_END'))));
     }
 
     // Numbering: generate next if creating and number empty
@@ -598,11 +598,11 @@ ob_start();
                     <input type="date" class="form-control form-control-lg" name="riv_date" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($row['riv_date'] ?? ''))); ?>" required />
     </div>
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_START_DATE'); ?> <span class="text-danger">*</span></label>
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_START'); ?> <span class="text-danger">*</span></label>
                     <input type="date" class="form-control form-control-lg" name="riv_start_date" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($row['riv_start_date'] ?? ''))); ?>" required />
     </div>
     <div class="col-md-6">
-                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_END_DATE'); ?> <span class="text-danger">*</span></label>
+                    <label class="form-label text-uppercase text-dark small mb-1"><?php echo $gL10n->get('RE_END'); ?> <span class="text-danger">*</span></label>
                     <input type="date" class="form-control form-control-lg" name="riv_end_date" value="<?php echo htmlspecialchars(residentsFormatDateForInput((string)($row['riv_end_date'] ?? ''))); ?>" required />
     </div>
     <div class="col-md-6">
@@ -624,8 +624,8 @@ ob_start();
                     <thead>
             <tr>
                     <th style="width:30%"><?php echo $gL10n->get('SYS_NAME'); ?></th>
-                            <th style="width:17%"><?php echo $gL10n->get('RE_START_DATE'); ?></th>
-                            <th style="width:17%"><?php echo $gL10n->get('RE_END_DATE'); ?></th>
+                            <th style="width:17%"><?php echo $gL10n->get('RE_START'); ?></th>
+                            <th style="width:17%"><?php echo $gL10n->get('RE_END'); ?></th>
                             <th class="text-end" style="width:30%"><?php echo $gL10n->get('RE_AMOUNT'); ?></th>
                             <th class="text-center" style="width:6%"></th>
             </tr>

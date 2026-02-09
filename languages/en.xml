@@ -7,14 +7,14 @@
     <string name="RE_TAB_CHARGERS">Charges</string>
     <string name="RE_TAB_PREFERENCES">Preferences</string>
     <string name="RE_TAB_DEVICES">Devices</string>
-    <string name="RE_ONLY_ADMIN">Only Residents admins can access Preferences.</string>
+    <string name="RE_ONLY_ADMIN">Only admins have access.</string>
     <string name="RE_PREF_ADMIN_ROLES">Billing Admin</string>
     <string name="RE_PREF_DUE_DAYS">Default Due Days</string>
     <string name="RE_PREF_DEFAULT_NOTE">Default Invoice Note</string>
     <string name="RE_ORG_LOGO">Organization Logo</string>
-    <string name="RE_ORG_LOGO_HELP">Upload a JPG/PNG logo</string>
+    <string name="RE_ORG_LOGO_HELP">Upload JPG/PNG logo</string>
     <string name="RE_REMOVE_ORG_LOGO">Remove</string>
-    <string name="RE_DEFAULT_NOTE_TEXT">Auto-generated membership charge</string>
+    <string name="RE_DEFAULT_NOTE_TEXT">Auto generated membership charge</string>
     <string name="RE_PREF_PAYMENT_ADMIN">Payment Admin</string>
     <string name="RE_DUE_DATE">Due date</string>
     <string name="RE_NOTES">Notes</string>
@@ -27,7 +27,7 @@
     <string name="RE_EDIT_PAYMENT">Edit payment</string>
     <string name="RE_NUMBER">Invoice number</string>
     <string name="RE_VIEW">View</string>
-    <string name="RE_NO_DATA">No data found!</string>
+    <string name="RE_NO_DATA">No data found</string>
     <string name="RE_STATUS">Status</string>
     <string name="RE_DATE">Invoice Date</string>
     <string name="RE_PAYMENT_DATE">Payment Date</string>
@@ -35,20 +35,15 @@
     <string name="RE_USER">User</string>
     <string name="RE_CUSTOMER">Customer</string>
     <string name="RE_ACTIONS">Actions</string>
-    <string name="RE_START_DATE">Start date</string>
-    <string name="RE_END_DATE">End date</string>
     <string name="RE_INVOICE_ITEMS">Invoice items</string>
     <string name="RE_PAID_STATUS">Paid Status</string>
     <string name="RE_FILTER">Filter</string>
     <string name="RE_VALIDATION_OWNER_AND_ITEM">Please select an owner and add at least one invoice item.</string>
-    <string name="RE_DELETE_INVOICE_CONFIRM">Delete this invoice and its items?</string>
+    <string name="RE_DELETE_INVOICE_CONFIRM">Are you sure you want to delete this invoice ?</string>
     <string name="RE_INVOICE_DELETED">Invoice deleted.</string>
-    <string name="RE_DELETE_PAYMENT_CONFIRM">Delete this payment and its items?</string>
+    <string name="RE_DELETE_PAYMENT_CONFIRM">Are you sure you want to delete this payment ?</string>
     <string name="RE_PAYMENT_DELETED">Payment deleted.</string>
     <string name="RE_DELETE_ALL">Delete all</string>
-    <string name="RE_DELETE_SELECT_WARNING">Select at least one invoice before deleting.</string>
-    <string name="RE_PAY_SELECT_WARNING">Select at least one invoice before paying.</string>
-    <string name="RE_PAY_INVALID_SELECTION">Select invoices that belong to you before paying.</string>
     <string name="RE_CHARGERS_ADD">New charge</string>
     <string name="RE_CHARGERS_ADD_TITLE">Add charge</string>
     <string name="RE_CHARGERS_EDIT_TITLE">Edit charge</string>
@@ -56,8 +51,8 @@
     <string name="RE_CHARGERS_PERIOD">Period</string>
     <string name="RE_CHARGERS_AMOUNT">Amount</string>
     <string name="RE_CHARGERS_ROLES">Roles</string>
-    <string name="RE_CHARGERS_DELETE_CONFIRM">Delete this charge definition?</string>
-    <string name="RE_CHARGERS_EMPTY">No charge definitions found.</string>
+    <string name="RE_CHARGERS_DELETE_CONFIRM">Are you sure you want to delete this charge ?</string>
+    <string name="RE_CHARGERS_EMPTY">No charges found.</string>
     <string name="RE_CHARGERS_SAVED">Charge saved successfully.</string>
     <string name="RE_CHARGERS_DELETED">Charge deleted.</string>
     <string name="RE_CHARGERS_NAME_REQUIRED">Enter a charge name.</string>
@@ -69,7 +64,7 @@
     <string name="RE_PAYMENT_FAILED">Payment could not be completed.</string>
     <string name="RE_PAY_NOW">Pay now</string>
     <string name="RE_PAYMENT_MSG_INVALID_RESPONSE">We could not validate the payment response. Please try again.</string>
-    <string name="RE_PAYMENT_MSG_MISSING_ORDER">We couldn&apos;t find the payment that was referenced.</string>
+    <string name="RE_PAYMENT_MSG_MISSING_ORDER">We could not find the payment that was referenced.</string>
     <string name="RE_PAYMENT_MSG_PAYMENT_NOT_FOUND">This payment record no longer exists. Please start over.</string>
     <string name="RE_PAYMENT_MSG_PROCESSING_ERROR">Something went wrong while finalizing the payment. Please try again later.</string>
     <string name="RE_PAYMENT_MSG_DB_UPDATE_FAILED">Failed to save payment details. Please contact support.</string>
@@ -92,13 +87,6 @@
     <string name="RE_CONFIRM_DETAILS_INTRO">Choose the billing period dates and optional note, then click Next to continue.</string>
     <string name="RE_BACK">Back</string>
     <string name="RE_PREVIEW_DETAIL_MISSING">Preview data is no longer available. Please refresh the preview list.</string>
-    <string name="RE_STATUS_INITIATED">Initiated</string>
-    <string name="RE_STATUS_SUCCESS">Success</string>
-    <string name="RE_STATUS_FAILURE">Failure</string>
-    <string name="RE_STATUS_TIMEOUT">Timeout</string>
-    <string name="RE_STATUS_INVALID">Invalid</string>
-    <string name="RE_STATUS_TERMINATE">Terminate</string>
-    <string name="RE_STATUS_ABORTED">Aborted</string>
     <string name="RE_INVOICE_ALREADY_PAID">This invoice has already been paid.</string>
     <string name="RE_PAYMENT_ALREADY_INITIATED">A payment for this invoice is already in progress. Please wait %s minutes before trying again.</string>
     <string name="RE_PAYMENT_ALREADY_PAID">A successful payment already exists for the selected invoice(s).</string>
@@ -220,7 +208,7 @@
 
     <!-- Mobile App Labels - Common -->
     <string name="MOB_LOADING">Loading...</string>
-    <string name="MOB_TRY_AGAIN">Try again</string>
+    <string name="MOB_TRY_AGAIN">Please try again.</string>
     <string name="MOB_RETRY">Retry</string>
     <string name="MOB_CANCEL">Cancel</string>
     <string name="MOB_DELETE">Delete</string>
@@ -275,8 +263,6 @@
     <string name="MOB_INVOICE_PAYMENT_FAILED">Your payment could not be completed.</string>
     <string name="MOB_INVOICE_NO_SELECTED">No invoices selected</string>
     <string name="MOB_INVOICE_SERVER_UNAVAILABLE">Server URL is not available</string>
-    <string name="MOB_INVOICE_START_DATE">Start Date</string>
-    <string name="MOB_INVOICE_END_DATE">End Date</string>
     <string name="MOB_INV_NOT_CONN_PAYMENT_GATEWAY">Could not connect to payment gateway.</string>
     <!-- Mobile App Labels - Payments -->
     <string name="MOB_PAYMENT_TOTAL_PAID">Total Paid</string>
@@ -325,8 +311,6 @@
     <string name="MOB_MSG_NEW_MESSAGE">New Message</string>
     <string name="MOB_MSG_NEW_EMAIL">New Email</string>
     <string name="MOB_MSG_PROVIDE_ALBUM">Please provide an album name before saving</string>
-    <string name="MOB_DATE_START_HINT">Use YYYY-MM-DD format for the start date.</string>
-    <string name="MOB_DATE_END_HINT">Use YYYY-MM-DD format for the end date.</string>
     <string name="MOB_MSG_SUBJECT_REQUIRED">Give your message a short subject</string>
     <string name="MOB_MSG_BODY_REQUIRED">Type a quick note before sending.</string>
     <string name="MOB_MSG_DUPLICATES_REMOVED">Some duplicates were removed. Review and tap send again.</string>
@@ -380,7 +364,6 @@
     <string name="MOB_PHOTO_UPLOAD_FAILED">Failed to upload photos.</string>
     <string name="MOB_PHOTO_CREATE_ALBUM">Create Album</string>
     <string name="MOB_PHOTO_ALBUM_NAME">Album Name</string>
-    <string name="MOB_PHOTO_START_DATE">Start date</string>
     <string name="MOB_PHOTO_END_DATE">End date</string>
     <string name="MOB_PHOTO_PARENT_ALBUM">Parent Album</string>
     <string name="MOB_PHOTO_NEW_ALBUM">New album</string>
@@ -452,7 +435,7 @@
     <string name="MOB_AUTH_SERVER_REQUIRED">Server URL is required</string>
     <string name="MOB_AUTH_DEVICE_PENDING">Device approval pending</string>
     <string name="MOB_AUTH_SELECT_ORG">Select Organization</string>
-    <string name="MOB_ORG">Organization</string> 
+    <string name="MOB_ORG">Organization</string>
     <string name="MOB_ADMIN_APPROVAL_MSG"> Your device is awaiting admin approval.</string>
     <string name="MOB_CHOOSE_ORG">Choose organization</string>
     <string name="MOB_PLEASE_WAIT">Please wait...</string>

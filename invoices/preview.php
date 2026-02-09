@@ -128,8 +128,8 @@ $previewTable = new HtmlTable('table_re_invoices_preview', $page, true, true, 't
 $previewTable->setDatatablesRowsPerPage($defaultPageLength);
 $previewTable->addRowHeadingByArray(array(
     $gL10n->get('RE_NUMBER'),
-    $gL10n->get('RE_START_DATE'),
-    $gL10n->get('RE_END_DATE'),
+    $gL10n->get('RE_START'),
+    $gL10n->get('RE_END'),
     $gL10n->get('RE_STATUS'),
     $gL10n->get('RE_USER'),
     $gL10n->get('RE_DUE_DATE'),

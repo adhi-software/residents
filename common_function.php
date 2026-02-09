@@ -1289,7 +1289,6 @@ function residentsBuildInvoicePreviewData(int $groupId, array $options = array()
     */
 function residentsGetPaymentStatus(string $status): string
 {
-    global $gL10n;
     $status = trim($status);
     
     // Direct mapping if code is already passed
@@ -1299,23 +1298,36 @@ function residentsGetPaymentStatus(string $status): string
 
     $s = strtolower($status);
     
-    if ($s === strtolower($gL10n->get('RE_STATUS_INITIATED')) || $s === 'initiated') return 'IT';
-    if ($s === strtolower($gL10n->get('RE_STATUS_SUCCESS')) || $s === 'success' || $s === 'captured' || $s === 'authorised') return 'SU';
-    if ($s === strtolower($gL10n->get('RE_STATUS_FAILURE')) || $s === 'failure' || $s === 'failed') return 'FA';
-    if ($s === strtolower($gL10n->get('RE_STATUS_TIMEOUT')) || $s === 'timeout') return 'TO';
-    if ($s === strtolower($gL10n->get('RE_STATUS_INVALID')) || $s === 'invalid') return 'IV';
-    if ($s === strtolower($gL10n->get('RE_STATUS_TERMINATE')) || $s === 'terminate') return 'TE';
-    if ($s === strtolower($gL10n->get('RE_STATUS_ABORTED')) || $s === 'aborted') return 'AB';
+    if ($s === 'initiated') return 'IT';
+    if ($s === 'success' || $s === 'captured' || $s === 'authorised' || $s === 'authorized') return 'SU';
+    if ($s === 'failure' || $s === 'failed') return 'FA';
+    if ($s === 'timeout') return 'TO';
+    if ($s === 'invalid') return 'IV';
+    if ($s === 'terminate') return 'TE';
+    if ($s === 'aborted') return 'AB';
 
     return 'IV';
 }
 
 /**
-    * Get localized payment status label from code
+    * Get payment status label from code (gateway-neutral, non-localized).
     */
 function residentsGetPaymentStatusLabel(string $code): string
 {
     global $gL10n;
+    if (!isset($gL10n)) {
+        switch ($code) {
+            case 'IT': return 'Initiated';
+            case 'SU': return 'Success';
+            case 'FA': return 'Failure';
+            case 'TO': return 'Timeout';
+            case 'IV': return 'Invalid';
+            case 'TE': return 'Terminate';
+            case 'AB': return 'Aborted';
+            default: return $code;
+        }
+    }
+
     switch ($code) {
         case 'IT': return $gL10n->get('RE_STATUS_INITIATED');
         case 'SU': return $gL10n->get('RE_STATUS_SUCCESS');

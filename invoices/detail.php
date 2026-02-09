@@ -359,11 +359,11 @@ ob_start();
                             <div class="fw-semibold"><?php echo htmlspecialchars((string)$statusLabel); ?></div>
             </div>
             <div class="col-sm-6 mb-4">
-                            <div class="meta-label mb-1"><?php echo $gL10n->get('RE_START_DATE'); ?></div>
+                            <div class="meta-label mb-1"><?php echo $gL10n->get('RE_START'); ?></div>
                             <div class="fw-semibold"><?php echo htmlspecialchars($formatDate($inv['riv_start_date'])); ?></div>
             </div>
             <div class="col-sm-6">
-                            <div class="meta-label mb-1"><?php echo $gL10n->get('RE_END_DATE'); ?></div>
+                            <div class="meta-label mb-1"><?php echo $gL10n->get('RE_END'); ?></div>
                             <div class="fw-semibold"><?php echo htmlspecialchars($formatDate($inv['riv_end_date'])); ?></div>
             </div>
                     </div>
@@ -382,8 +382,8 @@ ob_start();
                     <thead>
             <tr>
                             <th><?php echo $gL10n->get('SYS_NAME'); ?></th>
-                            <th><?php echo $gL10n->get('RE_START_DATE'); ?></th>
-                            <th><?php echo $gL10n->get('RE_END_DATE'); ?></th>
+                            <th><?php echo $gL10n->get('RE_START'); ?></th>
+                            <th><?php echo $gL10n->get('RE_END'); ?></th>
                             <th class="text-end"><?php echo $gL10n->get('RE_AMOUNT'); ?></th>
             </tr>
                     </thead>
