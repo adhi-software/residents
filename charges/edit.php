@@ -123,7 +123,7 @@ $form->addSelectBox('charge_period', $gL10n->get('RE_CHARGERS_PERIOD'), $periodO
     'defaultValue' => (string)$charge->getValue('rch_period'),
     'showContextDependentFirstEntry' => false
 ));
-$form->addInput('charge_amount', $gL10n->get('RE_CHARGERS_AMOUNT'), (string)$charge->getValue('rch_amount'), array('type' => 'number', 'step' => '0.01', 'minNumber' => 0.01, 'property' => HtmlForm::FIELD_REQUIRED));
+$form->addInput('charge_amount', $gL10n->get('RE_AMOUNT'), (string)$charge->getValue('rch_amount'), array('type' => 'number', 'step' => '0.01', 'minNumber' => 0.01, 'property' => HtmlForm::FIELD_REQUIRED));
 $form->addSelectBox('charge_roles', $gL10n->get('RE_CHARGERS_ROLES'), $rolesOptions, array(
     'defaultValue' => $charge->getRoleIds(),
     'multiselect' => true,

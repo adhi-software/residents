@@ -221,7 +221,7 @@ $hasGateway = $gatewayName !== '';
 
 $uiHtml = '
 <div class="mb-3 row">
-    <label class="col-sm-3 col-form-label">'.$gL10n->get('RE_PAYMENT_GATEWAY_LABEL').'</label>
+    <label class="col-sm-3 col-form-label">'.$gL10n->get('RE_PG_NAME').'</label>
     <div class="col-sm-9">
     <!-- Configured Gateway Card -->
     <div id="pg_card" class="card shadow-sm border-0 bg-light" style="'.($hasGateway ? '' : 'display:none;').'">
