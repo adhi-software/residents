@@ -166,25 +166,18 @@
     
     <!-- Mobile App Labels - Navigation -->
     <string name="MOB_NAV_HOME">Home</string>
-    <string name="MOB_NAV_CONTACTS">Contacts</string>
     <string name="MOB_NAV_BILLING">Billing</string>
-    <string name="MOB_NAV_MESSAGES">Messages</string>
-    <string name="MOB_NAV_PHOTOS">Photos</string>
-    <string name="MOB_NAV_PROFILE">Profile</string>
     <string name="MOB_NAV_SETTINGS">Settings</string>
     <string name="MOB_NAV_ABOUT">About Us</string>
     <string name="MOB_NAV_EMAIL">Email</string>
 
     <!-- Mobile App Labels - Sub-Tab Navigation -->
-    <string name="MOB_TAB_ANNOUNCEMENTS">Announcements</string>
-    <string name="MOB_TAB_EVENTS">Events</string>
     <string name="MOB_TAB_FILES">Files</string>
 
     <!-- Mobile App Labels - Screen Headers -->
     <string name="MOB_HEADER_INVOICE_DETAIL">Invoice Detail</string>
     <string name="MOB_HEADER_CONFIRM_PAYMENT">Confirm Payment</string>
     <string name="MOB_HEADER_CONTACT_DETAILS">Contact Details</string>
-    <string name="MOB_HEADER_ALBUM">Album</string>
 
     <!-- Mobile App Labels - Common -->
     <string name="MOB_LOADING">Loading...</string>
@@ -192,12 +185,9 @@
     <string name="MOB_RETRY">Retry</string>
     <string name="MOB_CONFIRM">Confirm</string>
     <string name="MOB_CLEAR">Clear</string>
-    <string name="MOB_FILTER">Filter</string>
     <string name="MOB_APPLY_FILTER">Apply Filter</string>
     <string name="MOB_SELECT_GROUP">Select Group</string>
     <string name="MOB_SELECT_USER">Select User</string>
-    <string name="MOB_LOADING_DETAILS">Loading details...</string>
-    <string name="MOB_USERNAME">Username</string>
 
     <!-- Mobile App Labels - About Us -->
     <string name="MOB_ABOUT_UNABLE_LOAD">Unable to load version information</string>
@@ -206,13 +196,9 @@
     <string name="MOB_ABOUT_BUILT_BY">Built by</string>
 
     <!-- Mobile App Labels - Invoice -->
-    <string name="MOB_INVOICE_LOADING">Loading Invoices...</string>
     <string name="MOB_INVOICE_NO_INVOICES">No invoices found.</string>
     <string name="MOB_INVOICE_DUE">Due</string>
-    <string name="MOB_INVOICE_NOT_AVAILABLE">Invoice not available</string>
     <string name="MOB_INVOICE_NUMBER">Invoice #</string>
-    <string name="MOB_INVOICE_DATE">INVOICE DATE</string>
-    <string name="MOB_INVOICE_DUE_DATE">DUE DATE</string>
     <string name="MOB_INVOICE_DOWNLOAD_PDF">Download PDF</string>
     <string name="MOB_INVOICE_SECURE_PAYMENT">Secure Payment</string>
     <string name="MOB_INVOICE_PAYMENT_FAILED">Your payment could not be completed.</string>
@@ -221,53 +207,29 @@
     <!-- Mobile App Labels - Payments -->
     <string name="MOB_PAYMENT_TOTAL_PAID">Total Paid</string>
     <string name="MOB_PAYMENT_NO_PAYMENTS">No payments found.</string>
-    <string name="MOB_PAYMENT_LOADING">Loading payments...</string>
     <string name="MOB_PAYER_INFO">Payer Information</string>
-    <string name="MOB_PAYMENT_UNKNOWN">Unknown</string>
     <string name="MOB_PAYMENT_STANDARD">Standard</string>
     <string name="MOB_BANK_REF_NO">Bank Ref No.</string>
     <string name="MOB_PAYMENT_FOR_INVOICE">Payment for invoice</string>
 
     <!-- Mobile App Labels - Messages -->
-    <string name="MOB_MSG_LOADING">Loading messages...</string>
+    <string name="MOB_MSG_CONTACT">Contact</string>
+    <string name="MOB_MSG_NEW">NEW</string>
+    <string name="MOB_MSG_CONVERSATION">Conversation</string>
+    <string name="MOB_MSG_NEW_MESSAGE">New Message</string>
+    <string name="MOB_MSG_UNAVAILABLE">Message unavailable.</string>
     <string name="MOB_MSG_UNABLE_LOAD">Unable to load messages</string>
     <string name="MOB_MSG_NO_CONVERSATIONS">No conversations yet.</string>
-    <string name="MOB_MSG_NO_EMAILS">No emails yet.</string>
     <string name="MOB_MSG_DELETE_CONFIRM">This removes the thread for you without notifying others.</string>
-    <string name="MOB_MSG_CONTACT">Contact</string>
     <string name="MOB_MSG_START_CHAT">Start a private chat</string>
     <string name="MOB_MSG_PICK_MEMBER">Pick a member and add a subject to continue.</string>
     <string name="MOB_MSG_SELECT_MEMBER">Select one member to start the chat.</string>
     <string name="MOB_MSG_DUPLICATES_REMOVED">Duplicates were removed. Review and send again.</string>
-    <string name="MOB_MSG_MESSAGE">Message</string>
-    <string name="MOB_MSG_UNAVAILABLE">Message unavailable.</string>
     <string name="MOB_MSG_BACK_INBOX">Back to inbox</string>
     <string name="MOB_MSG_DELETE_INBOX">This removes the thread from your inbox.</string>
-    <string name="MOB_MSG_UNABLE_SEND">Unable to send</string>
-    <string name="MOB_MSG_TO">To</string>
-    <string name="MOB_MSG_SUBJECT">Subject</string>
-    <string name="MOB_MSG_ATTACHMENTS">Attachments</string>
-    <string name="MOB_MSG_ATTACH_FILES">Attach files</string>
-    <string name="MOB_MSG_FILE_HINT">Common formats under 10 MB work best.</string>
-    <string name="MOB_MSG_SENDING">Sending...</string>
-    <string name="MOB_MSG_PREPARING">Preparing...</string>
-    <string name="MOB_MSG_SENT_SUCCESS">Your message is on its way.</string>
-    <string name="MOB_MSG_SELECT_RECIPIENT">Select at least one person or role.</string>
-    <string name="MOB_MSG_FORWARD_PREPARING">Preparing the original message to forward.</string>
-    <string name="MOB_MSG_PHOTO_LIBRARY">Photo Library</string>
-    <string name="MOB_MSG_ADD_ATTACHMENT">Add Attachment</string>
-    <string name="MOB_MSG_NO_CONTENT">No message content available.</string>
-    <string name="MOB_MSG_NEW">NEW</string>
-    <string name="MOB_MSG_DOWNLOADING">Downloading...</string>
-    <string name="MOB_MSG_CONVERSATION">Conversation</string>
-    <string name="MOB_MSG_NEW_MESSAGE">New Message</string>
-    <string name="MOB_MSG_NEW_EMAIL">New Email</string>
-    <string name="MOB_MSG_PROVIDE_ALBUM">Please provide an album name before saving</string>
     <string name="MOB_MSG_SUBJECT_REQUIRED">Give your message a short subject</string>
     <string name="MOB_MSG_BODY_REQUIRED">Type a quick note before sending.</string>
-    <string name="MOB_MSG_DUPLICATES_REMOVED">Some duplicates were removed. Review and tap send again.</string>
     <string name="MOB_MSG_SEND_ERROR">Unable to send message</string>
-    <string name="MOB_SEARCH_MEMBERS_OR_ROLES">Search members or roles</string>
     <string name="MOB_ATTACH_MSG">Choose where to select files from:</string>
     <string name="MOB_RECIPIENTS_ADD">Add recipients</string>
     <string name="MOB_SEARCH_NO_MATCHES">No matches for that search.</string>
@@ -276,19 +238,16 @@
     <string name="MOB_PLACEHOLDER_SUBJECT">Enter the message subject</string>
     <string name="MOB_FORWARD_ATTACHMENT_NOTE_SINGULAR">Includes %1$d attachment from the original email.</string>
     <string name="MOB_FORWARD_ATTACHMENT_NOTE_PLURAL">Includes %1$d attachments from the original email.</string>
-    <string name="MOB_LOADING_ORIGINAL_MSG">Loading original message</string>
     <string name="MOB_FORWARD_ORIGINAL_SUBJECT">Original subject: %1$s</string>
-    <string name="MOB_LABEL_UNTITLED">Untitled</string>
     <string name="MOB_PLACEHOLDER_MESSAGE_BODY">Enter the message</string>
     <string name="MOB_ATTACH_ADD_ANOTHER">Add another file</string>
     <string name="MOB_BTN_SEND_MESSAGE">Send message</string>
     <string name="MOB_CONV_DELETE_ERROR">Unable to delete this conversation.</string>
     <string name="MOB_CONV_DELETE_TITLE">Delete this conversation?</string>
-    <string name="MOB_EMAIL_LOADING">Loading email…</string>
     <string name="MOB_EMAIL_UNAVAILABLE">Email unavailable.</string>
     <string name="MOB_TODO_WIRE_ACTION">Wire this action when ready.</string>
     <string name="MOB_ATTACH_DOWNLOAD_URL_MISSING">Download URL missing for this file.</string>
-    <string name="MOB_ATTACH_DOWNLOAD_ERROR">Unable to download this attachment.</string>
+    <string name="MOB_DOWNLOAD_ERROR">Unable to download</string>
     <string name="MOB_RECIPIENTS_MORE">more recipients</string>
     <string name="MOB_ATTACH_TAP_TO_DOWNLOAD">Tap to download &amp; open</string>
     <string name="MOB_MSG_DELETE_ERROR">Unable to delete message.</string>
@@ -299,9 +258,26 @@
     <string name="MOB_WARN_MISSING_CONFIG">Set server URL and API key first.</string>
     <string name="MOB_FORWARD_EMAIL">Forward email</string>
 
+    <!-- email -->
+    <string name="MOB_LABEL_UNTITLED">Untitled</string>
+    <string name="MOB_MSG_NO_EMAILS">No emails yet.</string>
+    <string name="MOB_MSG_ATTACHMENTS">Attachments</string>
+    <string name="MOB_MSG_DOWNLOADING">Downloading...</string>
+    <string name="MOB_MSG_NEW_EMAIL">New Email</string>
+    <string name="MOB_SEARCH_MEMBERS_OR_ROLES">Search members or roles</string>
+    <string name="MOB_MSG_ATTACH_FILES">Attach files</string>
+    <string name="MOB_MSG_FILE_HINT">Common formats under 10 MB work best.</string>
+    <string name="MOB_MSG_SENDING">Sending...</string>
+    <string name="MOB_MSG_PREPARING">Preparing...</string>
+    <string name="MOB_MSG_SENT_SUCCESS">Your message is on its way.</string>
+    <string name="MOB_MSG_SELECT_RECIPIENT">Select at least one person or role.</string>
+    <string name="MOB_MSG_FORWARD_PREPARING">Preparing the original message to forward.</string>
+    <string name="MOB_MSG_PHOTO_LIBRARY">Photo Library</string>
+    <string name="MOB_MSG_ADD_ATTACHMENT">Add Attachment</string>
+    <string name="MOB_MSG_NO_CONTENT">No message content available.</string>
+ 
     <!-- Mobile App Labels - Photos -->
     <string name="MOB_PHOTO_ALBUMS">Albums</string>
-    <string name="MOB_PHOTO_LOADING">Loading albums...</string>
     <string name="MOB_PHOTO_NO_ALBUMS">No albums yet</string>
     <string name="MOB_PHOTO_ALBUMS_HINT">Albums from Admidio appear here automatically.</string>
     <string name="MOB_PHOTO_ERROR_LOAD">Unable to load album</string>
@@ -309,7 +285,6 @@
     <string name="MOB_PHOTO_DELETE_TITLE">Delete Photo</string>
     <string name="MOB_PHOTO_DELETE_CONFIRM">This photo will be permanently removed.</string>
     <string name="MOB_PHOTO_SELECT_FAILED">Failed to select images</string>
-    <string name="MOB_PHOTO_UPLOADING">Uploading photos...</string>
     <string name="MOB_PHOTO_UPLOAD_FAILED">Failed to upload photos.</string>
     <string name="MOB_PHOTO_CREATE_ALBUM">Create Album</string>
     <string name="MOB_PHOTO_ALBUM_NAME">Album Name</string>
@@ -319,38 +294,29 @@
     <string name="MOB_PHOTO_UPLOAD_RIGHT">Parent inherits visibility + upload rights</string>
     <string name="MOB_PHOTO_ALBUM_UPLOAD">Allow uploads</string>
     <string name="MOB_PHOTO_CHOOSE_PARENT_ALB">Choose parent album</string>
-    <string name="MOB_PHOTO_API_INTEGRATION_HINT">Wire this form to the Admidio residents photos API to store albums server-side.</string>
     <string name="MOB_PHOTO_ADD_PERMISSION_HINT">If enabled, members with permissions can add photos later.</string>
     <string name="MOB_PHOTO_SUCCESS_MSG">photos saved to Downloads.</string>
     <string name="MOB_PHOTO_PARTIAL_MSG">saved, but some failed. Check permissions.</string>
-    <string name="MOB_PHOTO_SAVE_ERROR">Unable to download selected photos.</string>
     <string name="MOB_COULD_NOT_SHARE_PHOTO">Could not share photos</string>
     <string name="MOB_PHOTO_UPLOAD_PERMISSION_DENIED">You do not have permission to upload photos to this album.</string>
-    <string name="MOB_PHOTO_DELETE_TITLE">Delete selected photos?</string>
     <string name="MOB_PHOTO_DELETE_MSG">Remove %1$d %2$s from this album?</string>
-    <string name="MOB_DEV_NOT_WIRED">Not yet wired</string>
-    <string name="MOB_DEV_CONN_ENDPOINT">Connect to the photo delete endpoint.</string>
     <string name="MOB_PHOTO_INVALID_FORMAT">Only JPEG and PNG images are supported. Please select valid image files.</string>
     <string name="MOB_PHOTO_SKIPPED_MSG">file(s) were skipped. Only JPEG and PNG images are supported.</string>
     <string name="MOB_PHOTO_UPLOADING">Uploading</string>
-    <string name="MOB_PHOTO_LABEL_SINGLE">photo</string>
     <string name="MOB_UPLOAD_SUCCESS_PREFIX">Successfully uploaded</string>
     <string name="MOB_UPLOAD_PARTIAL_PREFIX">Uploaded</string>
     <string name="MOB_FAILED_SUFFIX">failed</string>
     <string name="MOB_PHOTO_UPLOAD_ERROR">Could not upload photos</string>
     <string name="MOB_PHOTO_DELETE_PERMISSION_DENIED">You do not have permission to delete photos.</string>
-    <string name="MOB_DELETE_PHOTO_TITLE">Delete photo?</string>
-    <string name="MOB_DEV_DELETE_ENDPOINT">Connect to delete endpoint.</string>
     <string name="MOB_PHOTO_EMPTY_ALBUM">No photos in this album</string>
     <string name="MOB_PHOTO_MISSING_URL">Missing download url.</string>
     <string name="MOB_PHOTO_DOWNLOAD_PERMISSION_DENIED">You do not have permission to download this file.</string>
     <string name="MOB_PHOTO_OPEN_PERMISSION_DENIED">You do not have permission to open this file.</string>
     <string name="MOB_PHOTO_OPEN_FAILED">Unable to open file</string>
-    <string name="MOB_LOADING_FILES">Loading files…</string>
-    <string name="MOB_RETRY_ACTION">Try again</string>
     <string name="MOB_DOCUMENTS_AND_FILES">Documents &amp; Files</string>
     <string name="MOB_FILES_EMPTY_LOCATION">No folders or files are available in this location.</string>
-    <string name="MOB_LABEL_FOLDER">Folder</string>
+    <string name="MOB_MSG_PROVIDE_ALBUM">Please provide an album name before saving</string>
+
     <!-- Mobile App Labels - Profile -->
     <string name="MOB_PROFILE_PHOTO">Profile Photo</string>
     <string name="MOB_PROFILE_CHANGE_PHOTO">Upload Photo</string>
@@ -367,16 +333,8 @@
     <string name="MOB_PROFILE_PHOTO_CONFIRM">Are you sure you want to remove profile photo?</string>
 
     <!-- Mobile App Labels - Events -->
-    <string name="MOB_EVENT_LOADING">Loading events...</string>
     <string name="MOB_EVENT_NO_EVENTS">No events found.</string>
-    <string name="MOB_EVENT_TIME">Time</string>
-    <string name="MOB_EVENT_DESCRIPTION">Description</string>
-    <string name="MOB_EVENT_CALENDAR">Calendar</string>
-    <string name="MOB_EVENT_VENUE">Venue</string>
-    <string name="MOB_EVENT_DEADLINE">Deadline</string>
     <string name="MOB_EVENT_CONF">Events Confirmation</string>
-    <string name="MOB_EVENT_PARTICIPATE">Participate</string>
-    <string name="MOB_EVENT_MEMBERS">Members</string>
     <string name="MOB_EVENT_COMMENTS">Comments</string>
     <string name="MOB_EVENT_BY">By:</string>
     
@@ -414,6 +372,5 @@
     <string name="MOB_DATE_RANGE">Date Range</string>
 
     <!-- Mobile App Labels - announcement -->
-    <string name="MOB_LOADING_ANNOUNCE">Loading Announcements...</string>
     <string name="MOB_NO_ANNOUNCE">No announcements yet</string>
 </resources>
