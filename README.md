@@ -6,13 +6,10 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 
 - **Invoice Management** - Create, edit, preview, and delete invoices for residents
 - **Payment Tracking** - Record and manage payments against invoices
-- **Recurring Charges** - Define recurring charge templates for automated billing
-- **Device Management** - Track and approve resident device registrations
 - **Payment Gateway Integration** - CCAvenue payment gateway support for online payment transactions
-- **PDF Generation** - Generate PDF invoices and payment receipts
-- **Multi-Database Support** - Works with both MySQL and PostgreSQL databases
-- **Role-Based Access Control** - Configurable admin roles for billing management
-- **Mobile API** - REST API endpoints for mobile app integration
+- **Recurring Charges** - Define recurring charge templates for automated billing
+- **REST API** - REST API endpoints for mobile app integration
+- **Device Management** - Track and approve resident device registrations
 
 ## Requirements
 
