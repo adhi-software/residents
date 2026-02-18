@@ -124,12 +124,12 @@
     <string name="RE_PG_CONFIG_MISSING">Please add the payment gateway configuration to the Preferences section.</string>
     <string name="RE_INSTALL">Install</string>
     <string name="RE_INSTALL_HEADLINE">Residents - Installation</string>
-    <string name="RE_INSTALL_DESC">This wizard will create the Residents tables.</string>
-    <string name="RE_INSTALL_DONE">Tables created. Menu entry added.</string>
+    <string name="RE_INSTALL_DESC">This page will install the Residents plugin.</string>
+    <string name="RE_INSTALL_DONE">Plugin successfully installed</string>
     <string name="RE_INSTALL_ALREADY">Residents is already installed.</string>
     <string name="RE_UNINSTALL_RESIDENTS">Uninstall Residents</string>
-    <string name="RE_UNINSTALL_CONFIRM">Remove all Residents tables and menu entry?</string>
-    <string name="RE_UNINSTALL_DONE">All Residents tables (if present) were removed and the menu entry was deleted.</string>
+    <string name="RE_UNINSTALL_CONFIRM">Are you sure you want to uninstall Residents?</string>
+    <string name="RE_UNINSTALL_DONE">Residents successfully uninstalled.</string>
     <string name="RE_OPEN_RESIDENTS">Open Residents</string>
     <string name="RE_DEVICE_NUMBER">Device #</string>
     <string name="RE_DEVICE_ID">Device ID</string>
@@ -154,7 +154,6 @@
     <string name="RE_INACTIVE">InActive</string>
     <string name="RE_CLOSED">Closed</string>
     <string name="RE_SEARCH">Search</string>
-    <string name="RE_GROUPS_ROLES">Groups &amp; Roles</string>
     <string name="RE_CONFIRM_PAY">Confirm Pay</string>
     <string name="RE_SELECT_INVOICES_PAY">Please select the invoices you wish to pay:</string>
     <string name="RE_TOTAL_PAYABLE">Total Payable:</string>
@@ -163,7 +162,7 @@
     <string name="RE_OPTIONAL">Optional</string>
     <string name="RE_PAY_METHOD_EXAMPLE">e.g. Cash, Bank Transfer</string>
     <string name="RE_GATEWAY_LIMITATION">Currently supports only CCAvenue payment gateway.</string>
-    
+    <string name="RE_DELETE_ALL">Delete all</string>
     <!-- Mobile App Labels - Navigation -->
     <string name="MOB_NAV_HOME">Home</string>
     <string name="MOB_NAV_BILLING">Billing</string>
