@@ -138,6 +138,10 @@
     <string name="RE_SAVE">சேமிக்கவும்</string>
     <string name="RE_PG_ADD_BTN">பணம் வாயிலைச் சேர்க்கவும்</string>
     <string name="RE_PG_TIMEOUT">பணம் வாயில் நேர முடிவு (நிமிடங்கள்)</string>
+    <string name="RE_PG_CLIENT_ID">கிளையண்ட் ஐடி</string>
+    <string name="RE_PG_CLIENT_SECRET">கிளையண்ட் ரகசியம்</string>
+    <string name="RE_PG_TYPE_CCAVENUE">சிசிஅவென்யூ</string>
+    <string name="RE_PG_TYPE_PAYPAL">பேபால்</string>
     <string name="RE_PG_CONFIG_MISSING">பணம் வாயில் அமைப்பை விருப்பங்கள் பகுதியில் சேர்க்கவும்.</string>
     <string name="RE_INSTALL">நிறுவவும்</string>
     <string name="RE_INSTALL_HEADLINE">குடியிருப்போர் - நிறுவல்</string>
@@ -174,12 +178,14 @@
     <string name="RE_GROUPS_ROLES">குழுக்கள் மற்றும் பாத்திரங்கள்</string>
     <string name="RE_CONFIRM_PAY">பணம் செலுத்துவதை உறுதிப்படுத்து</string>
     <string name="RE_SELECT_INVOICES_PAY">நீங்கள் செலுத்த விரும்பும் சீட்டுகளைத் தேர்ந்தெடுக்கவும்:</string>
+    <string name="RE_SELECT_PAYMENT_GATEWAY">கட்டண வாயிலைத் தேர்ந்தெடுக்கவும்:</string>
     <string name="RE_TOTAL_PAYABLE">மொத்த கட்டணம்:</string>
     <string name="RE_ESTIMATED_TOTAL">மதிப்பிடப்பட்ட மொத்தம்</string>
     <string name="RE_ADD_ROWS_HELP">கூடுதல் வரிசைகளைச் சேர்க்க "+" என்பதைக் கிளிக் செய்யவும்.</string>
     <string name="RE_OPTIONAL">விருப்பத்திற்குரியது</string>
     <string name="RE_PAY_METHOD_EXAMPLE">எ.கா. பணம், வங்கி பரிமாற்றம்</string>
     <string name="RE_GATEWAY_LIMITATION">தற்போது CCAvenue கட்டண நுழைவாயில் மட்டும் ஆதரிக்கப்படுகிறது.</string>
+    <string name="RE_NO_GATEWAY_CONFIGURED">கட்டண வாயில் எதுவும் அமைக்கப்படவில்லை. ஒன்றை சேர்க்க கீழே உள்ள பொத்தானை அழுத்தவும்.</string>
     
     <!-- Mobile App Labels - Navigation -->
     <string name="MOB_NAV_HOME">முகப்புப் பக்கம்</string>

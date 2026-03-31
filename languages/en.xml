@@ -121,6 +121,10 @@
     <string name="RE_SAVE">Save</string>
     <string name="RE_PG_ADD_BTN">Add Payment Gateway</string>
     <string name="RE_PG_TIMEOUT">Payment Gateway Timeout (mins)</string>
+    <string name="RE_PG_CLIENT_ID">Client ID</string>
+    <string name="RE_PG_CLIENT_SECRET">Client Secret</string>
+    <string name="RE_PG_TYPE_CCAVENUE">CCAvenue</string>
+    <string name="RE_PG_TYPE_PAYPAL">PayPal</string>
     <string name="RE_PG_CONFIG_MISSING">Please add the payment gateway configuration to the Preferences section.</string>
     <string name="RE_INSTALL">Install</string>
     <string name="RE_INSTALL_HEADLINE">Residents - Installation</string>
@@ -156,12 +160,14 @@
     <string name="RE_SEARCH">Search</string>
     <string name="RE_CONFIRM_PAY">Confirm Pay</string>
     <string name="RE_SELECT_INVOICES_PAY">Please select the invoices you wish to pay:</string>
+    <string name="RE_SELECT_PAYMENT_GATEWAY">Select Payment Gateway:</string>
     <string name="RE_TOTAL_PAYABLE">Total Payable:</string>
     <string name="RE_ESTIMATED_TOTAL">Estimated total</string>
     <string name="RE_ADD_ROWS_HELP">Click "+" to insert more rows.</string>
     <string name="RE_OPTIONAL">Optional</string>
     <string name="RE_PAY_METHOD_EXAMPLE">e.g. Cash, Bank Transfer</string>
     <string name="RE_GATEWAY_LIMITATION">Currently supports only CCAvenue payment gateway.</string>
+    <string name="RE_NO_GATEWAY_CONFIGURED">No payment gateway configured. Click the button below to add one.</string>
     <string name="RE_DELETE_ALL">Delete all</string>
     <!-- Mobile App Labels - Navigation -->
     <string name="MOB_NAV_HOME">Home</string>

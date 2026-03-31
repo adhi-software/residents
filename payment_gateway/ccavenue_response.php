@@ -24,6 +24,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once(__DIR__ . '/../common_function.php');
 require_once(__DIR__ . '/ccavenue_config.php');
 require_once(__DIR__ . '/ccavenue_crypto.php');
+require_once(__DIR__ . '/ccavenue_common.php');
 
 // Note: Gateway callbacks are cross-site POSTs and may not carry session cookies.
 // We must NOT use any session-dependent functions here.
@@ -77,9 +78,7 @@ if (!empty($received['merchant_param5']) && is_string($received['merchant_param5
 $orderId       = $received['order_id']        ?? ($received['orderid'] ?? ($received['merchant_param4'] ?? ''));
 $amount        = $received['amount']          ?? ($received['order_amount'] ?? '');
 $currency      = $received['currency']         ?? ($received['order_currency'] ?? '');
-if (strtoupper($currency) === 'INR') {
-    $currency = '₹';
-}
+$currency      = ccavenue_unmap_currency($currency);
 $status        = $received['order_status']    ?? ($received['status'] ?? '');
 $merchantParam = $received['merchant_param3']  ?? ($received['merchant_param3'] ?? '');
 $invoiceIdRaw  = $received['merchant_param2']  ?? '';

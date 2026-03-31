@@ -15,6 +15,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../../common_function.php';
 require_once __DIR__ . '/../../payment_gateway/ccavenue_config.php';
 require_once __DIR__ . '/../../payment_gateway/ccavenue_crypto.php';
+require_once __DIR__ . '/../../payment_gateway/ccavenue_common.php';
 
 ob_clean();
 
@@ -253,15 +254,12 @@ parse_str($decResponse, $received);
 $orderId    = $received['order_id'] ?? ($received['merchant_param4'] ?? '');
 $amount     = $received['amount'] ?? ($received['order_amount'] ?? '');
 $currency   = $received['currency'] ?? ($received['order_currency'] ?? '');
+$currency   = ccavenue_unmap_currency($currency);
 $status     = $received['order_status'] ?? ($received['status'] ?? '');
 $trackingId = $received['tracking_id'] ?? '';
 $bankRefNo  = $received['bank_ref_no'] ?? '';
 $merchantParam = $received['merchant_param3'] ?? '';
 $statusMessage = $received['status_message'] ?? '';
-
-if (strtoupper($currency) === 'INR') {
-    $currency = '₹';
-}
 
 // Check if payment exists
 $paymentId = (int)$orderId;

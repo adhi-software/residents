@@ -10,6 +10,37 @@ require_once __DIR__ . '/ccavenue_config.php';
 require_once __DIR__ . '/ccavenue_crypto.php';
 
 /**
+ * Map Admidio currency symbols to ISO codes
+ */
+function ccavenue_map_currency(string $currency): string
+{
+    $currencyMap = [
+        '$' => 'USD',
+        '€' => 'EUR',
+        '£' => 'GBP',
+        '₹' => 'INR',
+        '¥' => 'JPY'
+    ];
+    $code = $currencyMap[$currency] ?? $currency;
+    return (strlen($code) === 3) ? strtoupper($code) : 'INR';
+}
+
+/**
+ * Map ISO codes back to Admidio currency symbols
+ */
+function ccavenue_unmap_currency(string $code): string
+{
+    $currencyMap = [
+        'USD' => '$',
+        'EUR' => '€',
+        'GBP' => '£',
+        'INR' => '₹',
+        'JPY' => '¥'
+    ];
+    return $currencyMap[strtoupper($code)] ?? $code;
+}
+
+/**
     * Common CCAvenue transaction initiation
     * Used by both web and mobile to start payment
     * 
@@ -143,6 +174,10 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
     $baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/';
     $apiBaseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/api/payment/';
     
+    if ($source === 'mobile' && !empty($_POST['mobile_base_url'])) {
+        $apiBaseUrl = rtrim($_POST['mobile_base_url'], '/') . '/adm_plugins/residents/api/payment/';
+    }
+
     if ($source === 'mobile') {
         // Mobile uses dedicated response handler with clean HTML output (in api folder)
         $redirectUrl = $apiBaseUrl . 'ccavenue_response.php';
@@ -220,7 +255,7 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
         'merchant_id'     => CCAVENUE_MERCHANT_ID,
         'order_id'        => (string)$paymentId,
         'amount'          => number_format($totalAmount, 2, '.', ''),
-        'currency'        => 'INR',
+        'currency'        => ccavenue_map_currency($currency),
         'redirect_url'    => $redirectUrl,
         'cancel_url'      => $cancelUrl,
         'language'        => 'EN',
@@ -274,7 +309,11 @@ function renderCcavenueForMobile(array $invoiceIds, int $userId)
         echo '<div style="font-size:48px;margin-bottom:16px">⚠️</div>';
         echo '<h3 style="color:#dc3545;margin:0 0 12px">Payment Error</h3>';
         echo '<p style="color:#666;margin:0">' . htmlspecialchars($result['error']) . '</p>';
-        echo '</div></body></html>';
+        echo '</div>';
+        echo '<script>';
+        echo 'if(window.ReactNativeWebView){window.ReactNativeWebView.postMessage(JSON.stringify({type:"PAYMENT_ERROR",success:false,data:' . json_encode($result) . '}));}';
+        echo '</script>';
+        echo '</body></html>';
         exit;
     }
     

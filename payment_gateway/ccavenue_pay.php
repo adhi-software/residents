@@ -17,6 +17,7 @@ if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
 }
 require_once(__DIR__ . '/ccavenue_config.php');
 require_once(__DIR__ . '/ccavenue_crypto.php');
+require_once(__DIR__ . '/ccavenue_common.php');
 
 global $gDb, $gCurrentUser, $gCurrentOrgId, $gSettingsManager, $gL10n, $gProfileFields;
 
@@ -268,7 +269,7 @@ $merchantData = array(
     'merchant_id' => CCAVENUE_MERCHANT_ID,
     'order_id' => $order_id,
     'amount' => number_format($amount, 2, '.', ''),
-    'currency' => 'INR',
+    'currency' => ccavenue_map_currency($currency),
     'redirect_url' => $redirectUrl,
     'cancel_url' => $cancelUrl,
     'language' => 'EN',

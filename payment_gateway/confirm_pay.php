@@ -55,14 +55,32 @@ if ($selectAll && count($selectedInvoiceIds) === 0 && is_array($invoices)) {
     }));
 }
 
+// Fetch configuration to determine payment gateway redirect behavior
+$config = residentsReadConfig();
+$gateways = $config['payment_gateways'] ?? array();
+
+$formAction = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/select_gateway.php';
+$singleGatewayIndex = '';
+
+if (count($gateways) === 1) {
+    $idx = array_key_first($gateways);
+    $gw = $gateways[$idx];
+    $singleGatewayName = strtoupper($gw['name'] ?? '');
+    $singleGatewayIndex = $idx;
+    $formAction = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/' . strtolower($singleGatewayName) . '_pay.php';
+}
+
 $page->addHtml('<div class="card">
-    <div class="card-header">
-    <h3 class="card-title">' . $gL10n->get('RE_PAYMENT_DETAILS') . '</h3>
-    </div>
     <div class="card-body">
-    <form action="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/payment_gateway/ccavenue_pay.php') . '" method="post" id="confirm_pay_form">
-            <input type="hidden" name="admidio-csrf-token" value="' . $gCurrentSession->getCsrfToken() . '" />
-            <p>'. $gL10n->get('RE_SELECT_INVOICES_PAY') .'</p>
+    <form action="' . SecurityUtils::encodeUrl($formAction) . '" method="post" id="confirm_pay_form">
+            <input type="hidden" name="admidio-csrf-token" value="' . $gCurrentSession->getCsrfToken() . '" />');
+
+if ($singleGatewayIndex !== '') {
+    $page->addHtml('<input type="hidden" name="payment_gateway" value="' . $singleGatewayIndex . '" />');
+}
+
+$page->addHtml('
+            <p>' . $gL10n->get('RE_SELECT_INVOICES_PAY') . '</p>
             <table class="table table-striped table-hover">
     <thead>
                     <tr>
@@ -114,11 +132,13 @@ $page->addHtml('</tbody>
             <th id="total_display">0.00</th>
                     </tr>
     </tfoot>
-            </table>
-            
+            </table>');
+
+
+$page->addHtml('
             <div class="d-flex justify-content-end mt-3" style="gap:0.5rem;">
     <a href="' . SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', array('tab' => 'invoices')) . '" class="btn btn-secondary me-2">' . $gL10n->get('SYS_CANCEL') . '</a>
-    <button type="submit" class="btn btn-primary" id="btn_pay" disabled>'. $gL10n->get('RE_CONFIRM_PAY') .'</button>
+    <button type="submit" class="btn btn-primary" id="btn_pay" disabled>Proceed Pay</button>
             </div>
     </form>
     </div>
