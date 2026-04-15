@@ -477,10 +477,18 @@ $jsActions = <<<'JS'
       }
       var buttonEl = $('#re-delete-selected');
       if (buttonEl.length) {
+        // Also ensure SEPA button exists
+        if (!$('#re-sepa-export').length) {
+          var sepaBtn = $('<button type="button" id="re-sepa-export" class="btn btn-secondary btn-sm ms-2" disabled><i class="bi bi-file-earmark-code"></i> ' + '{{SEPA_BUTTON_LABEL_RAW}}' + '</button>');
+          lengthEl.append(sepaBtn);
+        }
         return buttonEl;
       }
       var newButtonEl = $('<button type="button" id="re-delete-selected" class="btn btn-danger btn-sm ms-2"><i class="bi bi-trash"></i> ' + deleteButtonLabel + '</button>');
       lengthEl.append(newButtonEl);
+      // Add SEPA button right after Delete button
+      var sepaBtn = $('<button type="button" id="re-sepa-export" class="btn btn-secondary btn-sm ms-2" disabled><i class="bi bi-file-earmark-code"></i> ' + '{{SEPA_BUTTON_LABEL_RAW}}' + '</button>');
+      lengthEl.append(sepaBtn);
       return newButtonEl;
     }
     function bindDeleteButton(buttonEl){
@@ -579,9 +587,50 @@ $jsActions = <<<'JS'
           .trigger('change');
         syncHeaderCheckbox();
       });
+    function updateSepaButtonState(){
+      var sepaBtn = $('#re-sepa-export');
+      if (sepaBtn.length === 0) { return; }
+      var selectedCheckboxes = tableEl.find('tbody input.re-row-select:checked');
+      var selectedCount = selectedCheckboxes.length;
+      var anyPaidSelected = false;
+      selectedCheckboxes.each(function(){
+        if ($(this).data('paid') == '1') {
+          anyPaidSelected = true;
+          return false;
+        }
+      });
+      sepaBtn.prop('disabled', selectedCount === 0 || anyPaidSelected);
+    }
+    $(document).on('click', '#re-sepa-export', function(e){
+      e.preventDefault();
+      var selectedIds = [];
+      tableEl.find('tbody input.re-row-select:checked').each(function(){
+        selectedIds.push($(this).val());
+      });
+      if (selectedIds.length === 0) { return; }
+      
+      // Create and submit a hidden form to sepa_prepare.php
+      var form = $('<form>', {
+        'method': 'post',
+        'action': '{{SEPA_EXPORT_URL}}'
+      });
+      form.append($('<input>', {
+        'type': 'hidden',
+        'name': 'ids',
+        'value': selectedIds.join(',')
+      }));
+      form.append($('<input>', {
+        'type': 'hidden',
+        'name': 'admidio-csrf-token',
+        'value': '{{CSRF_TOKEN}}'
+      }));
+      $('body').append(form);
+      form.submit();
+    });
     dataTable.on('draw', function(){
       updateInfo();
       syncHeaderCheckbox();
+      updateSepaButtonState();
       if (isAdmin) {
         deleteButtonEl = getDeleteButton();
       }
@@ -590,6 +639,7 @@ $jsActions = <<<'JS'
     tableEl.on('change', 'input.re-row-select', function(){
       updateInfo();
       syncHeaderCheckbox();
+      updateSepaButtonState();
     });
     updateInfo();
     syncHeaderCheckbox();
@@ -604,7 +654,9 @@ $jsActions = strtr($jsActions, array(
 '{{DELETE_ERROR}}' => $deleteErrorMsg,
 '{{DELETE_BUTTON_LABEL}}' => $deleteButtonLabel,
 '{{DELETE_PAID_MSG}}' => $deletePaidMsg,
+'{{SEPA_BUTTON_LABEL_RAW}}' => $gL10n->get('RE_SEPA_EXPORT'),
 '{{CSRF_TOKEN}}' => $csrfTokenJs,
+'{{SEPA_EXPORT_URL}}' => ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/invoices/sepa_prepare.php',
 ));
 $page->addJavascript("\n" . $jsActions . "\n", true);
 

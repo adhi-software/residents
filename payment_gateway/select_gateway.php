@@ -133,14 +133,14 @@ $page->addHtml('
 
             <style>
                 .gateway-option input:checked + label {
-                    border-color: #0d6efd !important;
-                    background-color: #f8f9ff !important;
-                    box-shadow: 0 0 0 0.3rem rgba(13, 110, 253, 0.15);
+                    border-color: #349aaa !important;
+                    background-color: #f4fafb !important;
+                    box-shadow: 0 0 0 0.3rem rgba(52, 154, 170, 0.15);
                 }
                 .gateway-option input:checked + label .radio-icon::before {
                     content: "\F26B"; 
                     font-family: "bootstrap-icons";
-                    color: #0d6efd;
+                    color: #349aaa;
                 }
                 .gateway-option label:hover {
                     background-color: #f8f9fa !important;

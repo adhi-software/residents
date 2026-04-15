@@ -158,6 +158,17 @@
     <string name="RE_INACTIVE">InActive</string>
     <string name="RE_CLOSED">Closed</string>
     <string name="RE_SEARCH">Search</string>
+    <string name="RE_SEPA_EXPORT">Generate SEPA XML</string>
+    <string name="RE_SEQUENCE_TYPE">Sequence Type</string>
+    <string name="RE_SEPA_OOFF">One-off debit (OOFF)</string>
+    <string name="RE_SEPA_FIRST">First debit (FRST)</string>
+    <string name="RE_SEPA_RECURRING">Recurring debit (RCUR)</string>
+    <string name="RE_SEPA_FINAL">Final debit (FNAL)</string>
+    <string name="RE_SEPA_NO_INVOICES">No invoices selected.</string>
+    <string name="RE_SEPA_EXPORT_XML">Export XML</string>
+    <string name="RE_SEPA_GENERATING">Generating...</string>
+    <string name="RE_SEPA_FIELDS_NOT_FOUND">MembershipFee profile fields not found. Please ensure the MembershipFee plugin is installed and configured.</string>
+    <string name="RE_SEPA_INVALID_DATE">Invalid due date provided.</string>
     <string name="RE_CONFIRM_PAY">Confirm Pay</string>
     <string name="RE_SELECT_INVOICES_PAY">Please select the invoices you wish to pay:</string>
     <string name="RE_SELECT_PAYMENT_GATEWAY">Select Payment Gateway:</string>

@@ -175,6 +175,17 @@
     <string name="RE_INACTIVE">செயலற்றது</string>
     <string name="RE_CLOSED">மூடப்பட்டது</string>
 	<string name="RE_SEARCH">தேடு</string>
+    <string name="RE_SEPA_EXPORT">SEPA ஏற்றுமதி</string>
+    <string name="RE_SEQUENCE_TYPE">தொடர் வகை</string>
+    <string name="RE_SEPA_OOFF">ஒற்றைத் தவணை (OOFF)</string>
+    <string name="RE_SEPA_FIRST">முதல் தவணை (FRST)</string>
+    <string name="RE_SEPA_RECURRING">தொடரும் தவணை (RCUR)</string>
+    <string name="RE_SEPA_FINAL">இறுதித் தவணை (FNAL)</string>
+    <string name="RE_SEPA_NO_INVOICES">சீட்டுகள் எதுவும் தேர்ந்தெடுக்கப்படவில்லை.</string>
+    <string name="RE_SEPA_EXPORT_XML">XML ஏற்றுமதி</string>
+    <string name="RE_SEPA_GENERATING">உருவாக்கப்படுகிறது...</string>
+    <string name="RE_SEPA_FIELDS_NOT_FOUND">MembershipFee சுயவிவர புலங்கள் கிடைக்கவில்லை. MembershipFee செருகுநிரல் நிறுவப்பட்டு உள்ளமைக்கப்பட்டுள்ளதா என்பதை உறுதிப்படுத்தவும்.</string>
+    <string name="RE_SEPA_INVALID_DATE">தவறான காலக்கெடு தேதி.</string>
     <string name="RE_GROUPS_ROLES">குழுக்கள் மற்றும் பாத்திரங்கள்</string>
     <string name="RE_CONFIRM_PAY">பணம் செலுத்துவதை உறுதிப்படுத்து</string>
     <string name="RE_SELECT_INVOICES_PAY">நீங்கள் செலுத்த விரும்பும் சீட்டுகளைத் தேர்ந்தெடுக்கவும்:</string>
