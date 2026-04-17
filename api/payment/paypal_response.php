@@ -198,16 +198,16 @@ try {
     $currency = $pgPaymentData['rtr_currency'];
     $trackingId = $captureResponse['purchase_units'][0]['payments']['captures'][0]['id'] ?? '';
 
-    $gDb->queryPrepared('UPDATE ' . TBL_RE_TRANS . ' SET rtr_status = ?, rtr_pg_response = ?, rtr_pg_msg = ?, rtr_usr_id_change = ?, rtr_pg_trans_date = NOW(), rtr_timestamp_change = NOW() WHERE rtr_id = ?', 
-    [($isSuccess ? 'SU' : 'FA'), $captureRequest['body'], $status, $ownerId, $paymentId], false);
+    $gDb->queryPrepared('UPDATE ' . TBL_RE_TRANS . ' SET rtr_status = ?, rtr_pg_response = ?, rtr_pg_msg = ?, rtr_usr_id_change = ?, rtr_pg_trans_date = ?, rtr_timestamp_change = ? WHERE rtr_id = ?', 
+    [($isSuccess ? 'SU' : 'FA'), $captureRequest['body'], $status, $ownerId, DATETIME_NOW, DATETIME_NOW, $paymentId], false);
 
     if ($isSuccess) {
         $itemStmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_TRANS_ITEMS . ' WHERE rti_pg_payment_id = ?', [$paymentId], false);
         $pgPaymentItems = $itemStmt ? $itemStmt->fetchAll() : array();
 
         if ($pgPaymentItems) {
-            $gDb->queryPrepared('INSERT INTO ' . TBL_RE_PAYMENTS . ' (rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?)', 
-            ['SU', 'PayPal', 'Online', $trackingId, $ownerId, $orgId, $ownerId, $ownerId], false);
+            $gDb->queryPrepared('INSERT INTO ' . TBL_RE_PAYMENTS . ' (rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change, rpa_timestamp_create, rpa_timestamp_change) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            ['SU', DATETIME_NOW, 'PayPal', 'Online', $trackingId, $ownerId, $orgId, $ownerId, $ownerId, DATETIME_NOW, DATETIME_NOW], false);
             $bilPaymentId = $gDb->lastInsertId();
 
             if ($bilPaymentId > 0) {

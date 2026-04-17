@@ -321,7 +321,7 @@ try {
         rtr_pg_response = ?,
         rtr_usr_id_change = ?,
         rtr_pg_trans_date = ?,
-        rtr_timestamp_change = NOW()
+        rtr_timestamp_change = ?
     WHERE rtr_id = ?';
 
     $updated = $gDb->queryPrepared($updateSql, [
@@ -335,6 +335,7 @@ try {
         $decResponse,
         is_numeric($merchantParam) ? (int)$merchantParam : null,
         $formattedTransDate,
+        DATETIME_NOW,
         $paymentId
     ], false);
     if ($updated === false) {
@@ -360,8 +361,9 @@ if ($isSuccess) {
 
         if ($pgPaymentItems) {
             $insertPaymentSql = 'INSERT INTO ' . TBL_RE_PAYMENTS . ' (
-                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_bank_ref_no, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_bank_ref_no, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change,
+                rpa_timestamp_create, rpa_timestamp_change
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
             $paymentStatus = residentsGetPaymentStatus($status);
             $merchantUser = is_numeric($merchantParam) ? (int)$merchantParam : null;
@@ -376,7 +378,9 @@ if ($isSuccess) {
                 $merchantUser,
                 $orgId,
                 $merchantUser,
-                $merchantUser
+                $merchantUser,
+                DATETIME_NOW,
+                DATETIME_NOW
             ], false);
 
             if ($insertedPayment === false) {
@@ -389,8 +393,8 @@ if ($isSuccess) {
             if ($bilPaymentId > 0) {
                 // Link to pg_payment
                 $linked = $gDb->queryPrepared(
-                    'UPDATE ' . TBL_RE_TRANS . ' SET rtr_payment_id = ?, rtr_usr_id_change = ?, rtr_timestamp_change = NOW() WHERE rtr_id = ?',
-                    [$bilPaymentId, $merchantUser, $paymentId],
+                    'UPDATE ' . TBL_RE_TRANS . ' SET rtr_payment_id = ?, rtr_usr_id_change = ?, rtr_timestamp_change = ? WHERE rtr_id = ?',
+                    [$bilPaymentId, $merchantUser, DATETIME_NOW, $paymentId],
                     false
                 );
                 if ($linked === false) {
@@ -399,8 +403,9 @@ if ($isSuccess) {
 
                 // Insert payment items and mark invoices paid
                 $insertItemSql = 'INSERT INTO ' . TBL_RE_PAYMENT_ITEMS . ' (
-                    rpi_payment_id, rpi_inv_id, rpi_amount, rpi_currency, rpi_usr_id, rpi_org_id, rpi_usr_id_create, rpi_usr_id_change
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+                    rpi_payment_id, rpi_inv_id, rpi_amount, rpi_currency, rpi_usr_id, rpi_org_id, rpi_usr_id_create, rpi_usr_id_change,
+                    rpi_timestamp_create, rpi_timestamp_change
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
                 foreach ($pgPaymentItems as $item) {
                     $insertedItem = $gDb->queryPrepared($insertItemSql, [
@@ -411,7 +416,9 @@ if ($isSuccess) {
                         $merchantUser,
                         $orgId,
                         $merchantUser,
-                        $merchantUser
+                        $merchantUser,
+                        DATETIME_NOW,
+                        DATETIME_NOW
                     ], false);
                     if ($insertedItem === false) {
                         error_log('Mobile response: Failed to insert payment item: DB error');

@@ -46,13 +46,14 @@ try {
                 rtr_status = ?,
                 rtr_pg_msg = ?,
                 rtr_usr_id_change = ?,
-                rtr_timestamp_change = NOW()
+                rtr_timestamp_change = ?
         WHERE rtr_id = ?';
 
         $gDb->queryPrepared($updateSql, array(
             'AB',
             'Cancelled by user',
             $ownerId,
+            DATETIME_NOW,
             $paymentId
         ), false);
     }

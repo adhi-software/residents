@@ -135,13 +135,14 @@ $insertSql = 'INSERT INTO ' . TBL_RE_TRANS . ' (
         rtr_pg_id, rtr_status,
         rtr_amount, rtr_currency, rtr_payment_id, rtr_usr_id, rtr_org_id,
         rtr_pg_pay_method, rtr_pg_msg, rtr_pg_trans_date, rtr_pg_request,
-        rtr_pg_response, rtr_usr_id_create, rtr_usr_id_change
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        rtr_pg_response, rtr_usr_id_create, rtr_usr_id_change,
+        rtr_timestamp_create, rtr_timestamp_change
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
 if ($gDb->queryPrepared($insertSql, array(
     null, 'IT', number_format($totalAmount, 2, '.', ''), $currency, null,
     $ownerId, $gCurrentOrgId, 'PayPal', 'Invoice Payment', null, null, null,
-    $ownerId, $ownerId
+    $ownerId, $ownerId, DATETIME_NOW, DATETIME_NOW
 ), false) !== false) {
     $paymentId = (int)$gDb->lastInsertId();
 }
@@ -149,14 +150,15 @@ if ($gDb->queryPrepared($insertSql, array(
 if ($paymentId > 0) {
     $insertItemSql = 'INSERT INTO ' . TBL_RE_TRANS_ITEMS . ' (
         rti_pg_payment_id, rti_inv_id,
-        rti_amount, rti_currency, rti_usr_id, rti_org_id, rti_usr_id_create, rti_usr_id_change
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        rti_amount, rti_currency, rti_usr_id, rti_org_id, rti_usr_id_create, rti_usr_id_change,
+        rti_timestamp_create, rti_timestamp_change
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
     foreach ($invoiceIds as $invId) {
         $invTotal = residentsGetInvoiceTotals($invId);
         $gDb->queryPrepared($insertItemSql, array(
             $paymentId, $invId, number_format((float)$invTotal['amount'], 2, '.', ''), $currency,
-            $ownerId, $gCurrentOrgId, $ownerId, $ownerId
+            $ownerId, $gCurrentOrgId, $ownerId, $ownerId, DATETIME_NOW, DATETIME_NOW
         ), false);
     }
 }
@@ -237,8 +239,8 @@ if ($orderRequest['code'] === 200 || $orderRequest['code'] === 201) {
     
     // Update payment record with PayPal Order ID
     $gDb->queryPrepared(
-        'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_id = ?, rtr_pg_request = ?, rtr_timestamp_change = NOW() WHERE rtr_id = ?',
-        array($paypalOrderId, json_encode($orderData), $paymentId),
+        'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_id = ?, rtr_pg_request = ?, rtr_timestamp_change = ? WHERE rtr_id = ?',
+        array($paypalOrderId, json_encode($orderData), DATETIME_NOW, $paymentId),
         false
     );
     

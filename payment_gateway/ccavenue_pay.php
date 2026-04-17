@@ -185,8 +185,9 @@ try {
             rtr_pg_id, rtr_status,
             rtr_amount, rtr_currency, rtr_payment_id, rtr_usr_id, rtr_org_id,
             rtr_pg_pay_method, rtr_pg_msg, rtr_pg_trans_date, rtr_pg_request,
-            rtr_pg_response, rtr_usr_id_create, rtr_usr_id_change
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            rtr_pg_response, rtr_usr_id_create, rtr_usr_id_change,
+            rtr_timestamp_create, rtr_timestamp_change
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
     if ($gDb->queryPrepared($insertSql, array(
     null,
@@ -202,7 +203,9 @@ try {
     null,
     null,
     $ownerId,
-    $ownerId
+    $ownerId,
+    DATETIME_NOW,
+    DATETIME_NOW
     ), false) === false) {
         throw new RuntimeException('Failed to create initiated payment record.');
     }
@@ -214,8 +217,9 @@ try {
     if ($paymentId > 0) {
         $insertItemSql = 'INSERT INTO ' . TBL_RE_TRANS_ITEMS . ' (
         rti_pg_payment_id, rti_inv_id,
-        rti_amount, rti_currency, rti_usr_id, rti_org_id, rti_usr_id_create, rti_usr_id_change
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        rti_amount, rti_currency, rti_usr_id, rti_org_id, rti_usr_id_create, rti_usr_id_change,
+        rti_timestamp_create, rti_timestamp_change
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
         foreach ($invoiceIds as $invId) {
             $invTotal = residentsGetInvoiceTotals($invId);
@@ -229,7 +233,9 @@ try {
         $ownerId,
         $gCurrentOrgId ?? null,
         $ownerId,
-        $ownerId
+        $ownerId,
+        DATETIME_NOW,
+        DATETIME_NOW
             ), false) === false) {
                 throw new RuntimeException('Failed to create initiated payment item record.');
             }
@@ -298,8 +304,8 @@ $merchantDataStr = rtrim($merchantDataStr, '&'); // Remove trailing &
 if ($paymentId > 0) {
     try {
         if ($gDb->queryPrepared(
-            'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_request = ?, rtr_timestamp_change = CURRENT_TIMESTAMP, rtr_usr_id_change = ? WHERE rtr_id = ?',
-            array($merchantDataStr, $ownerId, $paymentId),
+            'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_request = ?, rtr_timestamp_change = ?, rtr_usr_id_change = ? WHERE rtr_id = ?',
+            array($merchantDataStr, DATETIME_NOW, $ownerId, $paymentId),
             false
         ) === false) {
             throw new RuntimeException('Failed to update payment request payload.');

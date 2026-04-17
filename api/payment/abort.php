@@ -48,8 +48,8 @@ try {
         while ($row = $stmt->fetch()) {
             $paymentId = (int)$row['rtr_id'];
             $gDb->queryPrepared(
-                'UPDATE ' . TBL_RE_TRANS . ' SET rtr_status = ?, rtr_pg_msg = ?, rtr_usr_id_change = ?, rtr_timestamp_change = NOW() WHERE rtr_id = ?',
-                ['AB', 'Cancelled by user (Mobile - WebView closed)', $userId, $paymentId],
+                'UPDATE ' . TBL_RE_TRANS . ' SET rtr_status = ?, rtr_pg_msg = ?, rtr_usr_id_change = ?, rtr_timestamp_change = ? WHERE rtr_id = ?',
+                ['AB', 'Cancelled by user (Mobile - WebView closed)', $userId, DATETIME_NOW, $paymentId],
                 false
             );
             $aborted++;

@@ -74,8 +74,8 @@ try {
             rtr_pg_response = ?,
             rtr_pg_msg = ?,
             rtr_usr_id_change = ?,
-            rtr_pg_trans_date = NOW(),
-            rtr_timestamp_change = NOW()
+            rtr_pg_trans_date = ?,
+            rtr_timestamp_change = ?
     WHERE rtr_id = ?';
 
     $gDb->queryPrepared($updateSql, array(
@@ -83,6 +83,8 @@ try {
         $captureRequest['body'],
         $status,
         $ownerId,
+        DATETIME_NOW,
+        DATETIME_NOW,
         $paymentId
     ), false);
 
@@ -93,11 +95,12 @@ try {
 
         if ($pgPaymentItems) {
             $insertPaymentSql = 'INSERT INTO ' . TBL_RE_PAYMENTS . ' (
-                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change
-            ) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?)';
+                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change,
+                rpa_timestamp_create, rpa_timestamp_change
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
             $gDb->queryPrepared($insertPaymentSql, array(
-                'SU', 'PayPal', 'Online', $trackingId, $ownerId, $orgId, $ownerId, $ownerId
+                'SU', DATETIME_NOW, 'PayPal', 'Online', $trackingId, $ownerId, $orgId, $ownerId, $ownerId, DATETIME_NOW, DATETIME_NOW
             ), false);
 
             $bilPaymentId = $gDb->lastInsertId();

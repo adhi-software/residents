@@ -106,7 +106,7 @@ if (!empty($token)) {
         $stmt = $gDb->queryPrepared('SELECT * FROM ' . TBL_RE_TRANS . ' WHERE rtr_pg_id = ?', [$token], false);
         $pgPaymentData = $stmt ? $stmt->fetch() : null;
         if ($pgPaymentData) {
-            $gDb->queryPrepared('UPDATE ' . TBL_RE_TRANS . ' SET rtr_status = ?, rtr_pg_msg = ?, rtr_timestamp_change = NOW() WHERE rtr_id = ?', ['AB', 'Cancelled by user (Mobile)', (int)$pgPaymentData['rtr_id']], false);
+            $gDb->queryPrepared('UPDATE ' . TBL_RE_TRANS . ' SET rtr_status = ?, rtr_pg_msg = ?, rtr_timestamp_change = ? WHERE rtr_id = ?', ['AB', 'Cancelled by user (Mobile)', DATETIME_NOW, (int)$pgPaymentData['rtr_id']], false);
         }
     } catch (\Throwable $e) {
         error_log('Mobile PayPal Cancel Error: ' . $e->getMessage());

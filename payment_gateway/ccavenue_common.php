@@ -199,8 +199,10 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
             rtr_org_id,
             rtr_pg_pay_method,
             rtr_usr_id_create,
-            rtr_usr_id_change
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            rtr_usr_id_change,
+            rtr_timestamp_create,
+            rtr_timestamp_change
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
             null,
             'IT',
@@ -210,7 +212,9 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
             $gCurrentOrgId,
             'CCAvenue',
             $ownerId,
-            $ownerId
+            $ownerId,
+            DATETIME_NOW,
+            DATETIME_NOW
         ],
         false
     ) === false) {
@@ -232,8 +236,10 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
                 rti_usr_id,
                 rti_org_id,
                 rti_usr_id_create,
-                rti_usr_id_change
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                rti_usr_id_change,
+                rti_timestamp_create,
+                rti_timestamp_change
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 $paymentId,
                 $invId,
@@ -242,7 +248,9 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
                 $ownerId,
                 $gCurrentOrgId,
                 $ownerId,
-                $ownerId
+                $ownerId,
+                DATETIME_NOW,
+                DATETIME_NOW
             ],
             false
         ) === false) {
@@ -274,8 +282,8 @@ function initCcavenueTransaction(array $invoiceIds, int $userId, string $source 
 
     // Save request data to rtr_pg_request
     $gDb->queryPrepared(
-        'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_request = ?, rtr_timestamp_change = NOW() WHERE rtr_id = ?',
-        [$merchantStr, $paymentId],
+        'UPDATE ' . TBL_RE_TRANS . ' SET rtr_pg_request = ?, rtr_timestamp_change = ? WHERE rtr_id = ?',
+        [$merchantStr, DATETIME_NOW, $paymentId],
         false
     );
 
