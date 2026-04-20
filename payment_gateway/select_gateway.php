@@ -113,10 +113,10 @@ foreach ($gateways as $idx => $gw) {
     
     $page->addHtml('
                     <div class="form-check gateway-option p-0">
-                        <input class="form-check-input d-none pg-radio" type="radio" name="payment_gateway" id="pg_' . $idx . '" value="' . $idx . '" data-action="' . strtolower($name) . '_pay.php" required>
+                        <input class="form-check-input pg-radio" type="radio" name="payment_gateway" id="pg_' . $idx . '" value="' . $idx . '" data-action="' . strtolower($name) . '_pay.php" required style="display: none;">
                         <label class="form-check-label d-flex align-items-center border rounded p-4 bg-white" for="pg_' . $idx . '" style="min-width: 300px; cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                             <div class="d-flex align-items-center w-100">
-                                <i class="bi bi-circle me-4 radio-icon" style="font-size: 1.4rem; color: #ced4da;"></i>
+                                <span class="gateway-radio-circle me-4"></span>
                                 <div class="gateway-logo-container border rounded bg-white me-4 d-flex align-items-center justify-content-center" style="width: 100px; height: 45px; box-shadow: inset 0 0 3px rgba(0,0,0,0.05); overflow: hidden;">
                                     <img src="' . $logoSrc . '" alt="" style="max-height: 30px; max-width: 90%; object-fit: contain; ' . $scaleStyle . '" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">
                                     <span class="logo-fallback" style="display: none; font-weight: bold; font-size: 0.8rem; color: #666;">' . substr($name, 0, 2) . '</span>
@@ -132,24 +132,46 @@ $page->addHtml('
             </div>
 
             <style>
+                .gateway-radio-circle {
+                    display: inline-block;
+                    width: 22px;
+                    height: 22px;
+                    min-width: 22px;
+                    border-radius: 50%;
+                    border: 2px solid #ced4da;
+                    position: relative;
+                    transition: all 0.2s ease-in-out;
+                }
+                .gateway-radio-circle::after {
+                    content: "";
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) scale(0);
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    background-color: #349aaa;
+                    transition: transform 0.2s ease-in-out;
+                }
+                .gateway-option input:checked + label .gateway-radio-circle {
+                    border-color: #349aaa;
+                }
+                .gateway-option input:checked + label .gateway-radio-circle::after {
+                    transform: translate(-50%, -50%) scale(1);
+                }
                 .gateway-option input:checked + label {
                     border-color: #349aaa !important;
                     background-color: #f4fafb !important;
                     box-shadow: 0 0 0 0.3rem rgba(52, 154, 170, 0.15);
-                }
-                .gateway-option input:checked + label .radio-icon::before {
-                    content: "\F26B"; 
-                    font-family: "bootstrap-icons";
-                    color: #349aaa;
                 }
                 .gateway-option label:hover {
                     background-color: #f8f9fa !important;
                     transform: translateY(-2px);
                     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
                 }
-                .radio-icon::before {
-                    content: "\F285"; 
-                    font-family: "bootstrap-icons";
+                .gateway-option label:hover .gateway-radio-circle {
+                    border-color: #349aaa;
                 }
             </style>
             
