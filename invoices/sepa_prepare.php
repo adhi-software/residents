@@ -358,9 +358,25 @@ foreach ($aggregatedData as $userId => $data) {
 
 $uniqueDueDates = array_unique($exportDueDates);
 
-// 4. Directly trigger the MembershipFee SEPA export
+// ============================================================================
+// 3b. Clear DUEDATE for all non-selected users so MembershipFee's filter
+//     only picks up the selected users during export.
+// ============================================================================
+$selectedUserIds = array_keys($aggregatedData);
+$placeholders    = implode(',', array_fill(0, count($selectedUserIds), '?'));
+
+$sqlClear = 'UPDATE ' . TBL_USER_DATA . '
+             SET usd_value = \'\'
+             WHERE usd_usf_id = ?
+               AND usd_usr_id NOT IN (' . $placeholders . ')';
+
+$params = array_merge(array($dueDateFieldId), $selectedUserIds);
+$gDb->queryPrepared($sqlClear, $params);
+
+// ============================================================================
+// 4. Trigger the MembershipFee SEPA export
+// ============================================================================
 $_POST['duedatesepatype'] = $uniqueDueDates;
 $_POST['export_file_mode'] = 'xml_file';
 
 require_once(ADMIDIO_PATH . '/adm_plugins/MembershipFee/system/sepa_export.php');
-
