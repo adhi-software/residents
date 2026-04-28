@@ -1086,7 +1086,7 @@ function ensureResidentsMenuItem(): void
         $rolesStmt = $gDb->queryPrepared(
             'SELECT rol_id FROM ' . TBL_ROLES . '
              INNER JOIN ' . TBL_CATEGORIES . ' ON cat_id = rol_cat_id
-             WHERE rol_valid = 1',
+             WHERE rol_valid = true',
             array(),
             false
         );

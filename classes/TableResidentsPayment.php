@@ -128,7 +128,7 @@ class TableResidentsPayment extends TableResidentsBase
     }
 
         if (!empty($filters['filter_group'])) {
-            $filterConditions[] = 'p.rpa_usr_id IN (SELECT mem_usr_id FROM ' . TBL_MEMBERS . ' WHERE mem_rol_id = ? AND mem_end > NOW())';
+            $filterConditions[] = 'p.rpa_usr_id IN (SELECT mem_usr_id FROM ' . TBL_MEMBERS . ' WHERE mem_rol_id = ? AND mem_end > \'' . DATE_NOW . '\')';
             $filterParams[] = (int)$filters['filter_group'];
     }
 
@@ -280,12 +280,12 @@ class TableResidentsPayment extends TableResidentsBase
         $params = array($firstNameFieldId, $lastNameFieldId);
 
         // Always join to scope users to the current organization
-        $sql .= ' JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id AND m.mem_end > NOW()';
-        $sql .= ' JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = 1';
+        $sql .= ' JOIN ' . TBL_MEMBERS . ' m ON m.mem_usr_id = u.usr_id AND m.mem_end > \'' . DATE_NOW . '\'';
+        $sql .= ' JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = true';
         $sql .= ' JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)';
         $params[] = (int)$gCurrentOrgId;
 
-        $where = array('u.usr_valid = 1');
+        $where = array('u.usr_valid = true');
 
         if ($groupId > 0) {
             $where[] = 'm.mem_rol_id = ?';

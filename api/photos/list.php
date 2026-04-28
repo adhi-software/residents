@@ -33,7 +33,7 @@ if ($offset < 0) {
 }
 
 $countStmt = $gDb->queryPrepared(
-    'SELECT COUNT(*) AS total FROM adm_photos WHERE pho_locked = 0 AND pho_org_id = ? AND pho_pho_id_parent is NULL',
+    'SELECT COUNT(*) AS total FROM ' . TBL_PHOTOS . ' WHERE pho_locked = false AND pho_org_id = ? AND pho_pho_id_parent is NULL',
     array($currentOrgId),
     false
 );
@@ -45,8 +45,8 @@ $total = $totalRow ? (int) $totalRow['total'] : 0;
 
 $sql = $gDb->queryPrepared(
     'SELECT pho_id, pho_name, pho_quantity, pho_begin, pho_end, pho_description, pho_pho_id_parent
-        FROM adm_photos
-        WHERE pho_locked = 0 AND pho_org_id = ? AND pho_pho_id_parent is NULL
+        FROM ' . TBL_PHOTOS . '
+        WHERE pho_locked = false AND pho_org_id = ? AND pho_pho_id_parent is NULL
         ORDER BY pho_begin DESC, pho_id DESC
         LIMIT ? OFFSET ?',
     array($currentOrgId, $limit, $offset),

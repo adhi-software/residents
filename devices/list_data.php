@@ -32,15 +32,15 @@ if (!$isAdmin) {
 }
 
 try {
-    $draw = admFuncVariableIsValid($_GET, 'draw', 'int', array('requireValue' => true));
-    $start = admFuncVariableIsValid($_GET, 'start', 'int', array('requireValue' => true));
-    $length = admFuncVariableIsValid($_GET, 'length', 'int', array('requireValue' => true));
+    $draw = admFuncVariableIsValid($_GET, 'draw', 'int', array('defaultValue' => 1));
+    $start = admFuncVariableIsValid($_GET, 'start', 'int', array('defaultValue' => 0));
+    $length = admFuncVariableIsValid($_GET, 'length', 'int', array('defaultValue' => 25));
     $searchValue = '';
     if (isset($_GET['search'])) {
         $searchValue = admFuncVariableIsValid($_GET['search'], 'value', 'string');
     }
-} catch (AdmException $e) {
-    echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array(), 'error' => $e->getMessage()));
+} catch (\Exception $e) {
+    echo json_encode(array('draw' => (int)($_GET['draw'] ?? 0), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array(), 'error' => $e->getMessage()));
     exit;
 }
 
