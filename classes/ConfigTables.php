@@ -689,6 +689,9 @@ class ConfigTables
         } elseif ($gDbType === 'pgsql') {
             $gDb->queryPrepared('ALTER TABLE ' . TABLE_PREFIX . '_preferences ALTER COLUMN prf_value TYPE TEXT', array(), false);
         }
+
+        // Clean up any corrupted JSON rows that were truncated before this upgrade ran
+        $gDb->queryPrepared('DELETE FROM ' . TABLE_PREFIX . '_preferences WHERE prf_name LIKE ? AND LENGTH(prf_value) >= 255', array('RE\_\_payment\_gateways\_\_%'), false);
     }
 
     public function uninstall(): void

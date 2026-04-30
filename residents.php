@@ -11,6 +11,23 @@
 
 require_once(__DIR__ . '/common_function.php');
 require_once(__DIR__ . '/../../system/login_valid.php');
+require_once(__DIR__ . '/version.php');
+require_once(__DIR__ . '/classes/ConfigTables.php');
+
+// --- AUTOMATIC SCHEMA UPGRADE LOGIC ---
+$config = residentsReadConfig();
+$dbVersion = $config['system']['db_version'] ?? '1.0';
+
+if (version_compare($dbVersion, RESIDENTS_VERSION, '<')) {
+    // Code version is newer than DB version -> Run upgrades
+    $creator = new ConfigTables();
+    $creator->init(); 
+    
+    // Update the version in the database so it doesn't run again
+    $config['system']['db_version'] = RESIDENTS_VERSION;
+    residentsWriteConfig($config);
+}
+// --------------------------------------
 
 $scriptUrl = FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
 if (!isUserAuthorizedForResidents($scriptUrl)) {
@@ -19,7 +36,7 @@ if (!isUserAuthorizedForResidents($scriptUrl)) {
 
 $config = residentsReadConfig();
 $isAdmin = isResidentsAdmin();
-$canSeeChargers = isResidentsAdminBySettings();
+$canSeeChargers = isResidentsAdminBySettings(); 
 $canSeePreferences = isResidentsAdmin();
 
 $tab = admFuncVariableIsValid($_GET, 'tab', 'string', array('defaultValue' => 'invoices', 'validValues' => array('invoices', 'payments', 'chargers', 'preferences', 'devices')));

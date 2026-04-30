@@ -768,6 +768,9 @@ function residentsReadConfig(): array
     // We check by merchant_id (CCAVENUE) or client_id (PAYPAL) to avoid duplicates if partially migrated.
     if (!empty(trim((string)($config['payment_gateway']['name'] ?? '')))) {
         $legacy = $config['payment_gateway'];
+        // Force uppercase for consistency during migration
+        $legacy['name'] = strtoupper($legacy['name']);
+        
         $alreadyExists = false;
         foreach ($config['payment_gateways'] as $existing) {
             if (($existing['name'] ?? '') === $legacy['name']) {
