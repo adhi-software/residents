@@ -209,6 +209,7 @@
     <string name="MOB_ABOUT_UNABLE_LOAD">Unable to load version information</string>
     <string name="MOB_ABOUT_ADMIDIO_VERSION">Admidio Version</string>
     <string name="MOB_ABOUT_RESIDENTS_VERSION">Residents Version</string>
+    <string name="MOB_ABOUT_APP_VERSION">Admidio Mobile Version</string>
     <string name="MOB_ABOUT_BUILT_BY">Built by</string>
 
     <!-- Mobile App Labels - Invoice -->

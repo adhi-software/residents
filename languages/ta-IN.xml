@@ -256,6 +256,7 @@
     <string name="MOB_ABOUT_UNABLE_LOAD">பதிப்புத் தகவலை ஏற்ற முடியவில்லை.</string>
     <string name="MOB_ABOUT_ADMIDIO_VERSION">அட்மிடியோ பதிப்பு</string>
     <string name="MOB_ABOUT_RESIDENTS_VERSION">குடியிருப்பாளர் பதிப்பு</string>
+    <string name="MOB_ABOUT_APP_VERSION">அட்மிடியோ மொபைல் பதிப்பு</string>
     <string name="MOB_ABOUT_BUILT_BY">உருவாக்கியவர்</string>
 
     <!-- Mobile App Labels - Invoice -->
