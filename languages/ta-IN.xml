@@ -138,6 +138,10 @@
     <string name="RE_SAVE">சேமிக்கவும்</string>
     <string name="RE_PG_ADD_BTN">பணம் வாயிலைச் சேர்க்கவும்</string>
     <string name="RE_PG_TIMEOUT">பணம் வாயில் நேர முடிவு (நிமிடங்கள்)</string>
+    <string name="RE_PG_CLIENT_ID">கிளையண்ட் ஐடி</string>
+    <string name="RE_PG_CLIENT_SECRET">கிளையண்ட் ரகசியம்</string>
+    <string name="RE_PG_TYPE_CCAVENUE">சிசிஅவென்யூ</string>
+    <string name="RE_PG_TYPE_PAYPAL">பேபால்</string>
     <string name="RE_PG_CONFIG_MISSING">பணம் வாயில் அமைப்பை விருப்பங்கள் பகுதியில் சேர்க்கவும்.</string>
     <string name="RE_INSTALL">நிறுவவும்</string>
     <string name="RE_INSTALL_HEADLINE">குடியிருப்போர் - நிறுவல்</string>
@@ -171,15 +175,29 @@
     <string name="RE_INACTIVE">செயலற்றது</string>
     <string name="RE_CLOSED">மூடப்பட்டது</string>
 	<string name="RE_SEARCH">தேடு</string>
+    <string name="RE_SEPA_EXPORT">SEPA ஏற்றுமதி</string>
+    <string name="RE_SEQUENCE_TYPE">தொடர் வகை</string>
+    <string name="RE_SEPA_OOFF">ஒற்றைத் தவணை (OOFF)</string>
+    <string name="RE_SEPA_FIRST">முதல் தவணை (FRST)</string>
+    <string name="RE_SEPA_RECURRING">தொடரும் தவணை (RCUR)</string>
+    <string name="RE_SEPA_FINAL">இறுதித் தவணை (FNAL)</string>
+    <string name="RE_SEPA_NO_INVOICES">சீட்டுகள் எதுவும் தேர்ந்தெடுக்கப்படவில்லை.</string>
+    <string name="RE_SEPA_EXPORT_XML">XML ஏற்றுமதி</string>
+    <string name="RE_SEPA_GENERATING">உருவாக்கப்படுகிறது...</string>
+    <string name="RE_SEPA_FIELDS_NOT_FOUND">MembershipFee சுயவிவர புலங்கள் கிடைக்கவில்லை, தயவுசெய்து செருகுநிரல் நிறுவப்பட்டு உள்ளமைக்கப்பட்டுள்ளதா என்பதை உறுதிப்படுத்தவும்.</string>
+    <string name="RE_SEPA_PLUGIN_MISSING">SEPA XML ஏற்றுமதிக்கு, இந்த அம்சத்தைப் பயன்படுத்துவதற்கு முன் தயவுசெய்து MembershipFee செருகுநிரலை நிறுவி உள்ளமைக்கவும்.</string>
+    <string name="RE_SEPA_INVALID_DATE">தவறான காலக்கெடு தேதி.</string>
     <string name="RE_GROUPS_ROLES">குழுக்கள் மற்றும் பாத்திரங்கள்</string>
     <string name="RE_CONFIRM_PAY">பணம் செலுத்துவதை உறுதிப்படுத்து</string>
     <string name="RE_SELECT_INVOICES_PAY">நீங்கள் செலுத்த விரும்பும் சீட்டுகளைத் தேர்ந்தெடுக்கவும்:</string>
+    <string name="RE_SELECT_PAYMENT_GATEWAY">கட்டண வாயிலைத் தேர்ந்தெடுக்கவும்:</string>
     <string name="RE_TOTAL_PAYABLE">மொத்த கட்டணம்:</string>
     <string name="RE_ESTIMATED_TOTAL">மதிப்பிடப்பட்ட மொத்தம்</string>
     <string name="RE_ADD_ROWS_HELP">கூடுதல் வரிசைகளைச் சேர்க்க "+" என்பதைக் கிளிக் செய்யவும்.</string>
     <string name="RE_OPTIONAL">விருப்பத்திற்குரியது</string>
     <string name="RE_PAY_METHOD_EXAMPLE">எ.கா. பணம், வங்கி பரிமாற்றம்</string>
     <string name="RE_GATEWAY_LIMITATION">தற்போது CCAvenue கட்டண நுழைவாயில் மட்டும் ஆதரிக்கப்படுகிறது.</string>
+    <string name="RE_NO_GATEWAY_CONFIGURED">கட்டண வாயில் எதுவும் அமைக்கப்படவில்லை. ஒன்றை சேர்க்க கீழே உள்ள பொத்தானை அழுத்தவும்.</string>
     
     <!-- Mobile App Labels - Navigation -->
     <string name="MOB_NAV_HOME">முகப்புப் பக்கம்</string>
@@ -239,6 +257,7 @@
     <string name="MOB_ABOUT_UNABLE_LOAD">பதிப்புத் தகவலை ஏற்ற முடியவில்லை.</string>
     <string name="MOB_ABOUT_ADMIDIO_VERSION">அட்மிடியோ பதிப்பு</string>
     <string name="MOB_ABOUT_RESIDENTS_VERSION">குடியிருப்பாளர் பதிப்பு</string>
+    <string name="MOB_ABOUT_APP_VERSION">அட்மிடியோ மொபைல் பதிப்பு</string>
     <string name="MOB_ABOUT_BUILT_BY">உருவாக்கியவர்</string>
 
     <!-- Mobile App Labels - Invoice -->

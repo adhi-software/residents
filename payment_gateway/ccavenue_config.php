@@ -8,7 +8,25 @@
 
 // Fetch configuration from database
 $residentsConfig = residentsReadConfig();
-$pgConf = $residentsConfig['payment_gateway'] ?? array();
+$gateways = $residentsConfig['payment_gateways'] ?? array();
+$pgIndex = $_POST['payment_gateway'] ?? $_GET['payment_gateway'] ?? null;
+$pgConf = array();
+
+if (is_numeric($pgIndex) && isset($gateways[(int)$pgIndex])) {
+    $pgConf = $gateways[(int)$pgIndex];
+} else {
+    // Fallback: search for the first CCAVENUE config
+    foreach ($gateways as $gw) {
+        if (($gw['name'] ?? '') === 'CCAVENUE') {
+            $pgConf = $gw;
+            break;
+        }
+    }
+    // Final fallback to legacy property if search fails
+    if (empty($pgConf)) {
+        $pgConf = $residentsConfig['payment_gateway'] ?? array();
+    }
+}
 
 // CCAvenue Credentials
 if (!defined('CCAVENUE_ACCESS_CODE')) {

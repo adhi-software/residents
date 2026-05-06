@@ -23,8 +23,8 @@ $currentOrgId = isset($gCurrentOrgId)
 $canEditPhotos = $currentUser->isAdministratorPhotos();
 
 $sql = 'SELECT pho_id, pho_name, pho_quantity, pho_begin, pho_end, pho_description, pho_pho_id_parent
-    FROM adm_photos
-    WHERE pho_locked = 0 AND pho_org_id = ?';
+    FROM ' . TBL_PHOTOS . '
+    WHERE pho_locked = false AND pho_org_id = ?';
 $sqlParams = array($currentOrgId);
 
 $albumId = $_GET['album_id'] ?? '';
@@ -130,7 +130,7 @@ function getAlbums(array $obj, bool $canEdit, bool $pagingEnabled, int $offset, 
             }
     }
     }
-    $sqlChild = 'SELECT * FROM adm_photos WHERE pho_org_id = ? AND pho_pho_id_parent = ?';
+    $sqlChild = 'SELECT * FROM ' . TBL_PHOTOS . ' WHERE pho_org_id = ? AND pho_pho_id_parent = ?';
     $stmtChild = $gDb->queryPrepared($sqlChild, [$currentOrgId, $obj['pho_id']], false);
     $childRows = $stmtChild ? $stmtChild->fetchAll() : array();
 

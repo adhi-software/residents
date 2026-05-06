@@ -176,8 +176,8 @@ SQL;
     }
 
     $sql .= ' ORDER BY
-            COALESCE(ln.usd_value, \'\') ASC,
-            COALESCE(fn.usd_value, \'\') ASC,
+            ln.usd_value ASC,
+            fn.usd_value ASC,
             u.usr_login_name ASC
     LIMIT ? OFFSET ?';
     $params[] = $limit;

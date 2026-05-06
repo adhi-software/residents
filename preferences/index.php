@@ -38,16 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $defaultNoteSetting = isset($_POST['default_note']) ? trim((string)$_POST['default_note']) : '';
     $config['defaults']['invoice_note'] = $defaultNoteSetting;
 
-    // Payment Gateway Configuration
-    $config['payment_gateway']['name'] = isset($_POST['pg_name']) ? trim((string)$_POST['pg_name']) : '';
-    $config['payment_gateway']['currency'] = isset($_POST['pg_currency']) ? trim((string)$_POST['pg_currency']) : '';
-    $config['payment_gateway']['merchant_id'] = isset($_POST['pg_merchant_id']) ? trim((string)$_POST['pg_merchant_id']) : '';
-    $config['payment_gateway']['working_key'] = isset($_POST['pg_working_key']) ? trim((string)$_POST['pg_working_key']) : '';
-    $config['payment_gateway']['access_code'] = isset($_POST['pg_access_code']) ? trim((string)$_POST['pg_access_code']) : '';
-    $config['payment_gateway']['redirect_url'] = isset($_POST['pg_redirect_url']) ? trim((string)$_POST['pg_redirect_url']) : '';
-    $config['payment_gateway']['cancel_url'] = isset($_POST['pg_cancel_url']) ? trim((string)$_POST['pg_cancel_url']) : '';
-    $config['payment_gateway']['gateway_url'] = isset($_POST['pg_gateway_url']) ? trim((string)$_POST['pg_gateway_url']) : '';
-    $config['payment_gateway']['timeout'] = isset($_POST['pg_timeout']) ? (int)$_POST['pg_timeout'] : 15;
+    // Payment Gateway Configurations (multiple)
+    $pgJson = isset($_POST['pg_gateways_json']) ? trim((string)$_POST['pg_gateways_json']) : '[]';
+    $pgArray = json_decode($pgJson, true);
+    $config['payment_gateways'] = is_array($pgArray) ? array_values($pgArray) : array();
 
     // Organization logo upload (used in invoice PDFs)
     $orgId = isset($gCurrentOrganization) ? (int)$gCurrentOrganization->getValue('org_id') : 0;
@@ -161,50 +155,74 @@ $form->addCustomContent($gL10n->get('RE_ORG_LOGO'), $logoBoxHtml);
 $form->addInput('due_days', $gL10n->get('RE_PREF_DUE_DAYS'), (string)((int)($config['defaults']['due_days'] ?? 15)), array('maxLength' => 3));
 $form->addMultilineTextInput('default_note', $gL10n->get('RE_PREF_DEFAULT_NOTE'), (string)($config['defaults']['invoice_note'] ?? ''), 3);
 
-// Payment Gateway Configuration Section
-$pgConf = $config['payment_gateway'];
+// Payment Gateway Configuration Section — Multiple Gateways
+$pgGateways = $config['payment_gateways'] ?? array();
+// Ensure it's a re-indexed array
+$pgGateways = array_values($pgGateways);
 
-// Modal for Payment Gateway Configuration
-// Placed inside the form so inputs are submitted automatically
+// Hidden input to carry gateway JSON to POST
+$form->addHtml('<input type="hidden" name="pg_gateways_json" id="pg_gateways_json" value="' . htmlspecialchars(json_encode($pgGateways), ENT_QUOTES, 'UTF-8') . '" />');
+
+// Modal for Payment Gateway Configuration (reused for add/edit)
 $modalHtml = '
 <div class="modal fade" id="pgModal" tabindex="-1" aria-hidden="true">
-
     <div class="modal-dialog modal-lg">
     <div class="modal-content border-0 shadow">
             <div class="modal-header bg-light">
+    <h5 class="modal-title" id="pgModalTitle">'.$gL10n->get('RE_PG_ADD_BTN').'</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
                     <div id="pg_modal_error" class="alert alert-danger d-none mb-3" role="alert"></div>
-                    <div class="row gx-3" style="--bs-gutter-y: 2rem;">
-            <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_NAME').' <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" name="pg_name" id="pg_name" value="'.htmlspecialchars((string)$pgConf['name']).'" placeholder="e.g. CCAvenue">
-            </div>
-            
-            <div class="col-md-6">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_MERCHANT_ID').' <span class="text-danger">*</span></label>
-        <input type="text" class="form-control font-monospace" name="pg_merchant_id" id="pg_merchant_id" value="'.htmlspecialchars((string)$pgConf['merchant_id']).'">
-            </div>
-            <div class="col-md-6">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_ACCESS_CODE').' <span class="text-danger">*</span></label>
-        <input type="text" class="form-control font-monospace" name="pg_access_code" id="pg_access_code" value="'.htmlspecialchars((string)$pgConf['access_code']).'">
-            </div>
-            
-            <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_WORKING_KEY').' <span class="text-danger">*</span></label>
-        <input type="text" class="form-control font-monospace" name="pg_working_key" id="pg_working_key" value="'.htmlspecialchars((string)$pgConf['working_key']).'">
-            </div>
-            
-            <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_GATEWAY_URL').' <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" name="pg_gateway_url" id="pg_gateway_url" value="'.htmlspecialchars((string)$pgConf['gateway_url']).'">
-            </div>
-            
-            <div class="col-12">
-        <label class="form-label fw-bold">'.$gL10n->get('RE_PG_TIMEOUT').'</label>
-        <input type="number" class="form-control" name="pg_timeout" id="pg_timeout" min="1" value="'.htmlspecialchars((string)($pgConf['timeout'] ?? 15)).'">
-            </div>
+                    <div class="row gx-3" style="--bs-gutter-y: 1.5rem;">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">'.$gL10n->get('RE_PG_NAME').' <span class="text-danger">*</span></label>
+                            <select class="form-select" id="pg_m_name">
+                                <option value="CCAVENUE">'.$gL10n->get('RE_PG_TYPE_CCAVENUE').'</option>
+                                <option value="PAYPAL">'.$gL10n->get('RE_PG_TYPE_PAYPAL').'</option>
+                            </select>
+                        </div>
+
+                        <!-- CCAvenue Fields -->
+                        <div class="col-12" id="pg_grp_ccavenue">
+                            <div class="row gx-3">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">'.$gL10n->get('RE_PG_MERCHANT_ID').' <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control font-monospace" id="pg_m_merchant_id">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">'.$gL10n->get('RE_PG_ACCESS_CODE').' <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control font-monospace" id="pg_m_access_code">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">'.$gL10n->get('RE_PG_WORKING_KEY').' <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control font-monospace" id="pg_m_working_key">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PayPal Fields -->
+                        <div class="col-12 d-none" id="pg_grp_paypal">
+                            <div class="row gx-3">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold">'.$gL10n->get('RE_PG_CLIENT_ID').' <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control font-monospace" id="pg_m_client_id">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">'.$gL10n->get('RE_PG_CLIENT_SECRET').' <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control font-monospace" id="pg_m_client_secret">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">'.$gL10n->get('RE_PG_GATEWAY_URL').' <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="pg_m_gateway_url">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">'.$gL10n->get('RE_PG_TIMEOUT').'</label>
+                            <input type="number" class="form-control" id="pg_m_timeout" min="1" value="15">
+                        </div>
                     </div>
             </div>
             <div class="modal-footer bg-light">
@@ -215,40 +233,18 @@ $modalHtml = '
     </div>
 </div>';
 
-// Modern UI for Single Gateway
-$gatewayName = trim((string)$pgConf['name']);
-$hasGateway = $gatewayName !== '';
-
+// Gateway cards container + Add button
 $uiHtml = '
 <div class="mb-3 row">
-    <label class="col-sm-3 col-form-label">'.$gL10n->get('RE_PAYMENT_GATEWAY_LABEL').'</label>
+    <label class="col-sm-3 col-form-label">'.$gL10n->get('RE_PG_NAME').'</label>
     <div class="col-sm-9">
-    <!-- Configured Gateway Card -->
-    <div id="pg_card" class="card shadow-sm border-0 bg-light" style="'.($hasGateway ? '' : 'display:none;').'">
-            <div class="card-body d-flex justify-content-between align-items-center p-3">
-        <div class="d-flex align-items-center">
-                    <div class="bg-white rounded-circle p-2 me-3 shadow-sm text-primary">
-            <i class="bi bi-credit-card fs-4"></i>
-                    </div>
-                    <div>
-            <h6 class="mb-0 fw-bold" id="pg_card_name">'.htmlspecialchars($gatewayName).'</h6>
-                    </div>
-        </div>
-        <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-light text-primary" id="pg_btn_edit" title="'.$gL10n->get('RE_EDIT').'"><i class="bi bi-pencil"></i></button>
-                    <button type="button" class="btn btn-sm btn-light text-danger" id="pg_btn_delete" title="'.$gL10n->get('RE_DELETE').'"><i class="bi bi-trash"></i></button>
-        </div>
-            </div>
-    </div>
-
-    <!-- Add Button (Empty State) -->
-    <div id="pg_add_container" class="text-start" style="'.($hasGateway ? 'display:none;' : '').'">
+    <div id="pg_cards_container"></div>
+    <div class="mt-2">
             <button type="button" id="pg_btn_add" class="btn btn-outline-primary border-dashed w-100 p-3 text-center">
         <i class="bi bi-plus-circle fs-2 mb-2 d-block"></i>
         <span class="fw-bold">'.$gL10n->get('RE_PG_ADD_BTN').'</span>
             </button>
     </div>
-    <small class="form-text text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>' . htmlspecialchars($gL10n->get('RE_GATEWAY_LIMITATION')) . '</small>
     </div>
 </div>
 <style>
@@ -287,103 +283,235 @@ $(function(){
     var pgModal = new bootstrap.Modal(document.getElementById("pgModal"));
     var pgDeleteModal = new bootstrap.Modal(document.getElementById("pgDeleteModal"));
 
-    function clearData() {
-        $("#pg_name").val("");
-        $("#pg_currency").val("");
-        $("#pg_merchant_id").val("");
-        $("#pg_working_key").val("");
-        $("#pg_access_code").val("");
-        $("#pg_redirect_url").val("");
-        $("#pg_cancel_url").val("");
-        $("#pg_gateway_url").val("");
-        $("#pg_timeout").val("15");
-    
-        // Remove error classes
+    // Gateway data array — initialized from PHP
+    var pgGateways = [];
+    try {
+        pgGateways = JSON.parse(document.getElementById("pg_gateways_json").value || "[]");
+    } catch(e) { pgGateways = []; }
+
+    // Currently editing index (-1 = adding new)
+    var pgEditIndex = -1;
+    // Currently deleting index
+    var pgDeleteIndex = -1;
+
+    var fieldKeys = ["name", "merchant_id", "access_code", "working_key", "gateway_url", "timeout", "client_id", "client_secret"];
+    var modalFieldIds = ["pg_m_name", "pg_m_merchant_id", "pg_m_access_code", "pg_m_working_key", "pg_m_gateway_url", "pg_m_timeout", "pg_m_client_id", "pg_m_client_secret"];
+
+    function getRequiredFields() {
+        var type = $("#pg_m_name").val();
+        var common = ["pg_m_name", "pg_m_gateway_url"];
+        if (type === "CCAVENUE") return common.concat(["pg_m_merchant_id", "pg_m_access_code", "pg_m_working_key"]);
+        if (type === "PAYPAL")   return common.concat(["pg_m_client_id", "pg_m_client_secret"]);
+        return common;
+    }
+
+    function toggleFields() {
+        var type = $("#pg_m_name").val();
+        if (type === "PAYPAL") {
+            $("#pg_grp_ccavenue").addClass("d-none");
+            $("#pg_grp_paypal").removeClass("d-none");
+        } else {
+            $("#pg_grp_ccavenue").removeClass("d-none");
+            $("#pg_grp_paypal").addClass("d-none");
+        }
+    }
+
+    $("#pg_m_name").on("change", toggleFields);
+
+    // Render all gateway cards from the array
+    function renderCards() {
+        var container = $("#pg_cards_container");
+        container.empty();
+        if (pgGateways.length === 0) {
+            container.html("<p class=\"text-muted fst-italic mb-0\"><i class=\"bi bi-info-circle me-1\"></i> '.$gL10n->get('RE_NO_GATEWAY_CONFIGURED').'</p>");
+        } else {
+            pgGateways.forEach(function(gw, idx) {
+                var card = ""
+                    + "<div class=\"card shadow-sm border-0 bg-light mb-2\">"
+                    + "  <div class=\"card-body d-flex justify-content-between align-items-center p-3\">"
+                    + "    <div class=\"d-flex align-items-center\">"
+                    + "      <div class=\"bg-white rounded-circle p-2 me-3 shadow-sm text-primary\">"
+                    + "        <i class=\"bi bi-credit-card fs-4\"></i>"
+                    + "      </div>"
+                                        + "      <div>"
+                    + "        <h6 class=\"mb-0 fw-bold\">" + $("<span>").text(gw.name || "Unnamed").html() + "</h6>"
+                    + "      </div>"
+                    + "    </div>"
+                    + "    <div class=\"btn-group\">"
+                    + "      <button type=\"button\" class=\"btn btn-sm btn-light text-primary pg-edit-btn\" data-idx=\"" + idx + "\" title=\"'.$gL10n->get('RE_EDIT').'\"><i class=\"bi bi-pencil\"></i></button>"
+                    + "      <button type=\"button\" class=\"btn btn-sm btn-light text-danger pg-delete-btn\" data-idx=\"" + idx + "\" title=\"'.$gL10n->get('RE_DELETE').'\"><i class=\"bi bi-trash\"></i></button>"
+                    + "    </div>"
+                    + "  </div>"
+                    + "</div>";
+                container.append(card);
+            });
+        }
+
+        // Toggle add button visibility based on available types (CCAVENUE, PAYPAL)
+        var types = pgGateways.map(function(g){ return g.name; });
+        if (types.indexOf("CCAVENUE") >= 0 && types.indexOf("PAYPAL") >= 0) {
+            $("#pg_btn_add").addClass("d-none");
+        } else {
+            $("#pg_btn_add").removeClass("d-none");
+        }
+        syncHidden();
+    }
+
+    // Keep hidden input in sync
+    function syncHidden() {
+        $("#pg_gateways_json").val(JSON.stringify(pgGateways));
+    }
+
+    // Clear modal
+    function clearModal() {
+        // Update selection availability
+        var existingTypes = pgGateways.map(function(g){ return g.name; });
+        $("#pg_m_name option").each(function(){
+            var val = $(this).val();
+            if (existingTypes.indexOf(val) >= 0) {
+                $(this).prop("disabled", true);
+            } else {
+                $(this).prop("disabled", false);
+            }
+        });
+
+        // Select first non-disabled option
+        var $first = $("#pg_m_name option:not(:disabled)").first();
+        if ($first.length) {
+            $("#pg_m_name").val($first.val());
+        }
+
+        modalFieldIds.forEach(function(id) { if(id !== "pg_m_name") $("#" + id).val(""); });
+        $("#pg_m_timeout").val("15");
+        toggleFields();
         $(".is-invalid").removeClass("is-invalid");
         $("#pg_modal_error").addClass("d-none").text("");
+    }
 
-        // Update UI
-        $("#pg_card").hide();
-        $("#pg_add_container").show();
+    // Populate modal from a gateway object
+    function populateModal(gw) {
+        // Enable all for current edit
+        $("#pg_m_name option").prop("disabled", false);
+        
+        // Disable other taken types
+        var existingTypes = pgGateways.map(function(g, i){ return i === pgEditIndex ? "" : g.name; });
+        $("#pg_m_name option").each(function(){
+            var val = $(this).val();
+            if (val !== "" && existingTypes.indexOf(val) >= 0) {
+                $(this).prop("disabled", true);
+            }
+        });
+
+        $("#pg_m_name").val(gw.name || "CCAVENUE");
+        $("#pg_m_merchant_id").val(gw.merchant_id || "");
+        $("#pg_m_access_code").val(gw.access_code || "");
+        $("#pg_m_working_key").val(gw.working_key || "");
+        $("#pg_m_client_id").val(gw.client_id || "");
+        $("#pg_m_client_secret").val(gw.client_secret || "");
+        $("#pg_m_gateway_url").val(gw.gateway_url || "");
+        $("#pg_m_timeout").val(gw.timeout || 15);
+        toggleFields();
+    }
+
+    // Read modal fields into a gateway object
+    function readModal() {
+        var type = $("#pg_m_name").val();
+        var gw = {
+            name:          type,
+            gateway_url:   $("#pg_m_gateway_url").val().trim(),
+            timeout:       parseInt($("#pg_m_timeout").val()) || 15
+        };
+        
+        if (type === "PAYPAL") {
+            gw.client_id     = $("#pg_m_client_id").val().trim();
+            gw.client_secret = $("#pg_m_client_secret").val().trim();
+        } else {
+            gw.merchant_id   = $("#pg_m_merchant_id").val().trim();
+            gw.working_key   = $("#pg_m_working_key").val().trim();
+            gw.access_code   = $("#pg_m_access_code").val().trim();
+        }
+        return gw;
     }
 
     // Real-time validation removal
-    var requiredMsgIds = ["pg_name", "pg_merchant_id", "pg_access_code", "pg_working_key", "pg_gateway_url"];
-    requiredMsgIds.forEach(function(id){
-        $("#" + id).on("input", function(){
-            if($(this).val().trim() !== "") {
-                $(this).removeClass("is-invalid");
-            }
-            // Hide global error message on any input
+    modalFieldIds.forEach(function(id){
+        $("#" + id).on("input change", function(){
+            if($(this).val().trim() !== "") $(this).removeClass("is-invalid");
             $("#pg_modal_error").addClass("d-none");
-    });
+        });
     });
 
+    // Add button
     $("#pg_btn_add").on("click", function(e){
         e.preventDefault();
-        // Clear modal fields for add or keep previous?
-        // If clicking add, usage is new.
-        // But if deleting then adding, we want clear.
-        if($("#pg_name").val() === "") {
-                $("#pgModalTitle").text("'.$gL10n->get('RE_ADD_PAYMENT').' ".split(" ")[0] + " Gateway");
-    } else {
-                // If fields are populated but card is hidden (not yet saved), we might want to keep them?
-                // Or clear them to be safe.
-                clearData();
-                $("#pgModalTitle").text("'.$gL10n->get('RE_ADD_PAYMENT').' ".split(" ")[0] + " Gateway");
-    }
+        pgEditIndex = -1;
+        clearModal();
+        $("#pgModalTitle").text("'.$gL10n->get('RE_PG_ADD_BTN').'");
         pgModal.show();
     });
 
-    $("#pg_btn_edit").on("click", function(e){
+    // Edit button (delegated)
+    $("#pg_cards_container").on("click", ".pg-edit-btn", function(e){
         e.preventDefault();
-        // Config already in inputs
-        // Just show modal
+        pgEditIndex = parseInt($(this).data("idx"));
+        clearModal();
+        populateModal(pgGateways[pgEditIndex]);
+        $("#pgModalTitle").text("'.$gL10n->get('RE_EDIT').'");
         pgModal.show();
     });
 
-    $("#pg_btn_delete").on("click", function(e){
+    // Delete button (delegated)
+    $("#pg_cards_container").on("click", ".pg-delete-btn", function(e){
         e.preventDefault();
+        pgDeleteIndex = parseInt($(this).data("idx"));
         pgDeleteModal.show();
     });
 
     $("#pg_btn_modal_save").on("click", function(){
-        // Hand-rolled validation on OK click
-        var requiredIds = ["pg_name", "pg_merchant_id", "pg_access_code", "pg_working_key", "pg_gateway_url"];
         var isValid = true;
-    
-        // Reset errors
-        requiredIds.forEach(function(id){
-            $("#" + id).removeClass("is-invalid");
-    });
+        var rFields = getRequiredFields();
+        modalFieldIds.forEach(function(id){ $("#" + id).removeClass("is-invalid"); });
         $("#pg_modal_error").addClass("d-none").text("");
 
-        // Check required fields
-        requiredIds.forEach(function(id){
-            var el = $("#" + id);
-            if(el.val().trim() === "") {
-                el.addClass("is-invalid");
+        rFields.forEach(function(id){
+            if($("#" + id).val().trim() === "") {
+                $("#" + id).addClass("is-invalid");
                 isValid = false;
             }
-    });
+        });
 
         if (!isValid) {
-            $("#pg_modal_error").text("Please fill in all required Payment Gateway fields.").removeClass("d-none");
+            $("#pg_modal_error").text("Please fill in all required fields.").removeClass("d-none");
             return;
-    }
+        }
 
-        var name = $("#pg_name").val().trim();
-        $("#pg_card_name").text(name);
-        $("#pg_card").show();
-        $("#pg_add_container").hide();
-    
+        var gw = readModal();
+        if (pgEditIndex >= 0) {
+            pgGateways[pgEditIndex] = gw;
+        } else {
+            pgGateways.push(gw);
+        }
+        renderCards();
         pgModal.hide();
     });
 
+    // Delete confirm
     $("#pg_btn_modal_delete_confirm").on("click", function(){
-        clearData();
+        if (pgDeleteIndex >= 0 && pgDeleteIndex < pgGateways.length) {
+            pgGateways.splice(pgDeleteIndex, 1);
+        }
+        pgDeleteIndex = -1;
+        renderCards();
         pgDeleteModal.hide();
     });
+
+    // Sync hidden field before form submit
+    $("#re_preferences").on("submit", function() {
+        syncHidden();
+    });
+
+    // Initial render
+    renderCards();
 });
 </script>
 ');

@@ -681,6 +681,17 @@ class ConfigTables
             $dropIndex($idxNumberIndex);
             $this->createUniqueIndexIfNotExist(TBL_RE_INVOICES, self::INVOICES_UNIQUE_INDEX_NUMBER_INDEX);
         }
+
+        // v5.x: Upgrade prf_value to TEXT to avoid truncation of JSON configs (e.g. PayPal)
+        // Admidio's preferences table might have it as VARCHAR(255) in older versions.
+        if ($gDbType === 'mysql') {
+            $gDb->queryPrepared('ALTER TABLE ' . TABLE_PREFIX . '_preferences MODIFY prf_value TEXT', array(), false);
+        } elseif ($gDbType === 'pgsql') {
+            $gDb->queryPrepared('ALTER TABLE ' . TABLE_PREFIX . '_preferences ALTER COLUMN prf_value TYPE TEXT', array(), false);
+        }
+
+        // Clean up any corrupted JSON rows that were truncated before this upgrade ran
+        $gDb->queryPrepared('DELETE FROM ' . TABLE_PREFIX . '_preferences WHERE prf_name LIKE ? AND LENGTH(prf_value) >= 255', array('RE\_\_payment\_gateways\_\_%'), false);
     }
 
     public function uninstall(): void

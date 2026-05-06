@@ -49,7 +49,7 @@ $table->addRowHeadingByArray(array(
 'ID',
 $gL10n->get('RE_CHARGERS_NAME'),
 $gL10n->get('RE_CHARGERS_PERIOD'),
-$gL10n->get('RE_CHARGERS_AMOUNT'),
+$gL10n->get('RE_AMOUNT'),
 $gL10n->get('RE_CHARGERS_ROLES'),
 $gL10n->get('RE_ACTIONS')
 ));

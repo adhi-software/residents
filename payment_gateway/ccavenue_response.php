@@ -24,6 +24,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once(__DIR__ . '/../common_function.php');
 require_once(__DIR__ . '/ccavenue_config.php');
 require_once(__DIR__ . '/ccavenue_crypto.php');
+require_once(__DIR__ . '/ccavenue_common.php');
 
 // Note: Gateway callbacks are cross-site POSTs and may not carry session cookies.
 // We must NOT use any session-dependent functions here.
@@ -77,9 +78,7 @@ if (!empty($received['merchant_param5']) && is_string($received['merchant_param5
 $orderId       = $received['order_id']        ?? ($received['orderid'] ?? ($received['merchant_param4'] ?? ''));
 $amount        = $received['amount']          ?? ($received['order_amount'] ?? '');
 $currency      = $received['currency']         ?? ($received['order_currency'] ?? '');
-if (strtoupper($currency) === 'INR') {
-    $currency = '₹';
-}
+$currency      = ccavenue_unmap_currency($currency);
 $status        = $received['order_status']    ?? ($received['status'] ?? '');
 $merchantParam = $received['merchant_param3']  ?? ($received['merchant_param3'] ?? '');
 $invoiceIdRaw  = $received['merchant_param2']  ?? '';
@@ -154,7 +153,7 @@ try {
             rtr_pg_response = ?,
             rtr_usr_id_change = ?,
             rtr_pg_trans_date = ?,
-            rtr_timestamp_change = NOW()
+            rtr_timestamp_change = ?
     WHERE rtr_id = ?';
 
     if ($gDb->queryPrepared($updateSql, array(
@@ -168,6 +167,7 @@ try {
     $decResponse,
     (is_numeric($merchantParam) ? (int)$merchantParam : null),
     $formattedTransDate,
+    DATETIME_NOW,
     $paymentId
     ), false) === false) {
         ob_end_clean();
@@ -203,8 +203,9 @@ try {
             if ($pgPaymentItems) {
                 // Insert into bil_payments
                 $insertPaymentSql = 'INSERT INTO ' . TBL_RE_PAYMENTS . ' (
-                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_bank_ref_no, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                rpa_status, rpa_date, rpa_pg_pay_method, rpa_pay_type, rpa_trans_id, rpa_bank_ref_no, rpa_usr_id, rpa_org_id, rpa_usr_id_create, rpa_usr_id_change,
+                rpa_timestamp_create, rpa_timestamp_change
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
                 $paymentStatus = residentsGetPaymentStatus($status);
                 $merchantUser = (is_numeric($merchantParam) ? (int)$merchantParam : null);
@@ -218,7 +219,9 @@ try {
                     $merchantUser,
                     $orgId,
                     $merchantUser,
-                    $merchantUser
+                    $merchantUser,
+                    DATETIME_NOW,
+                    DATETIME_NOW
                 ), false) === false) {
                     throw new RuntimeException('Failed to insert payment.');
         }
@@ -232,9 +235,9 @@ try {
                         $updatePgPaymentSql = 'UPDATE ' . TBL_RE_TRANS . ' SET
                         rtr_payment_id = ?,
                         rtr_usr_id_change = ?,
-                        rtr_timestamp_change = NOW()
+                        rtr_timestamp_change = ?
                             WHERE rtr_id = ?';
-                        $gDb->queryPrepared($updatePgPaymentSql, array($bilPaymentId, $merchantUser, $paymentId), false);
+                        $gDb->queryPrepared($updatePgPaymentSql, array($bilPaymentId, $merchantUser, DATETIME_NOW, $paymentId), false);
                     } catch (Exception $e) {
                         error_log('Failed to update bil_pg_payments.bil_payment: ' . $e->getMessage());
                     }
@@ -243,8 +246,9 @@ try {
                 // Insert into bil_payment_items and update invoices
                 if ($bilPaymentId > 0) {
                     $insertPaymentItemSql = 'INSERT INTO ' . TBL_RE_PAYMENT_ITEMS . ' (
-                            rpi_payment_id, rpi_inv_id, rpi_amount, rpi_currency, rpi_usr_id, rpi_org_id, rpi_usr_id_create, rpi_usr_id_change
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+                            rpi_payment_id, rpi_inv_id, rpi_amount, rpi_currency, rpi_usr_id, rpi_org_id, rpi_usr_id_create, rpi_usr_id_change,
+                            rpi_timestamp_create, rpi_timestamp_change
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
                     foreach ($pgPaymentItems as $item) {
                             if ($gDb->queryPrepared($insertPaymentItemSql, array(
@@ -255,7 +259,9 @@ try {
                             $merchantUser,
                             $orgId,
                             $merchantUser,
-                            $merchantUser
+                            $merchantUser,
+                            DATETIME_NOW,
+                            DATETIME_NOW
                             ), false) === false) {
                                 throw new RuntimeException('Failed to insert payment item.');
                             }

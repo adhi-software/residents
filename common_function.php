@@ -710,6 +710,7 @@ function residentsReadConfig(): array
             'invoice_note' => '',
             'due_days' => 15
     ),
+    // Legacy single gateway config (kept for backward compat with payment flow)
     'payment_gateway' => array(
             'name' => '',
             'currency' => '',
@@ -720,7 +721,9 @@ function residentsReadConfig(): array
             'cancel_url' => '',
             'gateway_url' => '',
             'timeout' => 15
-    )
+    ),
+    // New: array of multiple gateway configs
+    'payment_gateways' => array()
     );
 
     $decodeValue = static function (string $value) {
@@ -738,8 +741,60 @@ function residentsReadConfig(): array
         if (count($parts) >= 3) {
             $section = $parts[1];
             $key = $parts[2];
+            // Each payment gateway is stored as a separate row: RE__payment_gateways__0, __1, etc.
+            if ($section === 'payment_gateways' && is_numeric($key)) {
+                $decoded = json_decode($row['prf_value'], true);
+                if (is_array($decoded)) {
+                    $config['payment_gateways'][(int)$key] = $decoded;
+                }
+                continue;
+            }
+            // Legacy: handle old single-key 'list' format for backward compat
+            if ($section === 'payment_gateways' && $key === 'list') {
+                $decoded = json_decode($row['prf_value'], true);
+                if (is_array($decoded)) {
+                    // Only use legacy data if no indexed rows were found
+                    if (empty($config['payment_gateways'])) {
+                        $config['payment_gateways'] = $decoded;
+                    }
+                }
+                continue;
+            }
             $config[$section][$key] = $decodeValue($row['prf_value']);
     }
+    }
+
+    // Backward compatibility: if a legacy single payment_gateway exists, ensure it is represented in the list.
+    // We check by merchant_id (CCAVENUE) or client_id (PAYPAL) to avoid duplicates if partially migrated.
+    if (!empty(trim((string)($config['payment_gateway']['name'] ?? '')))) {
+        $legacy = $config['payment_gateway'];
+        // Force uppercase for consistency during migration
+        $legacy['name'] = strtoupper($legacy['name']);
+        
+        $alreadyExists = false;
+        foreach ($config['payment_gateways'] as $existing) {
+            if (($existing['name'] ?? '') === $legacy['name']) {
+                if ($legacy['name'] === 'PAYPAL') {
+                    if (($existing['client_id'] ?? '') === ($legacy['client_id'] ?? '')) {
+                        $alreadyExists = true;
+                        break;
+                    }
+                } else {
+                    if (($existing['merchant_id'] ?? '') === ($legacy['merchant_id'] ?? '')) {
+                        $alreadyExists = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!$alreadyExists) {
+            $config['payment_gateways'][] = $legacy;
+        }
+    }
+
+    // Keep legacy payment_gateway populated from the first gateway (for payment flow compat)
+    if (!empty($config['payment_gateways'])) {
+        $config['payment_gateway'] = $config['payment_gateways'][0];
     }
 
     return $config;
@@ -884,23 +939,56 @@ function residentsDeserializeRoleIds(?string $value): array
 function residentsWriteConfig(array $config): void
 {
     global $gDb, $gCurrentOrgId;
+
+    // Helper: upsert a single preference key
+    $upsertPref = static function (string $plpName, string $value) use ($gDb, $gCurrentOrgId): void {
+        $sqlSel = 'SELECT prf_id FROM ' . TBL_PREFERENCES . ' WHERE prf_name = ? AND prf_org_id = ?';
+        $sel = $gDb->queryPrepared($sqlSel, array($plpName, $gCurrentOrgId), false);
+        if ($sel === false) {
+            return;
+        }
+        $row = $sel->fetchObject();
+        if (isset($row->prf_id)) {
+            $gDb->queryPrepared('UPDATE ' . TBL_PREFERENCES . ' SET prf_value = ? WHERE prf_id = ?', array($value, $row->prf_id), false);
+        } else {
+            $gDb->queryPrepared('INSERT INTO ' . TBL_PREFERENCES . ' (prf_org_id, prf_name, prf_value) VALUES (?,?,?)', array($gCurrentOrgId, $plpName, $value), false);
+        }
+    };
+
     foreach ($config as $section => $data) {
+        // Skip legacy payment_gateway — it's auto-derived from payment_gateways[0] on read
+        if ($section === 'payment_gateway') {
+            continue;
+        }
+
+        // payment_gateways: store each gateway as a separate row to avoid varchar(255) truncation
+        if ($section === 'payment_gateways') {
+            // Delete all existing gateway rows (both old 'list' key and indexed keys)
+            $gDb->queryPrepared(
+                'DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_name LIKE ? AND prf_org_id = ?',
+                array('RE\_\_payment\_gateways\_\_%', $gCurrentOrgId),
+                false
+            );
+            // Also delete legacy single-gateway keys to keep database clean
+            $gDb->queryPrepared(
+                'DELETE FROM ' . TBL_PREFERENCES . ' WHERE prf_name LIKE ? AND prf_org_id = ?',
+                array('RE\_\_payment\_gateway\_\_%', $gCurrentOrgId),
+                false
+            );
+            // Insert each gateway as RE__payment_gateways__0, __1, etc.
+            $gateways = is_array($data) ? array_values($data) : array();
+            foreach ($gateways as $idx => $gw) {
+                $upsertPref('RE__payment_gateways__' . $idx, json_encode($gw));
+            }
+            continue;
+        }
+
         foreach ($data as $key => $value) {
             $plpName = 'RE__' . $section . '__' . $key;
             if (is_array($value)) {
                 $value = '((' . implode('#_#', $value) . '))';
             }
-            $sqlSel = 'SELECT prf_id FROM ' . TBL_PREFERENCES . ' WHERE prf_name = ? AND prf_org_id = ?';
-            $sel = $gDb->queryPrepared($sqlSel, array($plpName, $gCurrentOrgId), false);
-            if ($sel === false) {
-                continue;
-            }
-            $row = $sel->fetchObject();
-            if (isset($row->prf_id)) {
-                $gDb->queryPrepared('UPDATE ' . TBL_PREFERENCES . ' SET prf_value = ? WHERE prf_id = ?', array($value, $row->prf_id), false);
-            } else {
-                $gDb->queryPrepared('INSERT INTO ' . TBL_PREFERENCES . ' (prf_org_id, prf_name, prf_value) VALUES (?,?,?)', array($gCurrentOrgId, $plpName, $value), false);
-            }
+            $upsertPref($plpName, $value);
     }
     }
     
@@ -1001,7 +1089,7 @@ function ensureResidentsMenuItem(): void
         $rolesStmt = $gDb->queryPrepared(
             'SELECT rol_id FROM ' . TBL_ROLES . '
              INNER JOIN ' . TBL_CATEGORIES . ' ON cat_id = rol_cat_id
-             WHERE rol_valid = 1',
+             WHERE rol_valid = true',
             array(),
             false
         );

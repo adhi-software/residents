@@ -159,7 +159,7 @@ $userOptions = array('0' => $gL10n->get('RE_ALL')) + $userOptions;
 
 $form->addSelectBox(
     'filter_group',
-    $gL10n->get('RE_GROUPS_ROLES'),
+    $gL10n->get('SYS_GROUPS_ROLES'),
     $rolesOptions,
     array('defaultValue' => (string)$selectedGroup, 'showContextDependentFirstEntry' => false)
 );

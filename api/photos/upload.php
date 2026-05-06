@@ -51,8 +51,8 @@ if ($albumId <= 0) {
 
 // Verify album exists and belongs to current organization
 $sql = 'SELECT pho_id, pho_name, pho_begin, pho_quantity
-        FROM adm_photos
-        WHERE pho_id = ? AND pho_org_id = ? AND pho_locked = 0';
+        FROM ' . TBL_PHOTOS . '
+        WHERE pho_id = ? AND pho_org_id = ? AND pho_locked = false';
 $albumStatement = $gDb->queryPrepared($sql, [$albumId, $currentOrgId]);
 $album = $albumStatement->fetch();
 
@@ -206,7 +206,7 @@ try {
     
     // Update photo count in database (only after successful file save)
     $newQuantity = $newPhotoFileNumber;
-    $updateSql = 'UPDATE adm_photos SET pho_quantity = ? WHERE pho_id = ?';
+    $updateSql = 'UPDATE ' . TBL_PHOTOS . ' SET pho_quantity = ? WHERE pho_id = ?';
     $gDb->queryPrepared($updateSql, [$newQuantity, $albumId]);
     
     // Return success response
