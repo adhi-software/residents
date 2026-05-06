@@ -35,7 +35,7 @@ if (!is_file($sepaExportFile)) {
         <i class="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
         <div>' . $gL10n->get('RE_SEPA_PLUGIN_MISSING') . '</div>
     </div>
-    <div class="mt-3">
+    <div class="mt-3" style="margin-bottom: 3rem;">
         <a href="' . htmlspecialchars($backUrl) . '" class="btn btn-secondary px-4">
             ' . $gL10n->get('RE_BACK') . '
         </a>
@@ -61,7 +61,7 @@ if (!$feeFieldId || !$dueDateFieldId || !$sequenceFieldId) {
         <i class="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
         <div>' . $gL10n->get('RE_SEPA_FIELDS_NOT_FOUND') . '</div>
     </div>
-    <div class="mt-3">
+    <div class="mt-3" style="margin-bottom: 3rem;">
         <a href="' . htmlspecialchars($backUrl) . '" class="btn btn-secondary px-4">
             ' . $gL10n->get('RE_BACK') . '
         </a>
