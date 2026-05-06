@@ -167,7 +167,8 @@
     <string name="RE_SEPA_NO_INVOICES">No invoices selected.</string>
     <string name="RE_SEPA_EXPORT_XML">Export XML</string>
     <string name="RE_SEPA_GENERATING">Generating...</string>
-    <string name="RE_SEPA_FIELDS_NOT_FOUND">MembershipFee profile fields not found. Please ensure the MembershipFee plugin is installed and configured.</string>
+    <string name="RE_SEPA_FIELDS_NOT_FOUND">MembershipFee profile fields not found, please ensure the plugin is installed and configured.</string>
+    <string name="RE_SEPA_PLUGIN_MISSING">For SEPA XML export, please install the MembershipFee plugin and configure it before using this feature.</string>
     <string name="RE_SEPA_INVALID_DATE">Invalid due date provided.</string>
     <string name="RE_CONFIRM_PAY">Confirm Pay</string>
     <string name="RE_SELECT_INVOICES_PAY">Please select the invoices you wish to pay:</string>

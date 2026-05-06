@@ -25,6 +25,51 @@ if (!isUserAuthorizedForResidents($scriptUrl)) {
     die($gL10n->get('SYS_NO_RIGHTS'));
 }
 
+// Check if MembershipFee plugin files exist
+$sepaExportFile = ADMIDIO_PATH . '/adm_plugins/MembershipFee/system/sepa_export.php';
+if (!is_file($sepaExportFile)) {
+    $backUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php?tab=invoices';
+    $page = new HtmlPage('re-sepa-missing', $gL10n->get('RE_SEPA_EXPORT'));
+    $page->addHtml('
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+        <div>' . $gL10n->get('RE_SEPA_PLUGIN_MISSING') . '</div>
+    </div>
+    <div class="mt-3">
+        <a href="' . htmlspecialchars($backUrl) . '" class="btn btn-secondary px-4">
+            ' . $gL10n->get('RE_BACK') . '
+        </a>
+    </div>');
+    $page->show();
+    exit;
+}
+
+// Check if MembershipFee plugin profile fields exist (verifies it is installed)
+$feeFieldName      = 'FEE' . $gCurrentOrgId;
+$dueDateFieldName  = 'DUEDATE' . $gCurrentOrgId;
+$sequenceFieldName = 'SEQUENCETYPE' . $gCurrentOrgId;
+
+$feeFieldId      = (int)$gProfileFields->getProperty($feeFieldName, 'usf_id');
+$dueDateFieldId  = (int)$gProfileFields->getProperty($dueDateFieldName, 'usf_id');
+$sequenceFieldId = (int)$gProfileFields->getProperty($sequenceFieldName, 'usf_id');
+
+if (!$feeFieldId || !$dueDateFieldId || !$sequenceFieldId) {
+    $backUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php?tab=invoices';
+    $page = new HtmlPage('re-sepa-fields-missing', $gL10n->get('RE_SEPA_EXPORT'));
+    $page->addHtml('
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+        <div>' . $gL10n->get('RE_SEPA_FIELDS_NOT_FOUND') . '</div>
+    </div>
+    <div class="mt-3">
+        <a href="' . htmlspecialchars($backUrl) . '" class="btn btn-secondary px-4">
+            ' . $gL10n->get('RE_BACK') . '
+        </a>
+    </div>');
+    $page->show();
+    exit;
+}
+
 // Get invoice IDs from POST (from the DataTable select) or GET (for single tests)
 $invoiceIdsRaw = $_POST['ids'] ?? $_GET['ids'] ?? '';
 if (is_array($invoiceIdsRaw)) {
@@ -279,19 +324,6 @@ document.addEventListener("DOMContentLoaded", function() {
 // ============================================================================
 // STEP 2 – Perform Data Swap and Trigger Export
 // ============================================================================
-
-// 1. Identify the profile field IDs used by MembershipFee
-$feeFieldName      = 'FEE' . $gCurrentOrgId;
-$dueDateFieldName  = 'DUEDATE' . $gCurrentOrgId;
-$sequenceFieldName = 'SEQUENCETYPE' . $gCurrentOrgId;
-
-$feeFieldId      = (int)$gProfileFields->getProperty($feeFieldName, 'usf_id');
-$dueDateFieldId  = (int)$gProfileFields->getProperty($dueDateFieldName, 'usf_id');
-$sequenceFieldId = (int)$gProfileFields->getProperty($sequenceFieldName, 'usf_id');
-
-if ($feeFieldId <= 0 || $dueDateFieldId <= 0 || $sequenceFieldId <= 0) {
-    die($gL10n->get('RE_SEPA_FIELDS_NOT_FOUND'));
-}
 
 // Validate the user-supplied due date
 $dueDateDt = \DateTime::createFromFormat('Y-m-d', $selectedDueDate);
