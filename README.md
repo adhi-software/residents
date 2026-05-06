@@ -5,14 +5,13 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 ## Features
 
 - **Invoice Management** - Create, edit, preview, and delete invoices for residents
-- **SEPA File Generation** - Generate SEPA XML files for direct debit payments
 - **Payment Tracking** - Record and manage payments against invoices
 - **Recurring Charges** - Define recurring charge templates for automated billing
 - **Device Management** - Track and approve resident device registrations
 - **Payment Gateway Integration** - CCAvenue and PAYPAL payment gateway support for online payment transactions
 - **PDF Generation** - Generate PDF invoices and payment receipts
-- **Multi-Database Support** - Works with both MySQL and PostgreSQL databases
 - **Role-Based Access Control** - Configurable admin roles for billing management
+- **SEPA File Generation** - Generate SEPA XML files for direct debit payments (Requires the MembershipFee plugin)
 - **Mobile API** - REST API endpoints for mobile app integration
 
 ## Requirements
@@ -56,7 +55,7 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 
 ## Release Notes v1.1
 - PAYPAL payment gateway integration
-- SEPA xml file generation
+- SEPA xml file generation (Requires the MembershipFee plugin)
 
 ## Customization
 
