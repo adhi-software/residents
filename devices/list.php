@@ -70,20 +70,6 @@ if ($isAdmin) {
         . ' WHERE u.usr_valid = true'
         . ' ORDER BY u.usr_login_name';
         $stmtUsers = $gDb->queryPrepared($sqlUsers, array(DATE_NOW, DATE_NOW, $gCurrentOrgId));
-        if (!empty($_GET['debug_users'])) {
-            $debugRows = array();
-            $stmtUsersDebug = $gDb->queryPrepared($sqlUsers, array(DATE_NOW, DATE_NOW, $gCurrentOrgId));
-            if ($stmtUsersDebug !== false) {
-                while ($r = $stmtUsersDebug->fetch(PDO::FETCH_ASSOC)) {
-                    $debugRows[] = $r;
-                }
-            }
-            echo '<pre class="re-debug-users">'
-            . htmlspecialchars($sqlUsers) . "\n\n"
-            . htmlspecialchars(json_encode($debugRows, JSON_PRETTY_PRINT))
-            . '</pre>';
-            exit;
-        }
         $userOptions = array();
         if ($stmtUsers !== false) {
             while ($row = $stmtUsers->fetch()) {

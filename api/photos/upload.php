@@ -62,11 +62,6 @@ if ($album === false) {
     exit;
 }
 
-// DEBUG: Log what we're receiving
-error_log("Photo upload - POST: " . json_encode($_POST));
-error_log("Photo upload - FILES: " . json_encode($_FILES));
-error_log("Photo upload - Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
-
 // Check if photo file was uploaded
 if (!isset($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
     $uploadErrors = [
@@ -81,10 +76,7 @@ if (!isset($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
     
     $errorCode = isset($_FILES['photo']) ? $_FILES['photo']['error'] : UPLOAD_ERR_NO_FILE;
     $errorMessage = $uploadErrors[$errorCode] ?? 'Unknown upload error.';
-    
-    // DEBUG: Log the error
-    error_log("Photo upload error: " . $errorMessage . " (code: " . $errorCode . ")");
-    
+
     http_response_code(400);
     echo json_encode(['error' => $errorMessage]);
     exit;

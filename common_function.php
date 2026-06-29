@@ -1503,23 +1503,76 @@ function residentsGetInvoiceTotalAmount(int $invId): float
     return (float)$totals['amount'];
 }
 
+/**
+ * Read an inbound request header, trying several spellings so the API behaves the
+ * same behind any web server (Apache, nginx, PHP-FPM, ...). Names are matched
+ * case-insensitively and '-' / '_' are treated as equivalent. The first non-empty
+ * match wins, so newer header names should be listed before legacy ones.
+ *
+ * @param string[] $names Accepted header names, e.g. ['X-API-Key', 'Api-Key'].
+ * @return string|null Trimmed value, or null when none of the names are present.
+ */
+function residentsGetRequestHeader(array $names): ?string
+{
+    // Normalised forms of the accepted names for comparison.
+    $wanted = array();
+    foreach ($names as $name) {
+        $wanted[] = strtolower(str_replace('_', '-', (string) $name));
+    }
+
+    // 1) getallheaders() preserves the original header name (works on Apache and nginx).
+    if (function_exists('getallheaders')) {
+        foreach (getallheaders() as $headerName => $headerValue) {
+            $norm = strtolower(str_replace('_', '-', (string) $headerName));
+            if (in_array($norm, $wanted, true)) {
+                $value = trim((string) $headerValue);
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+        }
+    }
+
+    // 2) Portable fallback via $_SERVER (e.g. "X-API-Key" => $_SERVER['HTTP_X_API_KEY']).
+    foreach ($names as $name) {
+        $serverKey = 'HTTP_' . strtoupper(str_replace('-', '_', (string) $name));
+        if (isset($_SERVER[$serverKey])) {
+            $value = trim((string) $_SERVER[$serverKey]);
+            if ($value !== '') {
+                return $value;
+            }
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Whether the current request carries an API key (header, query string, or body).
+ * Dual-mode endpoints (e.g. the PDF exports) use this to choose API-key auth via
+ * validateApiKey() versus browser/session login, and it reads the same sources
+ * validateApiKey() does so the two stay in sync.
+ */
+function residentsApiKeyProvided(): bool
+{
+    if (residentsGetRequestHeader(['X-API-Key', 'Api-Key']) !== null) {
+        return true;
+    }
+
+    return !empty($_GET['api_key']) || !empty($_POST['api_key']);
+}
+
 function validateApiKey(): User
 {
     global $gDb, $gCurrentUserId, $gProfileFields, $gCurrentOrgId, $gCurrentOrganization, $gSettingsManager, $gCurrentSession;
 
     $getRequestedOrgId = function (): int {
-        $headers = function_exists('getallheaders') ? getallheaders() : array();
-
         $candidates = array();
-        foreach ($headers as $headerName => $headerValue) {
-            $name = strtolower((string) $headerName);
-            if ($name === 'org_id') {
-                $candidates[] = (string) $headerValue;
-            }
-        }
 
-        if (isset($_SERVER['HTTP_ORG_ID'])) {
-            $candidates[] = (string) $_SERVER['HTTP_ORG_ID'];
+        // Preferred header is "X-Org-Id"; "Org-Id" is still accepted for older clients.
+        $orgIdHeader = residentsGetRequestHeader(['X-Org-Id', 'Org-Id']);
+        if ($orgIdHeader !== null) {
+            $candidates[] = $orgIdHeader;
         }
 
         if (isset($_GET['org_id'])) {
@@ -1566,18 +1619,8 @@ function validateApiKey(): User
         }
     };
 
-    $headers = function_exists('getallheaders') ? getallheaders() : array();
-    $apiKey = null;
-    foreach ($headers as $headerName => $headerValue) {
-        if (strcasecmp((string) $headerName, 'api_key') === 0) {
-            $apiKey = trim((string) $headerValue);
-            break;
-        }
-    }
-
-    if ($apiKey === null && isset($_SERVER['HTTP_API_KEY'])) {
-        $apiKey = trim((string) $_SERVER['HTTP_API_KEY']);
-    }
+    // Preferred header is "X-API-Key"; "Api-Key" is still accepted for older clients.
+    $apiKey = residentsGetRequestHeader(['X-API-Key', 'Api-Key']);
 
     if ($apiKey === null && isset($_GET['api_key'])) {
         $apiKey = trim((string) $_GET['api_key']);
