@@ -146,7 +146,7 @@
     <string name="RE_INSTALL">நிறுவவும்</string>
     <string name="RE_INSTALL_HEADLINE">குடியிருப்போர் - நிறுவல்</string>
     <string name="RE_INSTALL_DESC">வழிகாட்டி குடியிருப்போர் அட்டவணைகளை உருவாக்கும்.</string>
-    <string name="RE_INSTALL_DONE">அட்டவணைகள் & மெனு சேர்க்கப்பட்டது.</string>
+    <string name="RE_INSTALL_DONE">அட்டவணைகள் &amp; மெனு சேர்க்கப்பட்டது.</string>
     <string name="RE_INSTALL_ALREADY">குடியிருப்போர் ஏற்கனவே நிறுவப்பட்டுள்ளனர்</string>
     <string name="RE_UNINSTALL_RESIDENTS">குடியிருப்போர் நீக்கு</string>
     <string name="RE_UNINSTALL_CONFIRM">அனைத்து அட்டவணைகள் மற்றும் மெனு நீக்கவா?</string>
@@ -156,9 +156,8 @@
     <string name="RE_DEVICE_ID">சாதன ஐடி</string>
     <string name="RE_DEVICE_ACTIVE">செயலில் உள்ளது</string>
     <string name="RE_DEVICE_ACTIVE_DATE">செயலில் உள்ள தேதி</string>
-    <string name="RE_DEVICE_PLATFORM">தளம்</string>
-    <string name="RE_DEVICE_BRAND">மாதிரி</string>
-    <string name="RE_DEVICE_MODEL">வடிவம்</string>
+    <string name="RE_DEVICE_DETAILS">சாதனம்</string>
+    <string name="RE_DEVICE_REQUESTED">கோரிய நேரம்</string>
     <string name="RE_RESET">மீட்டமை</string>
     <string name="RE_APPROVE">அங்கீகரி</string>
     <string name="RE_DELETE_DEVICE_CONFIRM">இந்த சாதன தகவலை நீக்கவா?</string>

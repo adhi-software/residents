@@ -605,6 +605,10 @@ class ConfigTables
     {
         $this->createTablesIfNotExist();
         $this->applySchemaUpgrades();
+        // Ensure the per-user device profile fields exist (idempotent). Runs on fresh
+        // install and on the automatic version-upgrade path in residents.php so that
+        // existing installations gain the new fields when the plugin is updated.
+        residentsEnsureDeviceProfileFields();
     }
 
     private function applySchemaUpgrades(): void
@@ -716,6 +720,10 @@ class ConfigTables
         foreach ($tables as $table) {
             $this->dropTableIfExists($table);
     }
+
+        // Remove the per-user device profile fields (and their stored user data) so a
+        // later reinstall starts clean.
+        residentsRemoveDeviceProfileFields();
     }
 
     private function createTablesIfNotExist(): void

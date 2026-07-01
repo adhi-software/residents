@@ -138,10 +138,9 @@
     <string name="RE_DEVICE_NUMBER">Device #</string>
     <string name="RE_DEVICE_ID">Device ID</string>
     <string name="RE_DEVICE_ACTIVE">Active</string>
-    <string name="RE_DEVICE_ACTIVE_DATE">Active Date</string>
-    <string name="RE_DEVICE_PLATFORM">Platform</string>
-    <string name="RE_DEVICE_BRAND">Brand</string>
-    <string name="RE_DEVICE_MODEL">Model</string>
+    <string name="RE_DEVICE_ACTIVE_DATE">Activated Date</string>
+    <string name="RE_DEVICE_DETAILS">Device</string>
+    <string name="RE_DEVICE_REQUESTED">Requested</string>
     <string name="RE_RESET">Reset</string>
     <string name="RE_APPROVE">Approve</string>
     <string name="RE_DELETE_DEVICE_CONFIRM">Delete this Device Info?</string>

@@ -47,6 +47,9 @@ if ($guser === false) {
 $row = $guser->fetch();
 
 if (!$row) {
+    // Spend the same time as a genuine password check so a missing/non-member
+    // username is not distinguishable by response latency (username enumeration).
+    residentsEqualizeLoginTiming($password);
     http_response_code(401);
     echo json_encode(['error' => 'Invalid username or password']);
     exit;
@@ -79,16 +82,41 @@ $brand = (string) $device['brand'];
 $model = (string) $device['model'];
 $deviceId = (string) $device['deviceId'];
 
-// Check for existing device entry for this user
+// One approved device per account (within this org). If the account is already
+// active on a different device, reject this registration so a single account
+// cannot be used on multiple devices. Members flagged "Allow Multiple Devices"
+// (profile field) are exempt so they can be used on multiple devices.
+if (!residentsUserAllowsMultipleDevices($userId)) {
+    $otherDeviceStmt = $gDb->queryPrepared(
+        'SELECT rde_id FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_device_id <> ? AND rde_is_active = 1 AND rde_org_id = ? LIMIT 1',
+        [$userId, $deviceId, $currentOrgId],
+        false
+    );
+    if ($otherDeviceStmt === false) {
+        admidioApiError('Database error', 500);
+    }
+    if ($otherDeviceStmt->fetch()) {
+        http_response_code(409);
+        echo json_encode([
+            'status' => 'error',
+            'error' => 'This account is already registered on another device. Only one device per account is allowed.',
+        ]);
+        exit;
+    }
+}
+
+// Check for an existing request for this same user + device + org. Repeat
+// requests (e.g. a "Reset server" retry with the same credentials) update the
+// existing record instead of inserting a duplicate.
 $existingStmt = $gDb->queryPrepared(
     'SELECT rde_id, rde_is_active FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_device_id = ? AND rde_org_id = ? ORDER BY rde_timestamp_create DESC LIMIT 1',
     [$userId, $deviceId, $currentOrgId],
     false
 );
-$existing = $existingStmt ? $existingStmt->fetch() : false;
 if ($existingStmt === false) {
     admidioApiError('Database error', 500);
 }
+$existing = $existingStmt->fetch();
 
 if ($existing) {
     // If device is already approved, do not change its status.
@@ -101,9 +129,11 @@ if ($existing) {
         exit;
     }
 
-    // Pending device: refresh metadata but keep it pending.
+    // Pending request already exists: refresh metadata and the request date, but
+    // keep it pending. rde_timestamp_create doubles as the "requested" date shown
+    // in the device list, so bump it to reflect this latest request.
     $updated = $gDb->queryPrepared(
-    'UPDATE ' . TBL_RE_DEVICES . ' SET rde_platform = ?, rde_brand = ?, rde_model = ?, rde_timestamp_change = NOW() WHERE rde_id = ?',
+    'UPDATE ' . TBL_RE_DEVICES . ' SET rde_platform = ?, rde_brand = ?, rde_model = ?, rde_timestamp_create = NOW(), rde_timestamp_change = NOW() WHERE rde_id = ?',
     [$platform, $brand, $model, $existing['rde_id']],
     false
     );

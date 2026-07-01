@@ -119,9 +119,8 @@ class TableResidentsDevice extends TableResidentsBase
             'active_date' => 'd.rde_active_date',
             'active' => 'd.rde_is_active',
             'user' => 'user_name',
-            'platform' => 'd.rde_platform',
-            'brand' => 'd.rde_brand',
-            'model' => 'd.rde_model'
+            'requested' => 'd.rde_timestamp_create',
+            'device' => 'd.rde_brand'
         );
         $sortCol = $filters['sort_col'] ?? 'no';
         $sortDir = strtoupper($filters['sort_dir'] ?? 'DESC');

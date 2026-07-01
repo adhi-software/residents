@@ -20,7 +20,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
 $device = $data['device'] ?? [];
-$orgId = $_GET['org_id'] ?? $gCurrentOrgId;
+$orgId = $_GET['orgid'] ?? $_GET['org_id'] ?? $gCurrentOrgId;
 
 if ($username === '' || $password === '') {
     http_response_code(400);
@@ -50,6 +50,9 @@ if ($guser === false) {
 $row = $guser->fetch();
 
 if (!$row) {
+    // Spend the same time as a genuine password check so a missing/non-member
+    // username is not distinguishable by response latency (username enumeration).
+    residentsEqualizeLoginTiming($password);
     http_response_code(401);
     echo json_encode(['error' => 'Invalid username or password']);
     exit;
@@ -84,6 +87,41 @@ if ($gCurrentOrgId > 0) {
     $deviceParams[] = $gCurrentOrgId;
 }
 
+// Per-user device settings (profile fields):
+//  - auto-approve: the device is approved automatically on login, skipping the
+//    manual admin approval step.
+//  - allow multiple devices: the account is exempt from the "one active device per
+//    account" restriction below.
+$autoApprove = residentsUserHasAutoApproveDevice($userId);
+$allowMultiple = residentsUserAllowsMultipleDevices($userId);
+
+// One approved device per account (within this org). If the account is already
+// active on a different device, block login from this one so a single account
+// cannot be used on multiple devices. Members flagged "Allow Multiple Devices" are
+// exempt so they can be used on multiple devices.
+if (!$allowMultiple) {
+    $otherDeviceParams = [$userId, $deviceId];
+    if ($gCurrentOrgId > 0) {
+        $otherDeviceParams[] = $gCurrentOrgId;
+    }
+    $otherDeviceStmt = $gDb->queryPrepared(
+        'SELECT rde_id FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_device_id <> ? AND rde_is_active = 1' . $orgFilter . ' LIMIT 1',
+        $otherDeviceParams,
+        false
+    );
+    if ($otherDeviceStmt === false) {
+        admidioApiError('Database error', 500);
+    }
+    if ($otherDeviceStmt->fetch()) {
+        http_response_code(409);
+        echo json_encode([
+            'status' => 'error',
+            'error' => 'This account is already registered on another device. Only one device per account is allowed.',
+        ]);
+        exit;
+    }
+}
+
 $deviceStmt = $gDb->queryPrepared(
     'SELECT rde_id, rde_is_active, rde_api_key FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_device_id = ?' . $orgFilter . ' ORDER BY rde_timestamp_create DESC LIMIT 1',
     $deviceParams,
@@ -99,13 +137,13 @@ if (!$deviceRow) {
     $insertColumns = 'rde_device_id, rde_usr_id, rde_is_active, rde_platform, rde_brand, rde_model, rde_timestamp_create';
     $insertValues = '?, ?, 0, ?, ?, ?, NOW()';
     $insertParams = [$deviceId, $userId, $platform, $brand, $model];
-    
+
     if ($gCurrentOrgId > 0) {
         $insertColumns .= ', rde_org_id';
         $insertValues .= ', ?';
         $insertParams[] = $gCurrentOrgId;
     }
-    
+
     $inserted = $gDb->queryPrepared(
     'INSERT INTO ' . TBL_RE_DEVICES . ' (' . $insertColumns . ') VALUES (' . $insertValues . ')',
     $insertParams,
@@ -116,21 +154,34 @@ if (!$deviceRow) {
     }
     $requestId = (int) $gDb->lastInsertId();
 
-    echo json_encode([
-    'status' => 'pending',
-    'message' => 'Device request submitted. Ask admin to approve to login.',
-    'device_id' => $requestId,
-    ]);
-    exit;
+    // After the device request is created, auto-approve it for members flagged
+    // "Auto-approve Device" by reusing the same approve action as the admin device page.
+    if ($autoApprove && ($apiKey = residentsApproveDevice($requestId)) !== null) {
+        $deviceRow = ['rde_id' => $requestId, 'rde_is_active' => 1, 'rde_api_key' => $apiKey];
+    } else {
+        echo json_encode([
+        'status' => 'pending',
+        'message' => 'Device request submitted. Ask admin to approve to login.',
+        'device_id' => $requestId,
+        ]);
+        exit;
+    }
 }
 
 if (!$deviceRow['rde_is_active']) {
-    echo json_encode([
-    'status' => 'pending',
-    'message' => 'Device request is not approved yet.',
-    'device_id' => (int) $deviceRow['rde_id'],
-    ]);
-    exit;
+    // Existing pending device: auto-approve for members flagged "Auto-approve Device",
+    // otherwise keep waiting for manual admin approval.
+    if ($autoApprove && ($apiKey = residentsApproveDevice((int) $deviceRow['rde_id'])) !== null) {
+        $deviceRow['rde_is_active'] = 1;
+        $deviceRow['rde_api_key'] = $apiKey;
+    } else {
+        echo json_encode([
+        'status' => 'pending',
+        'message' => 'Device request is not approved yet.',
+        'device_id' => (int) $deviceRow['rde_id'],
+        ]);
+        exit;
+    }
 }
 
 // Generate API key if not already set
@@ -158,7 +209,7 @@ $userData = [
     'first_name' => $user->getValue('FIRST_NAME'),
     'last_name'  => $user->getValue('LAST_NAME'),
     'email'      => $user->getValue('EMAIL'),
-    'api_key'    => $apiKey,
+    'apikey'     => $apiKey,
 ];
 
 echo json_encode([

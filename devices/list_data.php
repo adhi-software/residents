@@ -56,9 +56,8 @@ $columnMap = array(
     3 => 'device_id',
     4 => 'active',
     5 => 'active_date',
-    6 => 'platform',
-    7 => 'brand',
-    8 => 'model'
+    6 => 'requested',
+    7 => 'device'
     );
 if (isset($_GET['order'][0]['column'])) {
     $columnIndex = (int)$_GET['order'][0]['column'];
@@ -151,6 +150,24 @@ $actions .= ' <form method="post" action="' . $deleteUrl . '" class="d-inline" s
     . '</form>';
 
 $selectHtml = $isAdmin ? '<input type="checkbox" class="re-row-select" value="' . $row['rde_id'] . '" />' : '';
+
+// Merge platform / brand / model into one cell: "Brand Model" with the
+// platform shown as muted sub-text underneath.
+$deviceMain = trim(implode(' ', array_filter(array(
+    trim((string)($row['rde_brand'] ?? '')),
+    trim((string)($row['rde_model'] ?? '')),
+))));
+$platformText = trim((string)($row['rde_platform'] ?? ''));
+$deviceHtml = '<div>' . ($deviceMain !== '' ? htmlspecialchars($deviceMain, ENT_QUOTES, 'UTF-8') : '&mdash;') . '</div>';
+if ($platformText !== '') {
+    $deviceHtml .= '<div class="text-muted small">' . htmlspecialchars($platformText, ENT_QUOTES, 'UTF-8') . '</div>';
+}
+
+// "Requested" date: rde_timestamp_create is refreshed on every registration
+// request, so it reflects the most recent request for this device.
+$requestedRaw = trim((string)($row['rde_timestamp_create'] ?? ''));
+$requestedHtml = $requestedRaw !== '' ? htmlspecialchars(residentsFormatDateTimeForUi($requestedRaw), ENT_QUOTES, 'UTF-8') : '';
+
     $data[] = array(
             $selectHtml,
             (int)$row['rde_id'],
@@ -158,9 +175,8 @@ $selectHtml = $isAdmin ? '<input type="checkbox" class="re-row-select" value="' 
             htmlspecialchars((string)$row['rde_device_id'], ENT_QUOTES, 'UTF-8'),
             $activeHtml,
             htmlspecialchars((string)$row['rde_active_date'], ENT_QUOTES, 'UTF-8'),
-            htmlspecialchars((string)$row['rde_platform'], ENT_QUOTES, 'UTF-8'),
-            htmlspecialchars((string)$row['rde_brand'], ENT_QUOTES, 'UTF-8'),
-            htmlspecialchars((string)$row['rde_model'], ENT_QUOTES, 'UTF-8'),
+            $requestedHtml,
+            $deviceHtml,
             $actions
     );
 }

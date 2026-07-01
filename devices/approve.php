@@ -34,17 +34,8 @@ if ($deviceID >= 0 && $device->isNewRecord()) {
 elseif ($isActive) {
     $gMessage->show($gL10n->get('RE_DEVICES_ALREADY_APPROVED') . ' (ID: ' . $deviceID . ')');
 }else{
-    $apiKey = (string) $device->getValue('rde_api_key');
-    if ($apiKey === '') {
-        $apiKey = bin2hex(random_bytes(20));
-    }
-    $device->setValue('rde_is_active', 1);
-    // Store activation timestamp (date + time)
-    $device->setValue('rde_active_date', date('Y-m-d H:i:s'));
-    $device->setValue('rde_api_key', $apiKey);
-    $device->setValue('rde_usr_id_change', $gCurrentUserId);
-    $device->setValue('rde_timestamp_change', date('Y-m-d H:i:s'));
-    $saved = $device->save();
+    $apiKey = residentsApproveDevice($deviceID, $gCurrentUserId);
+    $saved = ($apiKey !== null);
     $params = array('tab' => 'devices');
     if ($saved) {
         $params['device_status'] = 'approved';
