@@ -98,6 +98,15 @@ if ($gCurrentOrgId > 0) {
 $autoApprove = residentsUserHasAutoApproveDevice($userId);
 $allowMultiple = residentsUserAllowsMultipleDevices($userId);
 
+// "Allow Multiple Devices" was turned off while several devices were still
+// active: deactivate all of them so none keeps working. With no device active
+// anymore the check below passes and this login falls into the pending path,
+// i.e. each device can submit a fresh approval request and the admin decides
+// which single device to approve.
+if (!$allowMultiple) {
+    residentsDeactivateMultiDeviceViolation($userId, (int) $gCurrentOrgId);
+}
+
 // One approved device per account (within this org). If the account is already
 // active on a different device, block login from this one so a single account
 // cannot be used on multiple devices. Members flagged "Allow Multiple Devices" are

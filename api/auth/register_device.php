@@ -87,6 +87,11 @@ $deviceId = (string) $device['deviceId'];
 // cannot be used on multiple devices. Members flagged "Allow Multiple Devices"
 // (profile field) are exempt so they can be used on multiple devices.
 if (!residentsUserAllowsMultipleDevices($userId)) {
+    // The flag may have been turned off while several devices were still active:
+    // deactivate them all so the check below passes and this registration becomes
+    // a fresh pending approval request (see residentsDeactivateMultiDeviceViolation).
+    residentsDeactivateMultiDeviceViolation($userId, $currentOrgId);
+
     $otherDeviceStmt = $gDb->queryPrepared(
         'SELECT rde_id FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_device_id <> ? AND rde_is_active = 1 AND rde_org_id = ? LIMIT 1',
         [$userId, $deviceId, $currentOrgId],

@@ -959,6 +959,60 @@ function residentsUserHasOtherActiveDevice(int $userId, string $deviceIdent, int
 }
 
 /**
+    * Enforce the "one active device per account" rule for accounts whose
+    * "Allow Multiple Devices" flag was turned OFF while several devices were still
+    * active. Devices approved while the flag was on stay active in the database, so
+    * without this the account would be deadlocked: every login is blocked by the
+    * "another device is active" check and no new approval request can be made.
+    *
+    * When the user does not allow multiple devices and more than one device is
+    * still active (within the given org), ALL active devices are deactivated and
+    * their API keys cleared (same as the admin "unapprove" action). Each device
+    * then has to go through the normal approval flow again, and the admin decides
+    * which single device to approve.
+    *
+    * @param int $userId The user id (usr_id)
+    * @param int $orgId  The organization id (rde_org_id); 0 to ignore org
+    * @return bool True when a violation was found and the devices were deactivated
+    */
+function residentsDeactivateMultiDeviceViolation(int $userId, int $orgId): bool
+{
+    global $gDb;
+
+    // Cheap pre-check first: only accounts that once had "Allow Multiple Devices"
+    // can hold two or more active devices, so the profile-field lookup below is
+    // skipped for the common single-device case.
+    $orgFilter = '';
+    $params = array($userId);
+    if ($orgId > 0) {
+        $orgFilter = ' AND rde_org_id = ?';
+        $params[] = $orgId;
+    }
+
+    $stmt = $gDb->queryPrepared(
+        'SELECT COUNT(*) FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_is_active = 1' . $orgFilter,
+        $params,
+        false
+    );
+    if ($stmt === false || (int) $stmt->fetchColumn() < 2) {
+        return false;
+    }
+
+    if (residentsUserAllowsMultipleDevices($userId)) {
+        return false;
+    }
+
+    $updated = $gDb->queryPrepared(
+        'UPDATE ' . TBL_RE_DEVICES . " SET rde_is_active = 0, rde_api_key = '', rde_timestamp_change = NOW()
+            WHERE rde_usr_id = ? AND rde_is_active = 1" . $orgFilter,
+        $params,
+        false
+    );
+
+    return $updated !== false;
+}
+
+/**
     * Resolve the id of the dedicated "Device Settings" user-field category, creating
     * it if it does not exist yet. Idempotent. The category is created
     * organization-independent (cat_org_id NULL) with no view-right restriction, exactly
@@ -2103,6 +2157,22 @@ function validateApiKey(): User
 
     if ($deviceOrgId > 0) {
         $applyOrgContext($deviceOrgId);
+    }
+
+    // "Allow Multiple Devices" may have been turned off while several devices were
+    // still active. Enforce it here too so devices that are already signed in are
+    // deactivated on their next API call instead of only at the next password
+    // login. The key was just cleared, so answer with API_KEY_INVALID: the app
+    // drops its session and returns to the login screen, where the login endpoint
+    // creates a fresh approval request.
+    if ((bool) $deviceRecord['rde_is_active']
+        && residentsDeactivateMultiDeviceViolation(
+            (int) $deviceRecord['rde_usr_id'],
+            $deviceOrgId > 0 ? $deviceOrgId : $requestedOrgId
+        )) {
+        http_response_code(403);
+        echo json_encode(['error' => 'API key is invalid', 'code' => 'API_KEY_INVALID']);
+        exit();
     }
 
     if (!(bool) $deviceRecord['rde_is_active']) {
