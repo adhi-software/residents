@@ -850,6 +850,19 @@ const RE_USF_AUTO_APPROVE_DEVICE = 'RE_AUTO_APPROVE_DEVICE';
 const RE_USF_ALLOW_MULTIPLE_DEVICES = 'RE_ALLOW_MULTIPLE_DEVICES';
 
 /**
+    * Internal name (cat_name_intern) of the dedicated user-field category that groups
+    * the two mobile-device profile fields into their own section/header on the Admidio
+    * profile screen (instead of mixing them into the default "Basic Data" section).
+    */
+const RE_USF_DEVICE_CATEGORY = 'RE_DEVICE_SETTINGS';
+
+/**
+    * Display name (section header) shown for the device settings category on the
+    * profile screen. Plain text on purpose (not a translation id) so it is shown as-is.
+    */
+const RE_USF_DEVICE_CATEGORY_NAME = 'Device Settings';
+
+/**
     * Read a boolean (checkbox) profile field value for a given user directly from the
     * database. Reads the raw stored value so it works in API contexts where a full
     * User object is not (yet) loaded. A missing row is treated as unchecked (false).
@@ -946,14 +959,61 @@ function residentsUserHasOtherActiveDevice(int $userId, string $deviceIdent, int
 }
 
 /**
+    * Resolve the id of the dedicated "Device Settings" user-field category, creating
+    * it if it does not exist yet. Idempotent. The category is created
+    * organization-independent (cat_org_id NULL) with no view-right restriction, exactly
+    * like the built-in "Basic Data" / "Social networks" categories, so it is visible to
+    * every member and administrators, and appears as its own section/header on the
+    * profile screen.
+    *
+    * @return int The cat_id of the device settings category, or 0 if it could not be
+    *             resolved or created.
+    */
+function residentsEnsureDeviceProfileCategory(): int
+{
+    global $gDb;
+
+    // Already present (created by an earlier call / plugin version)?
+    $stmt = $gDb->queryPrepared(
+        'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? AND cat_name_intern = ? LIMIT 1',
+        array('USF', RE_USF_DEVICE_CATEGORY),
+        false
+    );
+    $catId = ($stmt !== false) ? (int) $stmt->fetchColumn() : 0;
+    if ($catId > 0) {
+        return $catId;
+    }
+
+    try {
+        $category = new \Admidio\Categories\Entity\Category($gDb);
+        // Allow creation regardless of the current user's admin rights (this runs during
+        // install and the automatic upgrade path).
+        $category->saveChangesWithoutRights();
+        $category->setValue('cat_type', 'USF');
+        $category->setValue('cat_name_intern', RE_USF_DEVICE_CATEGORY);
+        $category->setValue('cat_name', RE_USF_DEVICE_CATEGORY_NAME);
+        // Empty string on a nullable column stores NULL -> organization-independent,
+        // matching how the default USF categories (Basic Data, ...) are created.
+        $category->setValue('cat_org_id', '');
+        $category->save();
+        $catId = (int) $category->getValue('cat_id');
+    } catch (\Throwable $e) {
+        return 0;
+    }
+
+    return $catId;
+}
+
+/**
     * Create the two per-user device profile fields used by the mobile login flow if
     * they do not already exist. Idempotent, so it is safe to call on every install
     * and on the automatic schema upgrade path (existing installations pick the fields
     * up when the plugin version is bumped).
     *
-    * The fields are created as CHECKBOX fields inside the default "Basic Data"
-    * (BASIC_DATA) user field category so administrators can toggle them per member
-    * from the normal Admidio profile edit screen.
+    * The fields are created as CHECKBOX fields inside a dedicated "Device Settings"
+    * user-field category (see residentsEnsureDeviceProfileCategory) so they appear in
+    * their own section/header on the Admidio profile screen. Fields that were created
+    * by an earlier plugin version inside "Basic Data" are moved into this category.
     *
     * @return void
     */
@@ -961,16 +1021,19 @@ function residentsEnsureDeviceProfileFields(): void
 {
     global $gDb;
 
-    // Resolve the target user field category (Basic Data). Fall back to any USF
-    // category so the fields can still be created on unusual installations.
-    $catId = 0;
-    $catStmt = $gDb->queryPrepared(
-        'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? AND cat_name_intern = ? ORDER BY cat_id LIMIT 1',
-        array('USF', 'BASIC_DATA'),
-        false
-    );
-    if ($catStmt !== false) {
-        $catId = (int) $catStmt->fetchColumn();
+    // Resolve the dedicated "Device Settings" category so the two toggles get their own
+    // section/header on the profile. Fall back to Basic Data, then any USF category, so
+    // the fields can still be created on unusual installations.
+    $catId = residentsEnsureDeviceProfileCategory();
+    if ($catId <= 0) {
+        $catStmt = $gDb->queryPrepared(
+            'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? AND cat_name_intern = ? ORDER BY cat_id LIMIT 1',
+            array('USF', 'BASIC_DATA'),
+            false
+        );
+        if ($catStmt !== false) {
+            $catId = (int) $catStmt->fetchColumn();
+        }
     }
     if ($catId <= 0) {
         $catStmt = $gDb->queryPrepared(
@@ -1004,13 +1067,23 @@ function residentsEnsureDeviceProfileFields(): void
         $existingId = ($existsStmt !== false) ? (int) $existsStmt->fetchColumn() : 0;
 
         if ($existingId > 0) {
-            // Field already exists (e.g. created by an earlier plugin version that set a
-            // description). Ensure the description is cleared so no help text is shown.
-            $gDb->queryPrepared(
-                'UPDATE ' . TBL_USER_FIELDS . ' SET usf_description = ? WHERE usf_id = ? AND usf_description IS NOT NULL AND usf_description <> ?',
-                array('', $existingId, ''),
-                false
-            );
+            // Field already exists (e.g. created by an earlier plugin version inside the
+            // "Basic Data" category). Move it into the dedicated device settings category
+            // so it shows in its own section, and clear any help text. Setting usf_cat_id
+            // via the entity also re-computes usf_sequence within the target category.
+            try {
+                $field = new \Admidio\ProfileFields\Entity\ProfileField($gDb, $existingId);
+                $field->saveChangesWithoutRights();
+                if ((int) $field->getValue('usf_cat_id') !== $catId) {
+                    $field->setValue('usf_cat_id', $catId);
+                }
+                if ((string) $field->getValue('usf_description') !== '') {
+                    $field->setValue('usf_description', '');
+                }
+                $field->save();
+            } catch (\Throwable $e) {
+                // Ignore so a single failure does not break plugin load.
+            }
             continue;
         }
 
@@ -1031,9 +1104,10 @@ function residentsEnsureDeviceProfileFields(): void
 }
 
 /**
-    * Remove the two per-user device profile fields (and their stored user data) that
-    * were created by residentsEnsureDeviceProfileFields(). Used on plugin uninstall
-    * so a later reinstall starts clean.
+    * Remove the two per-user device profile fields (and their stored user data) and the
+    * dedicated "Device Settings" category that were created by
+    * residentsEnsureDeviceProfileFields() / residentsEnsureDeviceProfileCategory().
+    * Used on plugin uninstall so a later reinstall starts clean.
     *
     * @return void
     */
@@ -1058,6 +1132,24 @@ function residentsRemoveDeviceProfileFields(): void
             $field = new \Admidio\ProfileFields\Entity\ProfileField($gDb, $usfId);
             $field->saveChangesWithoutRights();
             $field->delete();
+        } catch (\Throwable $e) {
+            // Ignore delete errors to keep uninstall usable.
+        }
+    }
+
+    // Remove the now-empty dedicated category. Deleting a category with fields still
+    // attached would fail, so this runs after the fields above have been deleted.
+    $catStmt = $gDb->queryPrepared(
+        'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? AND cat_name_intern = ? LIMIT 1',
+        array('USF', RE_USF_DEVICE_CATEGORY),
+        false
+    );
+    $catId = ($catStmt !== false) ? (int) $catStmt->fetchColumn() : 0;
+    if ($catId > 0) {
+        try {
+            $category = new \Admidio\Categories\Entity\Category($gDb, $catId);
+            $category->saveChangesWithoutRights();
+            $category->delete();
         } catch (\Throwable $e) {
             // Ignore delete errors to keep uninstall usable.
         }
