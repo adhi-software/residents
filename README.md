@@ -51,11 +51,18 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 
 | **Admidio** | **Residents** |
 |-------------|-------------|
-| 5.0.x | 1.0, 1.1, 1.1.1 |
+| 5.0.x | 1.0, 1.1, 1.2 |
 
-## Release Notes v1.1.1
-- Fixed the API key issue on the Nginx server
-- Added a one-account-per-device limit.
+## Release Notes v1.2
+
+**Features**
+- Added per-user device settings: "Auto-approve Device" and "Allow Multiple Devices"
+- Enforced a single active device per account
+- Added sign-out endpoint that rotates the device API key
+- Added Requested date to the device list
+
+**Bug fixes**
+- Fixed API key handling — keys accepted via headers only, no longer via URL
 
 ## Customization
 
