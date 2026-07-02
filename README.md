@@ -51,11 +51,11 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 
 | **Admidio** | **Residents** |
 |-------------|-------------|
-| 5.0.x | 1.0, 1.1 |
+| 5.0.x | 1.0, 1.1, 1.1.1 |
 
-## Release Notes v1.1
-- PAYPAL payment gateway integration
-- SEPA xml file generation (Requires the MembershipFee plugin)
+## Release Notes v1.1.1
+- Fixed the API key issue on the Nginx server
+- Added a one-account-per-device limit.
 
 ## Customization
 

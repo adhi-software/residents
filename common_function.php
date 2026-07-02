@@ -910,6 +910,42 @@ function residentsUserAllowsMultipleDevices(int $userId): bool
 }
 
 /**
+    * Whether another (physically different) device is already active for this
+    * account within the given organization. Used to enforce the "one active device
+    * per account" rule at approval time. Registration and login only block devices
+    * when one is already active, so if two devices both send requests while both are
+    * still pending, both pending rows are created and an admin could otherwise
+    * approve both. This lets the approval path close that gap.
+    *
+    * @param int    $userId      The user id (usr_id)
+    * @param string $deviceIdent The physical device id (rde_device_id) to exclude
+    * @param int    $orgId       The organization id (rde_org_id); 0 to ignore org
+    * @return bool
+    */
+function residentsUserHasOtherActiveDevice(int $userId, string $deviceIdent, int $orgId): bool
+{
+    global $gDb;
+
+    $sql = 'SELECT rde_id FROM ' . TBL_RE_DEVICES . '
+            WHERE rde_usr_id = ? AND rde_device_id <> ? AND rde_is_active = 1';
+    $params = array($userId, $deviceIdent);
+    if ($orgId > 0) {
+        $sql .= ' AND rde_org_id = ?';
+        $params[] = $orgId;
+    }
+    $sql .= ' LIMIT 1';
+
+    $stmt = $gDb->queryPrepared($sql, $params, false);
+    if ($stmt === false) {
+        // On query failure err on the safe side: treat as a conflict so we never
+        // approve a second device by accident.
+        return true;
+    }
+
+    return (bool) $stmt->fetch();
+}
+
+/**
     * Create the two per-user device profile fields used by the mobile login flow if
     * they do not already exist. Idempotent, so it is safe to call on every install
     * and on the automatic schema upgrade path (existing installations pick the fields
@@ -1044,6 +1080,17 @@ function residentsApproveDevice(int $deviceId, ?int $changedByUserId = null): ?s
 
     $device = new TableResidentsDevice($gDb, $deviceId);
     if ($device->isNewRecord()) {
+        return null;
+    }
+
+    // One active device per account (per org). Refuse to approve a second device
+    // when another is already active for the same user+org, unless the member is
+    // exempt via "Allow Multiple Devices". This is the shared choke point for both
+    // the admin approval page and the login auto-approve path, so it guarantees two
+    // pending devices for the same account can never both be approved.
+    $ownerUserId = (int) $device->getValue('rde_usr_id');
+    if (!residentsUserAllowsMultipleDevices($ownerUserId)
+        && residentsUserHasOtherActiveDevice($ownerUserId, (string) $device->getValue('rde_device_id'), (int) $device->getValue('rde_org_id'))) {
         return null;
     }
 

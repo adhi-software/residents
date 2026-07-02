@@ -20,6 +20,9 @@ $data = json_decode(file_get_contents('php://input'), true);
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
 $device = $data['device'] ?? [];
+// Set when the app is merely polling the pending screen (Refresh). In that case
+// the "requested" date must not be bumped; only an explicit (re-)submit does.
+$isRefresh = !empty($data['refresh']);
 $orgId = $_GET['orgid'] ?? $_GET['org_id'] ?? $gCurrentOrgId;
 
 if ($username === '' || $password === '') {
@@ -161,7 +164,7 @@ if (!$deviceRow) {
     } else {
         echo json_encode([
         'status' => 'pending',
-        'message' => 'Device request submitted. Ask admin to approve to login.',
+        'message' => 'Please contact your admin for device approval.',
         'device_id' => $requestId,
         ]);
         exit;
@@ -175,9 +178,19 @@ if (!$deviceRow['rde_is_active']) {
         $deviceRow['rde_is_active'] = 1;
         $deviceRow['rde_api_key'] = $apiKey;
     } else {
+        // Refresh the "requested" date so re-requesting from a pending device
+        // updates the timestamp shown on the admin approval list. Skipped when the
+        // app is only polling for approval status (Refresh button).
+        if (!$isRefresh) {
+            $gDb->queryPrepared(
+                'UPDATE ' . TBL_RE_DEVICES . ' SET rde_platform = ?, rde_brand = ?, rde_model = ?, rde_timestamp_create = NOW(), rde_timestamp_change = NOW() WHERE rde_id = ?',
+                [$platform, $brand, $model, (int) $deviceRow['rde_id']],
+                false
+            );
+        }
         echo json_encode([
         'status' => 'pending',
-        'message' => 'Device request is not approved yet.',
+        'message' => 'Please contact your admin for device approval.',
         'device_id' => (int) $deviceRow['rde_id'],
         ]);
         exit;
