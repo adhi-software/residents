@@ -28,7 +28,7 @@ if ($deviceStatus === 'deleted') {
 } elseif ($deviceStatus === 'unapproved') {
     $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_DEVICE_UNAPPROVED') . '</div>');
 } elseif ($deviceStatus === 'error') {
-    $msg = $deviceMessage !== '' ? htmlspecialchars($deviceMessage) : 'Action failed.';
+    $msg = $deviceMessage !== '' ? $deviceMessage : 'Action failed.';
     $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
 }
 $baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';

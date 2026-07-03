@@ -44,7 +44,7 @@ elseif ($isActive) {
         $params = array(
             'tab' => 'devices',
             'device_status' => 'error',
-            'device_message' => 'This user already has an active device. Unapprove it first, or enable "Allow Multiple Devices" for this user.',
+            'device_message' => 'This user already has an active device. Unapprove it first, or enable Allow Multiple Devices for this user.',
         );
         admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', $params));
     }
