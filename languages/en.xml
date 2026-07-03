@@ -174,7 +174,6 @@
     <string name="RE_SELECT_PAYMENT_GATEWAY">Select Payment Gateway:</string>
     <string name="RE_TOTAL_PAYABLE">Total Payable:</string>
     <string name="RE_ESTIMATED_TOTAL">Estimated total</string>
-    <string name="RE_ADD_ROWS_HELP">Click "+" to insert more rows.</string>
     <string name="RE_OPTIONAL">Optional</string>
     <string name="RE_PAY_METHOD_EXAMPLE">e.g. Cash, Bank Transfer</string>
     <string name="RE_GATEWAY_LIMITATION">Currently supports only CCAvenue payment gateway.</string>
@@ -266,7 +265,7 @@
     <string name="MOB_ATTACH_DOWNLOAD_URL_MISSING">Download URL missing for this file.</string>
     <string name="MOB_DOWNLOAD_ERROR">Unable to download</string>
     <string name="MOB_RECIPIENTS_MORE">more recipients</string>
-    <string name="MOB_ATTACH_TAP_TO_DOWNLOAD">Tap to download &amp; open</string>
+    <string name="MOB_ATTACH_TAP_TO_DOWNLOAD">Tap to download and open</string>
     <string name="MOB_MSG_DELETE_ERROR">Unable to delete message.</string>
     <string name="MOB_ERROR_REFRESH_MSG">Unable to refresh message</string>
     <string name="MOB_WARN_MESSAGE_REQUIRED">Please enter a message before sending.</string>
@@ -308,7 +307,7 @@
     <string name="MOB_PHOTO_END_DATE">End date</string>
     <string name="MOB_PHOTO_PARENT_ALBUM">Parent Album</string>
     <string name="MOB_PHOTO_NEW_ALBUM">New album</string>
-    <string name="MOB_PHOTO_UPLOAD_RIGHT">Parent inherits visibility + upload rights</string>
+    <string name="MOB_PHOTO_UPLOAD_RIGHT">Parent inherits visibility and upload rights</string>
     <string name="MOB_PHOTO_ALBUM_UPLOAD">Allow uploads</string>
     <string name="MOB_PHOTO_CHOOSE_PARENT_ALB">Choose parent album</string>
     <string name="MOB_PHOTO_ADD_PERMISSION_HINT">If enabled, members with permissions can add photos later.</string>
@@ -330,7 +329,7 @@
     <string name="MOB_PHOTO_DOWNLOAD_PERMISSION_DENIED">You do not have permission to download this file.</string>
     <string name="MOB_PHOTO_OPEN_PERMISSION_DENIED">You do not have permission to open this file.</string>
     <string name="MOB_PHOTO_OPEN_FAILED">Unable to open file</string>
-    <string name="MOB_DOCUMENTS_AND_FILES">Documents &amp; Files</string>
+    <string name="MOB_DOCUMENTS_AND_FILES">Documents and Files</string>
     <string name="MOB_FILES_EMPTY_LOCATION">No folders or files are available in this location.</string>
     <string name="MOB_MSG_PROVIDE_ALBUM">Please provide an album name before saving</string>
 
