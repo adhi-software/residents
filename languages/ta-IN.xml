@@ -146,7 +146,7 @@
     <string name="RE_INSTALL">நிறுவவும்</string>
     <string name="RE_INSTALL_HEADLINE">குடியிருப்போர் - நிறுவல்</string>
     <string name="RE_INSTALL_DESC">வழிகாட்டி குடியிருப்போர் அட்டவணைகளை உருவாக்கும்.</string>
-    <string name="RE_INSTALL_DONE">அட்டவணைகள் & மெனு சேர்க்கப்பட்டது.</string>
+    <string name="RE_INSTALL_DONE">அட்டவணைகள் &amp; மெனு சேர்க்கப்பட்டது.</string>
     <string name="RE_INSTALL_ALREADY">குடியிருப்போர் ஏற்கனவே நிறுவப்பட்டுள்ளனர்</string>
     <string name="RE_UNINSTALL_RESIDENTS">குடியிருப்போர் நீக்கு</string>
     <string name="RE_UNINSTALL_CONFIRM">அனைத்து அட்டவணைகள் மற்றும் மெனு நீக்கவா?</string>
@@ -156,9 +156,8 @@
     <string name="RE_DEVICE_ID">சாதன ஐடி</string>
     <string name="RE_DEVICE_ACTIVE">செயலில் உள்ளது</string>
     <string name="RE_DEVICE_ACTIVE_DATE">செயலில் உள்ள தேதி</string>
-    <string name="RE_DEVICE_PLATFORM">தளம்</string>
-    <string name="RE_DEVICE_BRAND">மாதிரி</string>
-    <string name="RE_DEVICE_MODEL">வடிவம்</string>
+    <string name="RE_DEVICE_DETAILS">சாதனம்</string>
+    <string name="RE_DEVICE_REQUESTED">கோரிய நேரம்</string>
     <string name="RE_RESET">மீட்டமை</string>
     <string name="RE_APPROVE">அங்கீகரி</string>
     <string name="RE_DELETE_DEVICE_CONFIRM">இந்த சாதன தகவலை நீக்கவா?</string>
@@ -193,7 +192,6 @@
     <string name="RE_SELECT_PAYMENT_GATEWAY">கட்டண வாயிலைத் தேர்ந்தெடுக்கவும்:</string>
     <string name="RE_TOTAL_PAYABLE">மொத்த கட்டணம்:</string>
     <string name="RE_ESTIMATED_TOTAL">மதிப்பிடப்பட்ட மொத்தம்</string>
-    <string name="RE_ADD_ROWS_HELP">கூடுதல் வரிசைகளைச் சேர்க்க "+" என்பதைக் கிளிக் செய்யவும்.</string>
     <string name="RE_OPTIONAL">விருப்பத்திற்குரியது</string>
     <string name="RE_PAY_METHOD_EXAMPLE">எ.கா. பணம், வங்கி பரிமாற்றம்</string>
     <string name="RE_GATEWAY_LIMITATION">தற்போது CCAvenue கட்டண நுழைவாயில் மட்டும் ஆதரிக்கப்படுகிறது.</string>
@@ -390,7 +388,7 @@
     <string name="MOB_PHOTO_PARENT_ALBUM">பெற்றோர் படத் தொகுப்பு</string>
     <string name="MOB_PHOTO_NEW_ALBUM">படத் தொகுப்பு</string>
     <string name="MOB_PHOTO_CREATE_ALBUM">படத் தொகுப்பை உருவாக்கு</string>
-    <string name="MOB_PHOTO_UPLOAD_RIGHT">பெற்றோர் தெரிவுநிலை + பதிவேற்ற உரிமைகள் பெறும்</string>
+    <string name="MOB_PHOTO_UPLOAD_RIGHT">பெற்றோர் தெரிவுநிலை மற்றும் பதிவேற்ற உரிமைகள் பெறும்</string>
     <string name="MOB_PHOTO_ALBUM_UPLOAD">பதிவேற்ற அனுமதி</string>
     <string name="MOB_PHOTO_CHOOSE_PARENT_ALB">பெற்றோர் படத் தொகுப்பைத் தேர்ந்தெடு</string>
     <string name="MOB_PHOTO_API_INTEGRATION_HINT">படத் தொகுப்பை சர்வர் பக்கத்தில் சேமிக்க இந்த படிவத்தை அட்மிடியோ குடியிருப்பாளர் புகைப்பட API-க்கு இணைக்கவும்</string>

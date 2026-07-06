@@ -34,17 +34,23 @@ if ($deviceID >= 0 && $device->isNewRecord()) {
 elseif ($isActive) {
     $gMessage->show($gL10n->get('RE_DEVICES_ALREADY_APPROVED') . ' (ID: ' . $deviceID . ')');
 }else{
-    $apiKey = (string) $device->getValue('rde_api_key');
-    if ($apiKey === '') {
-        $apiKey = bin2hex(random_bytes(20));
+    // Enforce "one active device per account" at approval time. Two devices can each
+    // create a pending request while both are unapproved (the registration/login
+    // "already active" check passes for both), so block approving a second one here
+    // unless the member is exempt via "Allow Multiple Devices".
+    $ownerUserId = (int) $device->getValue('rde_usr_id');
+    if (!residentsUserAllowsMultipleDevices($ownerUserId)
+        && residentsUserHasOtherActiveDevice($ownerUserId, (string) $device->getValue('rde_device_id'), (int) $device->getValue('rde_org_id'))) {
+        $params = array(
+            'tab' => 'devices',
+            'device_status' => 'error',
+            'device_message' => 'This user already has an active device. Unapprove it first, or enable Allow Multiple Devices for this user.',
+        );
+        admRedirect(SecurityUtils::encodeUrl(ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php', $params));
     }
-    $device->setValue('rde_is_active', 1);
-    // Store activation timestamp (date + time)
-    $device->setValue('rde_active_date', date('Y-m-d H:i:s'));
-    $device->setValue('rde_api_key', $apiKey);
-    $device->setValue('rde_usr_id_change', $gCurrentUserId);
-    $device->setValue('rde_timestamp_change', date('Y-m-d H:i:s'));
-    $saved = $device->save();
+
+    $apiKey = residentsApproveDevice($deviceID, $gCurrentUserId);
+    $saved = ($apiKey !== null);
     $params = array('tab' => 'devices');
     if ($saved) {
         $params['device_status'] = 'approved';

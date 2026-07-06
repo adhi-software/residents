@@ -292,6 +292,41 @@ if (!function_exists('residentsFormatDateForUi')) {
     }
 }
 
+if (!function_exists('residentsFormatDateTimeForUi')) {
+    function residentsFormatDateTimeForUi($value): string
+    {
+        global $gSettingsManager;
+
+        $s = trim((string)$value);
+        if ($s === '') {
+            return '';
+    }
+
+        $format = 'Y-m-d H:i';
+        if (isset($gSettingsManager) && method_exists($gSettingsManager, 'getString')) {
+            $dateFormat = trim((string)$gSettingsManager->getString('system_date'));
+            $timeFormat = trim((string)$gSettingsManager->getString('system_time'));
+            if ($dateFormat !== '' || $timeFormat !== '') {
+                $format = trim($dateFormat . ' ' . $timeFormat);
+            }
+    }
+
+        try {
+            $candidate = strlen($s) >= 19 ? substr($s, 0, 19) : $s;
+            $dt = DateTime::createFromFormat('Y-m-d H:i:s', $candidate);
+            if (!$dt) {
+                $dt = DateTime::createFromFormat('Y-m-d', substr($s, 0, 10));
+            }
+            if (!$dt) {
+                $dt = new DateTime($s);
+            }
+            return $dt->format($format);
+    } catch (Throwable $e) {
+            return strlen($s) >= 16 ? substr($s, 0, 16) : $s;
+    }
+    }
+}
+
 if (!function_exists('residentsFormatDateForInput')) {
     function residentsFormatDateForInput($value): string
     {
@@ -798,6 +833,431 @@ function residentsReadConfig(): array
     }
 
     return $config;
+}
+
+/**
+    * Internal name (usf_name_intern) of the profile field that, when checked for a
+    * user, causes their mobile device to be auto-approved on login (skipping the
+    * manual admin approval step).
+    */
+const RE_USF_AUTO_APPROVE_DEVICE = 'RE_AUTO_APPROVE_DEVICE';
+
+/**
+    * Internal name (usf_name_intern) of the profile field that, when checked for a
+    * user, exempts them from the "one active device per account" restriction so the
+    * account may be used on multiple devices.
+    */
+const RE_USF_ALLOW_MULTIPLE_DEVICES = 'RE_ALLOW_MULTIPLE_DEVICES';
+
+/**
+    * Internal name (cat_name_intern) of the dedicated user-field category that groups
+    * the two mobile-device profile fields into their own section/header on the Admidio
+    * profile screen (instead of mixing them into the default "Basic Data" section).
+    */
+const RE_USF_DEVICE_CATEGORY = 'RE_DEVICE_SETTINGS';
+
+/**
+    * Display name (section header) shown for the device settings category on the
+    * profile screen. Plain text on purpose (not a translation id) so it is shown as-is.
+    */
+const RE_USF_DEVICE_CATEGORY_NAME = 'Device Settings';
+
+/**
+    * Read a boolean (checkbox) profile field value for a given user directly from the
+    * database. Reads the raw stored value so it works in API contexts where a full
+    * User object is not (yet) loaded. A missing row is treated as unchecked (false).
+    *
+    * @param int $userId The user id (usr_id)
+    * @param string $usfNameIntern The internal profile field name (usf_name_intern)
+    * @return bool True if the checkbox is checked, otherwise false
+    */
+function residentsGetUserProfileFlag(int $userId, string $usfNameIntern): bool
+{
+    global $gDb;
+
+    if ($userId <= 0 || $usfNameIntern === '') {
+        return false;
+    }
+
+    $sql = 'SELECT ud.usd_value
+              FROM ' . TBL_USER_DATA . ' ud
+        INNER JOIN ' . TBL_USER_FIELDS . ' uf ON uf.usf_id = ud.usd_usf_id
+             WHERE ud.usd_usr_id = ?
+               AND uf.usf_name_intern = ?
+             LIMIT 1';
+    $st = $gDb->queryPrepared($sql, array($userId, $usfNameIntern), false);
+    if ($st === false) {
+        return false;
+    }
+    $value = $st->fetchColumn();
+    if ($value === false || $value === null) {
+        return false;
+    }
+    return in_array(trim((string) $value), array('1', 'true'), true);
+}
+
+/**
+    * Whether the given user's mobile devices should be auto-approved on login
+    * (skipping the manual admin approval step). Driven by the per-user
+    * "Auto-approve Device" profile field.
+    *
+    * @param int $userId The user id (usr_id)
+    * @return bool
+    */
+function residentsUserHasAutoApproveDevice(int $userId): bool
+{
+    return residentsGetUserProfileFlag($userId, RE_USF_AUTO_APPROVE_DEVICE);
+}
+
+/**
+    * Whether the given user is allowed to use the account on multiple devices,
+    * i.e. is exempt from the "one active device per account" restriction. Driven by
+    * the per-user "Allow Multiple Devices" profile field.
+    *
+    * @param int $userId The user id (usr_id)
+    * @return bool
+    */
+function residentsUserAllowsMultipleDevices(int $userId): bool
+{
+    return residentsGetUserProfileFlag($userId, RE_USF_ALLOW_MULTIPLE_DEVICES);
+}
+
+/**
+    * Whether another (physically different) device is already active for this
+    * account within the given organization. Used to enforce the "one active device
+    * per account" rule at approval time. Registration and login only block devices
+    * when one is already active, so if two devices both send requests while both are
+    * still pending, both pending rows are created and an admin could otherwise
+    * approve both. This lets the approval path close that gap.
+    *
+    * @param int    $userId      The user id (usr_id)
+    * @param string $deviceIdent The physical device id (rde_device_id) to exclude
+    * @param int    $orgId       The organization id (rde_org_id); 0 to ignore org
+    * @return bool
+    */
+function residentsUserHasOtherActiveDevice(int $userId, string $deviceIdent, int $orgId): bool
+{
+    global $gDb;
+
+    $sql = 'SELECT rde_id FROM ' . TBL_RE_DEVICES . '
+            WHERE rde_usr_id = ? AND rde_device_id <> ? AND rde_is_active = 1';
+    $params = array($userId, $deviceIdent);
+    if ($orgId > 0) {
+        $sql .= ' AND rde_org_id = ?';
+        $params[] = $orgId;
+    }
+    $sql .= ' LIMIT 1';
+
+    $stmt = $gDb->queryPrepared($sql, $params, false);
+    if ($stmt === false) {
+        // On query failure err on the safe side: treat as a conflict so we never
+        // approve a second device by accident.
+        return true;
+    }
+
+    return (bool) $stmt->fetch();
+}
+
+/**
+    * Enforce the "one active device per account" rule for accounts whose
+    * "Allow Multiple Devices" flag was turned OFF while several devices were still
+    * active. Devices approved while the flag was on stay active in the database, so
+    * without this the account would be deadlocked: every login is blocked by the
+    * "another device is active" check and no new approval request can be made.
+    *
+    * When the user does not allow multiple devices and more than one device is
+    * still active (within the given org), ALL active devices are deactivated and
+    * their API keys cleared (same as the admin "unapprove" action). Each device
+    * then has to go through the normal approval flow again, and the admin decides
+    * which single device to approve.
+    *
+    * @param int $userId The user id (usr_id)
+    * @param int $orgId  The organization id (rde_org_id); 0 to ignore org
+    * @return bool True when a violation was found and the devices were deactivated
+    */
+function residentsDeactivateMultiDeviceViolation(int $userId, int $orgId): bool
+{
+    global $gDb;
+
+    // Cheap pre-check first: only accounts that once had "Allow Multiple Devices"
+    // can hold two or more active devices, so the profile-field lookup below is
+    // skipped for the common single-device case.
+    $orgFilter = '';
+    $params = array($userId);
+    if ($orgId > 0) {
+        $orgFilter = ' AND rde_org_id = ?';
+        $params[] = $orgId;
+    }
+
+    $stmt = $gDb->queryPrepared(
+        'SELECT COUNT(*) FROM ' . TBL_RE_DEVICES . ' WHERE rde_usr_id = ? AND rde_is_active = 1' . $orgFilter,
+        $params,
+        false
+    );
+    if ($stmt === false || (int) $stmt->fetchColumn() < 2) {
+        return false;
+    }
+
+    if (residentsUserAllowsMultipleDevices($userId)) {
+        return false;
+    }
+
+    $updated = $gDb->queryPrepared(
+        'UPDATE ' . TBL_RE_DEVICES . " SET rde_is_active = 0, rde_api_key = '', rde_timestamp_change = NOW()
+            WHERE rde_usr_id = ? AND rde_is_active = 1" . $orgFilter,
+        $params,
+        false
+    );
+
+    return $updated !== false;
+}
+
+/**
+    * Resolve the id of the dedicated "Device Settings" user-field category, creating
+    * it if it does not exist yet. Idempotent. The category is created
+    * organization-independent (cat_org_id NULL) with no view-right restriction, exactly
+    * like the built-in "Basic Data" / "Social networks" categories, so it is visible to
+    * every member and administrators, and appears as its own section/header on the
+    * profile screen.
+    *
+    * @return int The cat_id of the device settings category, or 0 if it could not be
+    *             resolved or created.
+    */
+function residentsEnsureDeviceProfileCategory(): int
+{
+    global $gDb;
+
+    // Already present (created by an earlier call / plugin version)?
+    $stmt = $gDb->queryPrepared(
+        'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? AND cat_name_intern = ? LIMIT 1',
+        array('USF', RE_USF_DEVICE_CATEGORY),
+        false
+    );
+    $catId = ($stmt !== false) ? (int) $stmt->fetchColumn() : 0;
+    if ($catId > 0) {
+        return $catId;
+    }
+
+    try {
+        $category = new \Admidio\Categories\Entity\Category($gDb);
+        // Allow creation regardless of the current user's admin rights (this runs during
+        // install and the automatic upgrade path).
+        $category->saveChangesWithoutRights();
+        $category->setValue('cat_type', 'USF');
+        $category->setValue('cat_name_intern', RE_USF_DEVICE_CATEGORY);
+        $category->setValue('cat_name', RE_USF_DEVICE_CATEGORY_NAME);
+        // Empty string on a nullable column stores NULL -> organization-independent,
+        // matching how the default USF categories (Basic Data, ...) are created.
+        $category->setValue('cat_org_id', '');
+        $category->save();
+        $catId = (int) $category->getValue('cat_id');
+    } catch (\Throwable $e) {
+        return 0;
+    }
+
+    return $catId;
+}
+
+/**
+    * Create the two per-user device profile fields used by the mobile login flow if
+    * they do not already exist. Idempotent, so it is safe to call on every install
+    * and on the automatic schema upgrade path (existing installations pick the fields
+    * up when the plugin version is bumped).
+    *
+    * The fields are created as CHECKBOX fields inside a dedicated "Device Settings"
+    * user-field category (see residentsEnsureDeviceProfileCategory) so they appear in
+    * their own section/header on the Admidio profile screen. Fields that were created
+    * by an earlier plugin version inside "Basic Data" are moved into this category.
+    *
+    * @return void
+    */
+function residentsEnsureDeviceProfileFields(): void
+{
+    global $gDb;
+
+    // Resolve the dedicated "Device Settings" category so the two toggles get their own
+    // section/header on the profile. Fall back to Basic Data, then any USF category, so
+    // the fields can still be created on unusual installations.
+    $catId = residentsEnsureDeviceProfileCategory();
+    if ($catId <= 0) {
+        $catStmt = $gDb->queryPrepared(
+            'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? AND cat_name_intern = ? ORDER BY cat_id LIMIT 1',
+            array('USF', 'BASIC_DATA'),
+            false
+        );
+        if ($catStmt !== false) {
+            $catId = (int) $catStmt->fetchColumn();
+        }
+    }
+    if ($catId <= 0) {
+        $catStmt = $gDb->queryPrepared(
+            'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? ORDER BY cat_id LIMIT 1',
+            array('USF'),
+            false
+        );
+        if ($catStmt !== false) {
+            $catId = (int) $catStmt->fetchColumn();
+        }
+    }
+    if ($catId <= 0) {
+        // No user field category available; nothing we can safely attach to.
+        return;
+    }
+
+    // Display names for the fields. No description is set on purpose so no help text
+    // is shown under the toggles on the profile edit screen.
+    $fields = array(
+        RE_USF_AUTO_APPROVE_DEVICE => 'Auto-approve Device',
+        RE_USF_ALLOW_MULTIPLE_DEVICES => 'Allow Multiple Devices'
+    );
+
+    foreach ($fields as $nameIntern => $displayName) {
+        // Look up an existing field with this internal name.
+        $existsStmt = $gDb->queryPrepared(
+            'SELECT usf_id FROM ' . TBL_USER_FIELDS . ' WHERE usf_name_intern = ? LIMIT 1',
+            array($nameIntern),
+            false
+        );
+        $existingId = ($existsStmt !== false) ? (int) $existsStmt->fetchColumn() : 0;
+
+        if ($existingId > 0) {
+            // Field already exists (e.g. created by an earlier plugin version inside the
+            // "Basic Data" category). Move it into the dedicated device settings category
+            // so it shows in its own section, and clear any help text. Setting usf_cat_id
+            // via the entity also re-computes usf_sequence within the target category.
+            try {
+                $field = new \Admidio\ProfileFields\Entity\ProfileField($gDb, $existingId);
+                $field->saveChangesWithoutRights();
+                if ((int) $field->getValue('usf_cat_id') !== $catId) {
+                    $field->setValue('usf_cat_id', $catId);
+                }
+                if ((string) $field->getValue('usf_description') !== '') {
+                    $field->setValue('usf_description', '');
+                }
+                $field->save();
+            } catch (\Throwable $e) {
+                // Ignore so a single failure does not break plugin load.
+            }
+            continue;
+        }
+
+        try {
+            $field = new \Admidio\ProfileFields\Entity\ProfileField($gDb);
+            // Allow creation regardless of the current user's admin rights (this runs
+            // during install and the automatic upgrade path).
+            $field->saveChangesWithoutRights();
+            $field->setValue('usf_cat_id', $catId);
+            $field->setValue('usf_type', 'CHECKBOX');
+            $field->setValue('usf_name_intern', $nameIntern);
+            $field->setValue('usf_name', $displayName);
+            $field->save();
+        } catch (\Throwable $e) {
+            // Ignore creation errors so a single failure does not break plugin load.
+        }
+    }
+}
+
+/**
+    * Remove the two per-user device profile fields (and their stored user data) and the
+    * dedicated "Device Settings" category that were created by
+    * residentsEnsureDeviceProfileFields() / residentsEnsureDeviceProfileCategory().
+    * Used on plugin uninstall so a later reinstall starts clean.
+    *
+    * @return void
+    */
+function residentsRemoveDeviceProfileFields(): void
+{
+    global $gDb;
+
+    foreach (array(RE_USF_AUTO_APPROVE_DEVICE, RE_USF_ALLOW_MULTIPLE_DEVICES) as $nameIntern) {
+        $stmt = $gDb->queryPrepared(
+            'SELECT usf_id FROM ' . TBL_USER_FIELDS . ' WHERE usf_name_intern = ? LIMIT 1',
+            array($nameIntern),
+            false
+        );
+        if ($stmt === false) {
+            continue;
+        }
+        $usfId = (int) $stmt->fetchColumn();
+        if ($usfId <= 0) {
+            continue;
+        }
+        try {
+            $field = new \Admidio\ProfileFields\Entity\ProfileField($gDb, $usfId);
+            $field->saveChangesWithoutRights();
+            $field->delete();
+        } catch (\Throwable $e) {
+            // Ignore delete errors to keep uninstall usable.
+        }
+    }
+
+    // Remove the now-empty dedicated category. Deleting a category with fields still
+    // attached would fail, so this runs after the fields above have been deleted.
+    $catStmt = $gDb->queryPrepared(
+        'SELECT cat_id FROM ' . TBL_CATEGORIES . ' WHERE cat_type = ? AND cat_name_intern = ? LIMIT 1',
+        array('USF', RE_USF_DEVICE_CATEGORY),
+        false
+    );
+    $catId = ($catStmt !== false) ? (int) $catStmt->fetchColumn() : 0;
+    if ($catId > 0) {
+        try {
+            $category = new \Admidio\Categories\Entity\Category($gDb, $catId);
+            $category->saveChangesWithoutRights();
+            $category->delete();
+        } catch (\Throwable $e) {
+            // Ignore delete errors to keep uninstall usable.
+        }
+    }
+}
+
+/**
+    * Approve a mobile device for API access: marks it active, ensures it has an
+    * API key, and records the activation timestamp. This is the shared "approve
+    * action" used by both the admin device-approval page and the auto-approve
+    * path during login.
+    *
+    * @param int $deviceId Primary key (rde_id) of the device to approve
+    * @param int|null $changedByUserId User id to record as the approver (optional)
+    * @return string|null The device API key on success, or null on failure
+    */
+function residentsApproveDevice(int $deviceId, ?int $changedByUserId = null): ?string
+{
+    global $gDb;
+
+    $device = new TableResidentsDevice($gDb, $deviceId);
+    if ($device->isNewRecord()) {
+        return null;
+    }
+
+    // One active device per account (per org). Refuse to approve a second device
+    // when another is already active for the same user+org, unless the member is
+    // exempt via "Allow Multiple Devices". This is the shared choke point for both
+    // the admin approval page and the login auto-approve path, so it guarantees two
+    // pending devices for the same account can never both be approved.
+    $ownerUserId = (int) $device->getValue('rde_usr_id');
+    if (!residentsUserAllowsMultipleDevices($ownerUserId)
+        && residentsUserHasOtherActiveDevice($ownerUserId, (string) $device->getValue('rde_device_id'), (int) $device->getValue('rde_org_id'))) {
+        return null;
+    }
+
+    $apiKey = (string) $device->getValue('rde_api_key');
+    if ($apiKey === '') {
+        $apiKey = bin2hex(random_bytes(20));
+    }
+
+    $device->setValue('rde_is_active', 1);
+    $device->setValue('rde_active_date', date('Y-m-d H:i:s'));
+    $device->setValue('rde_api_key', $apiKey);
+    if ($changedByUserId !== null) {
+        $device->setValue('rde_usr_id_change', $changedByUserId);
+    }
+    $device->setValue('rde_timestamp_change', date('Y-m-d H:i:s'));
+
+    if (!$device->save()) {
+        return null;
+    }
+
+    return $apiKey;
 }
 
 /**
@@ -1503,30 +1963,114 @@ function residentsGetInvoiceTotalAmount(int $invId): float
     return (float)$totals['amount'];
 }
 
+/**
+ * Read an inbound request header, trying several spellings so the API behaves the
+ * same behind any web server (Apache, nginx, PHP-FPM, ...). Names are matched
+ * case-insensitively and '-' / '_' are treated as equivalent. The first non-empty
+ * match wins, so newer header names should be listed before legacy ones.
+ *
+ * @param string[] $names Accepted header names, e.g. ['apikey', 'X-API-Key'].
+ * @return string|null Trimmed value, or null when none of the names are present.
+ */
+function residentsGetRequestHeader(array $names): ?string
+{
+    // Normalised forms of the accepted names for comparison.
+    $wanted = array();
+    foreach ($names as $name) {
+        $wanted[] = strtolower(str_replace('_', '-', (string) $name));
+    }
+
+    // 1) getallheaders() preserves the original header name (works on Apache and nginx).
+    if (function_exists('getallheaders')) {
+        foreach (getallheaders() as $headerName => $headerValue) {
+            $norm = strtolower(str_replace('_', '-', (string) $headerName));
+            if (in_array($norm, $wanted, true)) {
+                $value = trim((string) $headerValue);
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+        }
+    }
+
+    // 2) Portable fallback via $_SERVER (e.g. "apikey" => $_SERVER['HTTP_APIKEY']).
+    foreach ($names as $name) {
+        $serverKey = 'HTTP_' . strtoupper(str_replace('-', '_', (string) $name));
+        if (isset($_SERVER[$serverKey])) {
+            $value = trim((string) $_SERVER[$serverKey]);
+            if ($value !== '') {
+                return $value;
+            }
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Whether the current request carries an API key (header, query string, or body).
+ * Dual-mode endpoints (e.g. the PDF exports) use this to choose API-key auth via
+ * validateApiKey() versus browser/session login, and it reads the same sources
+ * validateApiKey() does so the two stay in sync.
+ */
+function residentsApiKeyProvided(): bool
+{
+    return residentsExtractApiKey() !== null;
+}
+
+/**
+ * Extract the API key from the request. Accepted sources are the request header
+ * (apikey / X-API-Key / Api-Key) and a POST body field (apikey / api_key). The
+ * query string is intentionally NOT read: URLs are written to web-server access
+ * logs, proxies and browser history, so a key placed there would leak. Returns
+ * null when no non-empty key is present.
+ */
+function residentsExtractApiKey(): ?string
+{
+    $apiKey = residentsGetRequestHeader(['apikey', 'X-API-Key', 'Api-Key']);
+    foreach (['apikey', 'api_key'] as $keyParam) {
+        if ($apiKey === null && isset($_POST[$keyParam])) {
+            $apiKey = trim((string) $_POST[$keyParam]);
+        }
+    }
+    if ($apiKey === null) {
+        return null;
+    }
+    $apiKey = trim($apiKey);
+    return $apiKey === '' ? null : $apiKey;
+}
+
+/**
+ * Run a throwaway password verification so the "user not found" path costs roughly
+ * the same time as the "user found, wrong password" path. Without it, response
+ * latency reveals whether a username exists (enumeration). The constant is a valid
+ * bcrypt hash, so password_verify() performs the full key-derivation work.
+ */
+function residentsEqualizeLoginTiming(string $password): void
+{
+    password_verify($password, '$2y$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+}
+
 function validateApiKey(): User
 {
     global $gDb, $gCurrentUserId, $gProfileFields, $gCurrentOrgId, $gCurrentOrganization, $gSettingsManager, $gCurrentSession;
 
     $getRequestedOrgId = function (): int {
-        $headers = function_exists('getallheaders') ? getallheaders() : array();
-
         $candidates = array();
-        foreach ($headers as $headerName => $headerValue) {
-            $name = strtolower((string) $headerName);
-            if ($name === 'org_id') {
-                $candidates[] = (string) $headerValue;
+
+        // Preferred field is "orgid"; the older "X-Org-Id"/"org_id" names are still accepted.
+        $orgIdHeader = residentsGetRequestHeader(['orgid', 'X-Org-Id', 'Org-Id']);
+        if ($orgIdHeader !== null) {
+            $candidates[] = $orgIdHeader;
+        }
+
+        foreach (['orgid', 'org_id'] as $orgParam) {
+            if (isset($_GET[$orgParam])) {
+                $candidates[] = (string) $_GET[$orgParam];
             }
-        }
-
-        if (isset($_SERVER['HTTP_ORG_ID'])) {
-            $candidates[] = (string) $_SERVER['HTTP_ORG_ID'];
-        }
-
-        if (isset($_GET['org_id'])) {
-            $candidates[] = (string) $_GET['org_id'];
-        }
-        if (isset($_POST['org_id'])) {
-            $candidates[] = (string) $_POST['org_id'];
+            if (isset($_POST[$orgParam])) {
+                $candidates[] = (string) $_POST[$orgParam];
+            }
         }
 
         foreach ($candidates as $raw) {
@@ -1566,30 +2110,14 @@ function validateApiKey(): User
         }
     };
 
-    $headers = function_exists('getallheaders') ? getallheaders() : array();
-    $apiKey = null;
-    foreach ($headers as $headerName => $headerValue) {
-        if (strcasecmp((string) $headerName, 'api_key') === 0) {
-            $apiKey = trim((string) $headerValue);
-            break;
-        }
-    }
-
-    if ($apiKey === null && isset($_SERVER['HTTP_API_KEY'])) {
-        $apiKey = trim((string) $_SERVER['HTTP_API_KEY']);
-    }
-
-    if ($apiKey === null && isset($_GET['api_key'])) {
-        $apiKey = trim((string) $_GET['api_key']);
-    }
-
-    if ($apiKey === null && isset($_POST['api_key'])) {
-        $apiKey = trim((string) $_POST['api_key']);
-    }
+    // Read from header or POST body only (never the query string — see
+    // residentsExtractApiKey). The query-string org id below is not a secret and
+    // stays supported for backwards compatibility.
+    $apiKey = residentsExtractApiKey();
 
     if ($apiKey === null || $apiKey === '') {
             http_response_code(400);
-            echo json_encode(['error' => 'Missing API key']);
+            echo json_encode(['error' => 'Missing API key', 'code' => 'API_KEY_INVALID']);
             exit();
     }
 
@@ -1616,7 +2144,7 @@ function validateApiKey(): User
 
     if (!$deviceRecord) {
             http_response_code(403);
-            echo json_encode(['error' => 'API key is invalid']);
+            echo json_encode(['error' => 'API key is invalid', 'code' => 'API_KEY_INVALID']);
             exit();
     }
 
@@ -1629,6 +2157,22 @@ function validateApiKey(): User
 
     if ($deviceOrgId > 0) {
         $applyOrgContext($deviceOrgId);
+    }
+
+    // "Allow Multiple Devices" may have been turned off while several devices were
+    // still active. Enforce it here too so devices that are already signed in are
+    // deactivated on their next API call instead of only at the next password
+    // login. The key was just cleared, so answer with API_KEY_INVALID: the app
+    // drops its session and returns to the login screen, where the login endpoint
+    // creates a fresh approval request.
+    if ((bool) $deviceRecord['rde_is_active']
+        && residentsDeactivateMultiDeviceViolation(
+            (int) $deviceRecord['rde_usr_id'],
+            $deviceOrgId > 0 ? $deviceOrgId : $requestedOrgId
+        )) {
+        http_response_code(403);
+        echo json_encode(['error' => 'API key is invalid', 'code' => 'API_KEY_INVALID']);
+        exit();
     }
 
     if (!(bool) $deviceRecord['rde_is_active']) {
@@ -1645,8 +2189,40 @@ function validateApiKey(): User
 
     if ($userId <= 0 || (int) $user->getValue('usr_id') !== $userId) {
             http_response_code(403);
-            echo json_encode(['error' => 'API key is invalid']);
+            echo json_encode(['error' => 'API key is invalid', 'code' => 'API_KEY_INVALID']);
             exit();
+    }
+
+    // The API key must not outlive the user's active membership. usr_valid stays
+    // true for "former" members, so checking the key alone would keep granting
+    // access after someone is removed from all roles or their membership expires.
+    // Require a current membership in the effective organisation (same rule the
+    // password login enforces), otherwise the key is treated as invalid.
+    $effectiveOrgId = $deviceOrgId > 0 ? $deviceOrgId : $requestedOrgId;
+    if ($effectiveOrgId > 0) {
+        $membershipStmt = $gDb->queryPrepared(
+            'SELECT 1
+                FROM ' . TBL_MEMBERS . ' m
+                INNER JOIN ' . TBL_ROLES . ' r ON r.rol_id = m.mem_rol_id AND r.rol_valid = true
+                INNER JOIN ' . TBL_CATEGORIES . ' c ON c.cat_id = r.rol_cat_id
+                WHERE m.mem_usr_id = ?
+                    AND m.mem_begin <= ?
+                    AND m.mem_end > ?
+                    AND (c.cat_org_id = ? OR c.cat_org_id IS NULL)
+                LIMIT 1',
+            [$userId, DATE_NOW, DATE_NOW, $effectiveOrgId],
+            false
+        );
+        if ($membershipStmt === false) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error']);
+            exit();
+        }
+        if (!$membershipStmt->fetch()) {
+            http_response_code(403);
+            echo json_encode(['error' => 'API key is invalid', 'code' => 'API_KEY_INVALID']);
+            exit();
+        }
     }
 
     $gCurrentUserId = $userId;
@@ -1751,8 +2327,11 @@ function validateUserLogin(int $userId, string $password){
     }
     
     if (!isMemberOfOrganization($user)) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Your login data were correct but you are not an active member of this organization.']);
+        // Generic 401 (identical to the wrong-password response) so a valid
+        // password on a non-member account cannot be distinguished from an
+        // invalid one — avoids confirming that the credentials were correct.
+        http_response_code(401);
+        echo json_encode(['error' => 'Invalid username or password']);
         exit;
     }
 }

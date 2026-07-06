@@ -680,7 +680,6 @@ ob_start();
             </div>
     </div>
     <div class="card-footer d-flex align-items-center justify-content-between flex-wrap">
-            <div class="text-muted small"><?php echo htmlspecialchars($gL10n->get('RE_ADD_ROWS_HELP')); ?></div>
             <div class="ms-auto text-end">
     <div class="text-muted small"><?php echo htmlspecialchars($gL10n->get('RE_ESTIMATED_TOTAL')); ?></div>
     <div class="fs-4 fw-semibold"><span id="re-total-currency"><?php echo htmlspecialchars((string)$currencyLabel); ?></span> <span id="re-total-value"><?php echo htmlspecialchars($initialTotalFormatted); ?></span></div>

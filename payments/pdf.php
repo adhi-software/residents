@@ -11,36 +11,13 @@
 
 require_once(__DIR__ . '/../common_function.php');
 
-// Check if we are in API mode (API Key provided)
-$useApiAuth = false;
-if (isset($_SERVER['HTTP_API_KEY']) && !empty($_SERVER['HTTP_API_KEY'])) {
-    $useApiAuth = true;
-} elseif (isset($_GET['api_key']) && !empty($_GET['api_key'])) {
-    $useApiAuth = true;
-} elseif (isset($_POST['api_key']) && !empty($_POST['api_key'])) {
-    $useApiAuth = true;
-} else {
-    $headers = function_exists('getallheaders') ? getallheaders() : array();
-    foreach ($headers as $headerName => $headerValue) {
-        if (strcasecmp((string)$headerName, 'api_key') === 0) {
-            if (!empty($headerValue)) {
-                $useApiAuth = true;
-            }
-            break;
-    }
-    }
-}
-
-if ($useApiAuth) {
-    // API Mode: correct validateApiKey will exit if key is invalid
+// Dual-mode auth: mobile sends an API key, the web UI uses the browser session.
+if (residentsApiKeyProvided()) {
+    // API Mode: validateApiKey() exits with an error if the key is invalid.
     validateApiKey();
 } else {
-    // Browser Mode: Enforce valid login
-    if (file_exists(__DIR__ . '/../../../system/login_valid.php')) {
-        require_once(__DIR__ . '/../../../system/login_valid.php');
-    } else {
-        require_once(__DIR__ . '/../../../system/login_valid.php');
-    }
+    // Browser Mode: enforce a valid login session.
+    require_once(__DIR__ . '/../../../system/login_valid.php');
 }
 
 // Include TCPDF (Admidio 5+ uses vendor directory)

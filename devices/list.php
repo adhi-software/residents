@@ -28,7 +28,7 @@ if ($deviceStatus === 'deleted') {
 } elseif ($deviceStatus === 'unapproved') {
     $page->addHtml('<div class="alert alert-success">' . $gL10n->get('RE_DEVICE_UNAPPROVED') . '</div>');
 } elseif ($deviceStatus === 'error') {
-    $msg = $deviceMessage !== '' ? htmlspecialchars($deviceMessage) : 'Action failed.';
+    $msg = $deviceMessage !== '' ? $deviceMessage : 'Action failed.';
     $page->addHtml('<div class="alert alert-danger">' . $msg . '</div>');
 }
 $baseUrl = ADMIDIO_URL . FOLDER_PLUGINS . PLUGIN_FOLDER_RE . '/residents.php';
@@ -70,20 +70,6 @@ if ($isAdmin) {
         . ' WHERE u.usr_valid = true'
         . ' ORDER BY u.usr_login_name';
         $stmtUsers = $gDb->queryPrepared($sqlUsers, array(DATE_NOW, DATE_NOW, $gCurrentOrgId));
-        if (!empty($_GET['debug_users'])) {
-            $debugRows = array();
-            $stmtUsersDebug = $gDb->queryPrepared($sqlUsers, array(DATE_NOW, DATE_NOW, $gCurrentOrgId));
-            if ($stmtUsersDebug !== false) {
-                while ($r = $stmtUsersDebug->fetch(PDO::FETCH_ASSOC)) {
-                    $debugRows[] = $r;
-                }
-            }
-            echo '<pre class="re-debug-users">'
-            . htmlspecialchars($sqlUsers) . "\n\n"
-            . htmlspecialchars(json_encode($debugRows, JSON_PRETTY_PRINT))
-            . '</pre>';
-            exit;
-        }
         $userOptions = array();
         if ($stmtUsers !== false) {
             while ($row = $stmtUsers->fetch()) {
@@ -252,8 +238,8 @@ $table = new HtmlTable('table_re_devices', $page, true, true, 'table table-hover
 $table->setServerSideProcessing($serverUrl);
 $table->setDatatablesRowsPerPage($defaultPageLength);
 $table->setDatatablesOrderColumns(array(array(2, 'desc')));
-$table->disableDatatablesColumnsSort(array(1,10));
-$table->setColumnAlignByArray(array('center', 'left', 'left', 'left', 'left', 'left', 'left', 'left', 'left', 'left'));
+$table->disableDatatablesColumnsSort(array(1,9));
+$table->setColumnAlignByArray(array('center', 'left', 'left', 'left', 'left', 'left', 'left', 'left', 'left'));
 $table->addRowHeadingByArray(array(
 '<input type="checkbox" id="re-select-all-devices" />',
 $gL10n->get('RE_DEVICE_NUMBER'),
@@ -261,9 +247,8 @@ $gL10n->get('RE_USER'),
 $gL10n->get('RE_DEVICE_ID'),
 $gL10n->get('RE_DEVICE_ACTIVE'),
 $gL10n->get('RE_DEVICE_ACTIVE_DATE'),
-$gL10n->get('RE_DEVICE_PLATFORM'),
-$gL10n->get('RE_DEVICE_BRAND'),
-$gL10n->get('RE_DEVICE_MODEL'),
+$gL10n->get('RE_DEVICE_REQUESTED'),
+$gL10n->get('RE_DEVICE_DETAILS'),
 $gL10n->get('RE_ACTIONS')
 ));
 

@@ -51,11 +51,18 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 
 | **Admidio** | **Residents** |
 |-------------|-------------|
-| 5.0.x | 1.0, 1.1 |
+| 5.0.x | 1.0, 1.1, 1.2 |
 
-## Release Notes v1.1
-- PAYPAL payment gateway integration
-- SEPA xml file generation (Requires the MembershipFee plugin)
+## Release Notes v1.2
+
+**Features**
+- Added Auto approve Device and Allow Multiple Devices user config
+- Enforced a single active device per account
+- Added sign-out endpoint that rotates the device API key
+- Added Requested date to the device list
+
+**Bug fixes**
+- Fixed an API key handling issue on the Nginx server
 
 ## Customization
 

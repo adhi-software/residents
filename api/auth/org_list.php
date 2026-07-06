@@ -12,8 +12,10 @@ require_once(__DIR__ . '/../../common_function.php');
 header('Content-Type: application/json; charset=utf-8');
 
 try {
+    // Only the id and display name are needed by the login org picker. org_uuid /
+    // org_shortname are deliberately not exposed on this unauthenticated endpoint.
     $stmt = $gDb->queryPrepared(
-        'SELECT org_id, org_uuid, org_shortname, org_longname
+        'SELECT org_id, org_longname
             FROM ' . TBL_ORGANIZATIONS . '
             ORDER BY org_longname ASC',
         array(),
@@ -28,8 +30,6 @@ try {
     while ($row = $stmt->fetch()) {
         $organizations[] = array(
             'id' => (int) ($row['org_id'] ?? 0),
-            'uuid' => (string) ($row['org_uuid'] ?? ''),
-            'shortname' => (string) ($row['org_shortname'] ?? ''),
             'name' => (string) ($row['org_longname'] ?? ''),
         );
     }
