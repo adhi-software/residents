@@ -56,13 +56,13 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 ## Release Notes v1.2
 
 **Features**
-- Added per-user device settings: "Auto-approve Device" and "Allow Multiple Devices"
+- Added Auto approve Device and Allow Multiple Devices user config
 - Enforced a single active device per account
 - Added sign-out endpoint that rotates the device API key
 - Added Requested date to the device list
 
 **Bug fixes**
-- Fixed API key handling — keys accepted via headers only, no longer via URL
+- Fixed an API key handling issue on the Nginx server
 
 ## Customization
 
