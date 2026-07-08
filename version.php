@@ -10,5 +10,5 @@
  */
 
 if (!defined('RESIDENTS_VERSION')) {
-    define('RESIDENTS_VERSION', '1.2');
+    define('RESIDENTS_VERSION', '1.1.1');
 }
