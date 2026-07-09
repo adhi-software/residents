@@ -51,9 +51,9 @@ A billing and invoicing plugin for Admidio that helps manage resident invoices, 
 
 | **Admidio** | **Residents** |
 |-------------|-------------|
-| 5.0.x | 1.0, 1.1, 1.2 |
+| 5.0.x | 1.0, 1.1, 1.1.1 |
 
-## Release Notes v1.2
+## Release Notes v1.1.1
 
 **Features**
 - Added Auto approve Device and Allow Multiple Devices user config
